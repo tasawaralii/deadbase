@@ -1,0 +1,7 @@
+LOAD DATABASE
+     FROM mysql://deadbase:password@host/deadbase
+     INTO postgresql://postgres:changethis@localhost/app
+
+WITH data only
+
+ALTER SCHEMA 'deadbase' RENAME TO 'public';
