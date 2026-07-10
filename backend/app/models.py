@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+# ruff: noqa: UP037
 import datetime as dt
 import decimal
 import enum
@@ -77,7 +76,7 @@ class User(UserBase, table=True):
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
-    items: list[Item] = Relationship(back_populates="owner", cascade_delete=True)
+    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -188,22 +187,7 @@ class AgeRatings(SQLModel, table=True):
     age_name: str = Field(sa_column=Column('age_name', String(50), nullable=False))
     age_des: str = Field(sa_column=Column('age_des', String(50), nullable=False))
 
-    animes: list[Animes] = Relationship(back_populates='age')
-
-
-class Content(SQLModel, table=True):
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='idx_17182_primary'),
-    )
-
-    id: int = Field(sa_column=Column('id', BigInteger, primary_key=True, autoincrement=True))
-    content_type: ContentContentType = Field(sa_column=Column('content_type', Enum(ContentContentType, values_callable=lambda cls: [member.value for member in cls], name='content_content_type'), nullable=False))
-    respective_id: int | None = Field(default=None, sa_column=Column('respective_id', BigInteger))
-
-    animes: Animes | None = Relationship(back_populates='content')
-    episodes: Episodes | None = Relationship(back_populates='content')
-    packs: Packs | None = Relationship(back_populates='content')
-    links: list[Links] = Relationship(back_populates="content")
+    animes: list["Animes"] = Relationship(back_populates='age')
 
 
 class Genres(SQLModel, table=True):
@@ -216,7 +200,7 @@ class Genres(SQLModel, table=True):
     genre_name: str = Field(sa_column=Column('genre_name', String(20), nullable=False))
     genre_sid: str = Field(sa_column=Column('genre_sid', String(20), nullable=False))
 
-    anime: list[Animes] = Relationship(back_populates='genre', sa_relationship_kwargs={'secondary': 'anime_genres'})
+    anime: list["Animes"] = Relationship(back_populates='genre', sa_relationship_kwargs={'secondary': 'anime_genres'})
 
 
 class Languages(SQLModel, table=True):
@@ -254,7 +238,7 @@ class Qualities(SQLModel, table=True):
     quality_order: int = Field(sa_column=Column('quality_order', BigInteger, nullable=False))
     quality_name: str = Field(sa_column=Column('quality_name', String(20), nullable=False))
 
-    links: list[Links] = Relationship(back_populates='quality')
+    links: list["Links"] = Relationship(back_populates='quality')
 
 
 class ServerInfo(SQLModel, table=True):
@@ -273,7 +257,7 @@ class ServerInfo(SQLModel, table=True):
     color: str = Field(sa_column=Column('color', String(10), nullable=False))
     is_enabled: bool = Field(sa_column=Column('is_enabled', Boolean, nullable=False, server_default=text('true')))
 
-    link_servers: list[LinkServers] = Relationship(back_populates='server')
+    link_servers: list["LinkServers"] = Relationship(back_populates='server')
 
 
 class Source(SQLModel, table=True):
@@ -325,8 +309,8 @@ class Animes(SQLModel, table=True):
 
     age: AgeRatings = Relationship(back_populates='animes')
     content: Content = Relationship(back_populates='animes')
-    genre: list[Genres] = Relationship(back_populates='anime', sa_relationship_kwargs={'secondary': 'anime_genres'})
-    seasons: list[Seasons] = Relationship(back_populates='anime')
+    genre: list["Genres"] = Relationship(back_populates='anime', sa_relationship_kwargs={'secondary': 'anime_genres'})
+    seasons: list["Seasons"] = Relationship(back_populates='anime')
 
 
 class Links(SQLModel, table=True):
@@ -355,7 +339,7 @@ class Links(SQLModel, table=True):
     quality_id: int | None = Field(default=None, sa_column=Column('quality_id', BigInteger))
 
     quality: Qualities | None = Relationship(back_populates='links')
-    link_servers: list[LinkServers] = Relationship(back_populates='link')
+    link_servers: list["LinkServers"] = Relationship(back_populates='link')
     content: Content = Relationship(back_populates="links")
 
 
@@ -412,8 +396,8 @@ class Seasons(SQLModel, table=True):
     poster_img: str | None = Field(default=None, sa_column=Column('poster_img', String(255), server_default=text('NULL::character varying')))
 
     anime: Animes = Relationship(back_populates='seasons')
-    episodes: list[Episodes] = Relationship(back_populates='season')
-    packs: list[Packs] = Relationship(back_populates='season')
+    episodes: list["Episodes"] = Relationship(back_populates='season')
+    packs: list["Packs"] = Relationship(back_populates='season')
 
 
 class Episodes(SQLModel, table=True):
@@ -460,6 +444,21 @@ class Packs(SQLModel, table=True):
 
     content: Content = Relationship(back_populates='packs')
     season: Seasons = Relationship(back_populates='packs')
+
+
+class Content(SQLModel, table=True):
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='idx_17182_primary'),
+    )
+
+    id: int = Field(sa_column=Column('id', BigInteger, primary_key=True, autoincrement=True))
+    content_type: ContentContentType = Field(sa_column=Column('content_type', Enum(ContentContentType, values_callable=lambda cls: [member.value for member in cls], name='content_content_type'), nullable=False))
+    respective_id: int | None = Field(default=None, sa_column=Column('respective_id', BigInteger))
+
+    animes: Animes | None = Relationship(back_populates='content')
+    episodes: Episodes | None = Relationship(back_populates='content')
+    packs: Packs | None = Relationship(back_populates='content')
+    links: list["Links"] = Relationship(back_populates="content")
 
 
 t_season_dubs = Table(
