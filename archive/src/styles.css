@@ -1,0 +1,195 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Bebas Neue", "Russo One", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius-2xl: 14px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-ink: var(--ink);
+}
+
+:root {
+  --radius: 0.375rem;
+
+  /* Paper & ink — manga cover palette */
+  --background: oklch(0.965 0.012 80);        /* warm paper */
+  --foreground: oklch(0.16 0.02 60);          /* near-black ink */
+  --ink: oklch(0.12 0.015 60);
+  --card: oklch(0.995 0.005 80);
+  --card-foreground: oklch(0.16 0.02 60);
+  --muted: oklch(0.93 0.015 75);
+  --muted-foreground: oklch(0.42 0.02 60);
+  --border: oklch(0.16 0.02 60);              /* hard ink borders */
+  --input: oklch(0.94 0.012 75);
+  --ring: oklch(0.6 0.24 28);
+
+  --primary: oklch(0.58 0.24 28);             /* cadmium red */
+  --primary-foreground: oklch(0.99 0.005 80);
+  --accent: oklch(0.86 0.19 95);              /* acid yellow */
+  --accent-foreground: oklch(0.12 0.02 60);
+  --danger: oklch(0.58 0.24 28);
+  --danger-foreground: oklch(0.99 0.005 80);
+  --secondary: oklch(0.22 0.02 60);           /* ink slab */
+  --secondary-foreground: oklch(0.99 0.005 80);
+}
+
+.dark {
+  --background: oklch(0.17 0.014 60);         /* warm charcoal */
+  --foreground: oklch(0.94 0.014 80);         /* off-white ink */
+  --ink: oklch(0.10 0.012 60);
+  --card: oklch(0.215 0.016 60);              /* raised surface */
+  --card-foreground: oklch(0.94 0.014 80);
+  --muted: oklch(0.26 0.016 60);
+  --muted-foreground: oklch(0.70 0.02 75);
+  --border: oklch(0.72 0.025 75);             /* softer bone, not pure white */
+  --input: oklch(0.26 0.016 60);
+  --ring: oklch(0.72 0.22 28);
+
+  --primary: oklch(0.70 0.22 28);             /* warmer red for dark */
+  --primary-foreground: oklch(0.12 0.01 60);
+  --accent: oklch(0.82 0.17 90);              /* mellowed yellow */
+  --accent-foreground: oklch(0.12 0.01 60);
+  --danger: oklch(0.70 0.22 28);
+  --danger-foreground: oklch(0.12 0.01 60);
+  --secondary: oklch(0.30 0.02 60);           /* dark slab, not inverted white */
+  --secondary-foreground: oklch(0.94 0.014 80);
+}
+
+
+@layer base {
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.005em;
+    line-height: 0.95;
+  }
+
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+}
+
+/* ---------- Utilities ---------- */
+
+@utility btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 2px solid var(--color-border);
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background-color 0.12s ease;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 0 var(--color-border);
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 0 var(--color-border);
+  }
+  &:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 0 var(--color-border);
+  }
+}
+
+/* Ghost button — no hard shadow, for header nav */
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  &:hover {
+    background: var(--color-muted);
+  }
+}
+
+/* Panel — hard-edge card with brutalist offset shadow */
+@utility panel {
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0 0 var(--color-border);
+}
+
+@utility panel-flat {
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* Halftone dot texture overlay */
+@utility halftone {
+  background-image: radial-gradient(var(--color-border) 1px, transparent 1.2px);
+  background-size: 8px 8px;
+}
+
+/* Diagonal stripe — for tags / stamps */
+@utility stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--color-border) 0 2px,
+    transparent 2px 8px
+  );
+}
+
+/* Ticket edge — perforated left border */
+@utility ticket {
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  position: relative;
+  box-shadow: 4px 4px 0 0 var(--color-border);
+}
+
+@utility label-cap {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
