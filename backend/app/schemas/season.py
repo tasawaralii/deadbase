@@ -3,7 +3,7 @@ import decimal
 
 from sqlmodel import SQLModel
 
-from app.schemas.common import ImageUrls
+from app.schemas.common import ImageUrls, SeasonDub
 from app.schemas.episode import EpisodeSummary
 from app.schemas.pack import PackSummary
 
@@ -24,5 +24,7 @@ class SeasonDetail(SQLModel):
     overview: str
     rating: decimal.Decimal
     release_date: dt.date | None
+    total_episodes: int
+    dubs: list[SeasonDub]
     episodes: list[EpisodeSummary]
     packs: list[PackSummary]

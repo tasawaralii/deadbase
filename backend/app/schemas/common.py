@@ -19,3 +19,8 @@ class LinkPublic(SQLModel):
     servers: list[DownloadLink]
     only_hindi: bool
     note: str
+
+
+class SeasonDub(SQLModel):
+    platform: str
+    language: str

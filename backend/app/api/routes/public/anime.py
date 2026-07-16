@@ -3,15 +3,84 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import ColumnElement
 from sqlalchemy.orm import selectinload
-from sqlmodel import col, func, select
+from sqlmodel import Session, col, func, select
 
 from app.api.deps import SessionDep
 from app.media import build_download_links, get_watch_servers, resolve_image_urls
-from app.models import Animes, Episodes, Genres, Packs, Seasons
+from app.models import Animes, Episodes, Genres, Links, Packs, Seasons
 from app.schemas.anime import AnimeDetail, AnimeListPublic, AnimeSummary
 from app.schemas.season import SeasonSummary
 
 router = APIRouter()
+
+
+def build_anime_detail(session: Session, anime: Animes) -> AnimeDetail:
+    base = {
+        "slug": anime.slug,
+        "anime_name": anime.anime_name,
+        "type": anime.type,
+        "poster": resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
+        "backdrop": resolve_image_urls(
+            anime.backdrop_source, anime.backdrop_img, "backdrop"
+        ),
+        "overview": anime.overview,
+        "duration": anime.duration,
+        "rating": anime.rating,
+        "age_rating": anime.age.age_name,
+        "genres": [g.genre_name for g in anime.genre],
+        "release_date": anime.anime_rel_date,
+    }
+
+    if anime.type == "movie":
+        return AnimeDetail(
+            **base,
+            links=build_download_links(session, anime.content_id),
+            watch_servers=get_watch_servers(),
+        )
+
+    episode_has_link = (
+        select(Links.link_id)
+        .where(Links.content_id == Episodes.content_id, Links.is_live == True)  # noqa: E712
+        .exists()
+    )
+    episode_count_subq = (
+        select(func.count(col(Episodes.episode_id)))
+        .where(Episodes.season_id == Seasons.season_id, episode_has_link)
+        .scalar_subquery()
+    )
+    pack_has_link = (
+        select(Links.link_id)
+        .where(Links.content_id == Packs.content_id, Links.is_live == True)  # noqa: E712
+        .exists()
+    )
+    pack_count_subq = (
+        select(func.count(col(Packs.pack_id)))
+        .where(Packs.season_id == Seasons.season_id, pack_has_link)
+        .scalar_subquery()
+    )
+
+    seasons = session.exec(
+        select(Seasons, episode_count_subq, pack_count_subq)
+        .where(Seasons.anime_id == anime.anime_id)
+        .order_by(col(Seasons.season_number).asc())
+    ).all()
+
+    return AnimeDetail(
+        **base,
+        seasons=[
+            SeasonSummary(
+                season_number=season.season_number,
+                season_name=season.season_name,
+                poster=resolve_image_urls(
+                    season.poster_source, season.poster_img, "poster"
+                ),
+                rating=season.rating,
+                episode_count=episode_count,
+                pack_count=pack_count,
+            )
+            for season, episode_count, pack_count in seasons
+        ],
+    )
 
 
 @router.get("/anime")
@@ -90,59 +159,4 @@ def read_anime(session: SessionDep, slug: str) -> AnimeDetail:
     if not anime:
         raise HTTPException(status_code=404, detail="Anime not found")
 
-    base = {
-        "slug": anime.slug,
-        "anime_name": anime.anime_name,
-        "type": anime.type,
-        "poster": resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
-        "backdrop": resolve_image_urls(
-            anime.backdrop_source, anime.backdrop_img, "backdrop"
-        ),
-        "overview": anime.overview,
-        "duration": anime.duration,
-        "rating": anime.rating,
-        "age_rating": anime.age.age_name,
-        "genres": [g.genre_name for g in anime.genre],
-        "release_date": anime.anime_rel_date,
-    }
-
-    if anime.type == "movie":
-        return AnimeDetail(
-            **base,
-            links=build_download_links(session, anime.content_id),
-            watch_servers=get_watch_servers(),
-        )
-
-    episode_count_subq = (
-        select(func.count(col(Episodes.episode_id)))
-        .where(Episodes.season_id == Seasons.season_id)
-        .scalar_subquery()
-    )
-    pack_count_subq = (
-        select(func.count(col(Packs.pack_id)))
-        .where(Packs.season_id == Seasons.season_id)
-        .scalar_subquery()
-    )
-
-    seasons = session.exec(
-        select(Seasons, episode_count_subq, pack_count_subq)
-        .where(Seasons.anime_id == anime.anime_id)
-        .order_by(col(Seasons.season_number).asc())
-    ).all()
-
-    return AnimeDetail(
-        **base,
-        seasons=[
-            SeasonSummary(
-                season_number=season.season_number,
-                season_name=season.season_name,
-                poster=resolve_image_urls(
-                    season.poster_source, season.poster_img, "poster"
-                ),
-                rating=season.rating,
-                episode_count=episode_count,
-                pack_count=pack_count,
-            )
-            for season, episode_count, pack_count in seasons
-        ],
-    )
+    return build_anime_detail(session, anime)
