@@ -433,7 +433,8 @@ class Packs(SQLModel, table=True):
         ForeignKeyConstraint(['season_id'], ['seasons.season_id'], ondelete='CASCADE', onupdate='CASCADE', name='packs_ibfk_1'),
         PrimaryKeyConstraint('pack_id', name='idx_17263_primary'),
         Index('idx_17263_content_id', 'content_id'),
-        Index('idx_17263_my_season_id', 'season_id')
+        Index('idx_17263_my_season_id', 'season_id'),
+        Index('ix_packs_season_id_start_ep_end_ep', 'season_id', 'start_ep', 'end_ep', unique=True)
     )
 
     pack_id: int = Field(sa_column=Column('pack_id', BigInteger, primary_key=True, autoincrement=True))
@@ -460,57 +461,6 @@ class Content(SQLModel, table=True):
     episodes: Episodes | None = Relationship(back_populates='content')
     packs: Packs | None = Relationship(back_populates='content')
     links: list["Links"] = Relationship(back_populates="content")
-
-
-# --- PUBLIC API SCHEMAS ---
-
-
-class ServerPublic(SQLModel):
-    server_name: str
-    server_domain: str
-    color: str
-
-
-class LinkServerPublic(SQLModel):
-    slug: str
-    server: ServerPublic
-
-
-class QualityPublic(SQLModel):
-    quality_name: str
-    quality_resolution: int
-    is_hevc: bool
-    is_hq: bool
-
-
-class LinkPublic(SQLModel):
-    filename: str
-    type: str
-    size: decimal.Decimal | None
-    duration: int
-    quality: QualityPublic | None
-    servers: list[LinkServerPublic]
-
-
-class SeasonPosterPublic(SQLModel):
-    source: SeasonsPosterSource
-    image: str | None
-
-
-class EpisodePublic(SQLModel):
-    episode_number: int
-    episode_name: str | None
-    overview: str | None
-    img: str | None
-    air_date: dt.date | None
-    episode_runtime: int | None
-    episode_rating: decimal.Decimal | None
-
-
-class EpisodeDetailPublic(SQLModel):
-    season_poster: SeasonPosterPublic
-    episode: EpisodePublic
-    links: list[LinkPublic]
 
 
 t_season_dubs = Table(

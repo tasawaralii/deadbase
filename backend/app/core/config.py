@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:5173"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
+    # Base URL for "own"-sourced (non-tmdb) media, e.g. a bucket/CDN origin.
+    # Prepended directly to the stored image path.
+    MEDIA_BASE_URL: str = ""
+
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
