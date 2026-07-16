@@ -13,7 +13,6 @@ from sqlalchemy import (
     Date,
     DateTime,
     Enum,
-    ForeignKey,
     ForeignKeyConstraint,
     Index,
     Numeric,
@@ -316,10 +315,12 @@ class Animes(SQLModel, table=True):
 class Links(SQLModel, table=True):
     __table_args__ = (
         ForeignKeyConstraint(['quality_id'], ['qualities.quality_id'], ondelete='SET NULL', onupdate='SET NULL', name='links_ibfk_1'),
+        ForeignKeyConstraint(['content_id'], ['content.id'], ondelete='RESTRICT', onupdate='RESTRICT', name='links_ibfk_2'),
         PrimaryKeyConstraint('link_id', name='idx_17221_primary'),
         Index('idx_17221_gdriveid', 'gdriveid', unique=True),
         Index('idx_17221_idx_linksinfo_filter', 'is_live', 'type', 'link_id'),
-        Index('idx_17221_quality', 'quality_id')
+        Index('idx_17221_quality', 'quality_id'),
+        Index('ix_links_content_id', 'content_id')
     )
 
     link_id: int = Field(sa_column=Column('link_id', BigInteger, primary_key=True, autoincrement=True))
@@ -334,7 +335,7 @@ class Links(SQLModel, table=True):
     only_hindi: bool = Field(sa_column=Column('only_hindi', Boolean, nullable=False, server_default=text('false')))
     added_date: datetime = Field(sa_column=Column('added_date', DateTime(True), nullable=False, server_default=text('CURRENT_TIMESTAMP')))
     updated_date: datetime = Field(sa_column=Column('updated_date', DateTime(True), nullable=False, server_default=text('CURRENT_TIMESTAMP')))
-    content_id: int = Field(sa_column=Column('content_id', BigInteger, ForeignKey("content.id"), nullable=False))
+    content_id: int = Field(sa_column=Column('content_id', BigInteger, nullable=False))
     size: decimal.Decimal | None = Field(default=None, sa_column=Column('size', Numeric))
     quality_id: int | None = Field(default=None, sa_column=Column('quality_id', BigInteger))
 
@@ -459,6 +460,57 @@ class Content(SQLModel, table=True):
     episodes: Episodes | None = Relationship(back_populates='content')
     packs: Packs | None = Relationship(back_populates='content')
     links: list["Links"] = Relationship(back_populates="content")
+
+
+# --- PUBLIC API SCHEMAS ---
+
+
+class ServerPublic(SQLModel):
+    server_name: str
+    server_domain: str
+    color: str
+
+
+class LinkServerPublic(SQLModel):
+    slug: str
+    server: ServerPublic
+
+
+class QualityPublic(SQLModel):
+    quality_name: str
+    quality_resolution: int
+    is_hevc: bool
+    is_hq: bool
+
+
+class LinkPublic(SQLModel):
+    filename: str
+    type: str
+    size: decimal.Decimal | None
+    duration: int
+    quality: QualityPublic | None
+    servers: list[LinkServerPublic]
+
+
+class SeasonPosterPublic(SQLModel):
+    source: SeasonsPosterSource
+    image: str | None
+
+
+class EpisodePublic(SQLModel):
+    episode_number: int
+    episode_name: str | None
+    overview: str | None
+    img: str | None
+    air_date: dt.date | None
+    episode_runtime: int | None
+    episode_rating: decimal.Decimal | None
+
+
+class EpisodeDetailPublic(SQLModel):
+    season_poster: SeasonPosterPublic
+    episode: EpisodePublic
+    links: list[LinkPublic]
 
 
 t_season_dubs = Table(
