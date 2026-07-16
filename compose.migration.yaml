@@ -1,0 +1,21 @@
+services:
+
+  blog-db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=migration
+      - MARIADB_DATABASE=deadtoons
+    ports:
+      - "3307:3306"
+    volumes:
+      - blog-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 10
+      start_period: 30s
+      timeout: 5s
+
+volumes:
+  blog-db-data:

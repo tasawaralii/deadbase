@@ -4,11 +4,13 @@ import decimal
 import enum
 import uuid
 from datetime import UTC, datetime
+from typing import Optional
 
 from pydantic import EmailStr
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     Column,
     Date,
     DateTime,
@@ -20,6 +22,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    UniqueConstraint,
     text,
 )
 from sqlmodel import Field, Relationship, SQLModel
@@ -76,6 +79,7 @@ class User(UserBase, table=True):
         sa_type=DateTime(timezone=True),  # type: ignore
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    posts: list["Posts"] = Relationship(back_populates="author")
 
 
 # Properties to return via API, id is always required
@@ -212,6 +216,8 @@ class Languages(SQLModel, table=True):
     language_sid: str = Field(sa_column=Column('language_sid', String(20), nullable=False))
     language_name: str = Field(sa_column=Column('language_name', String(20), nullable=False))
 
+    season_dubs: list["SeasonDubs"] = Relationship(back_populates='language')
+
 
 class OttPlatforms(SQLModel, table=True):
     __tablename__ = 'ott_platforms'
@@ -223,6 +229,8 @@ class OttPlatforms(SQLModel, table=True):
     ott_id: int = Field(sa_column=Column('ott_id', BigInteger, primary_key=True, autoincrement=True))
     ott_sid: str = Field(sa_column=Column('ott_sid', String(20), nullable=False))
     ott_name: str = Field(sa_column=Column('ott_name', String(20), nullable=False))
+
+    season_dubs: list["SeasonDubs"] = Relationship(back_populates='ott')
 
 
 class Qualities(SQLModel, table=True):
@@ -310,6 +318,7 @@ class Animes(SQLModel, table=True):
     content: Content = Relationship(back_populates='animes')
     genre: list["Genres"] = Relationship(back_populates='anime', sa_relationship_kwargs={'secondary': 'anime_genres'})
     seasons: list["Seasons"] = Relationship(back_populates='anime')
+    post: Optional["Posts"] = Relationship(back_populates='anime')  # noqa: UP045
 
 
 class Links(SQLModel, table=True):
@@ -399,6 +408,8 @@ class Seasons(SQLModel, table=True):
     anime: Animes = Relationship(back_populates='seasons')
     episodes: list["Episodes"] = Relationship(back_populates='season')
     packs: list["Packs"] = Relationship(back_populates='season')
+    post: Optional["Posts"] = Relationship(back_populates='season')  # noqa: UP045
+    dubs: list["SeasonDubs"] = Relationship(back_populates='season')
 
 
 class Episodes(SQLModel, table=True):
@@ -463,15 +474,100 @@ class Content(SQLModel, table=True):
     links: list["Links"] = Relationship(back_populates="content")
 
 
-t_season_dubs = Table(
-    'season_dubs', SQLModel.metadata,
-    Column('season_id', BigInteger, nullable=False),
-    Column('ott_id', BigInteger, nullable=False),
-    Column('language_id', BigInteger, nullable=False),
-    ForeignKeyConstraint(['language_id'], ['languages.language_id'], ondelete='RESTRICT', onupdate='RESTRICT', name='season_dubs_ibfk_2'),
-    ForeignKeyConstraint(['ott_id'], ['ott_platforms.ott_id'], ondelete='RESTRICT', onupdate='RESTRICT', name='season_dubs_ibfk_3'),
-    ForeignKeyConstraint(['season_id'], ['seasons.season_id'], ondelete='CASCADE', onupdate='CASCADE', name='season_dubs_ibfk_1'),
-    Index('idx_17302_language_id', 'language_id'),
-    Index('idx_17302_ott_id', 'ott_id'),
-    Index('idx_17302_season_id', 'season_id', 'ott_id', 'language_id', unique=True)
-)
+class SeasonDubs(SQLModel, table=True):
+    __tablename__ = 'season_dubs'
+    __table_args__ = (
+        ForeignKeyConstraint(['language_id'], ['languages.language_id'], ondelete='RESTRICT', onupdate='RESTRICT', name='season_dubs_ibfk_2'),
+        ForeignKeyConstraint(['ott_id'], ['ott_platforms.ott_id'], ondelete='RESTRICT', onupdate='RESTRICT', name='season_dubs_ibfk_3'),
+        ForeignKeyConstraint(['season_id'], ['seasons.season_id'], ondelete='CASCADE', onupdate='CASCADE', name='season_dubs_ibfk_1'),
+        PrimaryKeyConstraint('season_id', 'ott_id', 'language_id', name='season_dubs_pkey'),
+        Index('idx_17302_language_id', 'language_id'),
+        Index('idx_17302_ott_id', 'ott_id'),
+    )
+
+    season_id: int = Field(sa_column=Column('season_id', BigInteger, primary_key=True))
+    ott_id: int = Field(sa_column=Column('ott_id', BigInteger, primary_key=True))
+    language_id: int = Field(sa_column=Column('language_id', BigInteger, primary_key=True))
+
+    season: Seasons = Relationship(back_populates='dubs')
+    ott: OttPlatforms = Relationship(back_populates='season_dubs')
+    language: Languages = Relationship(back_populates='season_dubs')
+
+
+# --- BLOG MIGRATION MODELS ---
+
+
+class PostStatus(enum.StrEnum):
+    ONGOING = "ongoing"
+    COMPLETED = "completed"
+
+
+class CommentStatus(enum.StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    SPAM = "spam"
+
+
+class PostTags(SQLModel, table=True):
+    __tablename__ = 'post_tags'
+
+    post_id: int = Field(foreign_key='posts.id', primary_key=True, ondelete='CASCADE')
+    tag_id: int = Field(foreign_key='tags.id', primary_key=True, ondelete='CASCADE')
+
+
+class Tags(SQLModel, table=True):
+    __tablename__ = 'tags'
+
+    id: int | None = Field(default=None, primary_key=True)
+    slug: str = Field(unique=True, max_length=50)
+    name: str = Field(max_length=50)
+
+    posts: list["Posts"] = Relationship(back_populates='tags', link_model=PostTags)
+
+
+class Posts(SQLModel, table=True):
+    __tablename__ = 'posts'
+    __table_args__ = (
+        CheckConstraint(
+            '(anime_id IS NOT NULL) != (season_id IS NOT NULL)',
+            name='posts_exactly_one_target',
+        ),
+        UniqueConstraint('anime_id', name='posts_anime_id_key'),
+        UniqueConstraint('season_id', name='posts_season_id_key'),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    anime_id: int | None = Field(default=None, foreign_key='animes.anime_id', ondelete='CASCADE')
+    season_id: int | None = Field(default=None, foreign_key='seasons.season_id', ondelete='CASCADE')
+    title: str = Field(max_length=255)
+    slug: str = Field(unique=True, index=True, max_length=255)
+    backdrop_img: str | None = Field(default=None, max_length=255)
+    status: PostStatus
+    sticky: bool = Field(default=False)
+    views: int = Field(default=0)
+    author_id: uuid.UUID | None = Field(default=None, foreign_key='user.id', ondelete='SET NULL')
+    last_updated: datetime = Field(sa_type=DateTime(timezone=True))  # type: ignore
+
+    anime: Animes | None = Relationship(back_populates='post')
+    season: Seasons | None = Relationship(back_populates='post')
+    author: User | None = Relationship(back_populates='posts')
+    comments: list["Comments"] = Relationship(back_populates='post', cascade_delete=True)
+    tags: list["Tags"] = Relationship(back_populates='posts', link_model=PostTags)
+
+
+class Comments(SQLModel, table=True):
+    __tablename__ = 'comments'
+
+    id: int | None = Field(default=None, primary_key=True)
+    post_id: int = Field(foreign_key='posts.id', ondelete='CASCADE')
+    parent_id: int | None = Field(default=None, foreign_key='comments.id', ondelete='CASCADE')
+    author_name: str = Field(max_length=50)
+    author_email: str = Field(max_length=50)
+    author_url: str | None = Field(default=None, max_length=255)
+    body: str
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    status: CommentStatus = Field(default=CommentStatus.PENDING)
+
+    post: Posts = Relationship(back_populates='comments')
