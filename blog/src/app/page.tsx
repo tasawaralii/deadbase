@@ -20,7 +20,7 @@ const POSTS: Post[] = [
     img: "/poster-1.jpg",
     pinned: true,
     title:
-      "Neon Blossom Nights Season 2 Multi Audio [Placeholder-A/B/C] 480p, 720p & 1080p HD | 10bit HEVC",
+      "Neon Blossom Nihts Season 2 Multi Audio [Placeholder-A/B/C] 480p, 720p & 1080p HD | 10bit HEVC",
     tags: ["Dub Pack", "Studio Alpha", "Completed"],
     time: "1 day ago",
     comments: 0,
@@ -78,7 +78,7 @@ export default function Home() {
           <li key={p.slug} className="py-6 flex flex-col sm:flex-row gap-5">
             <Link
               href={`/posts/${p.slug}`}
-              className="shrink-0 block sm:w-56 aspect-video overflow-hidden rounded-sm bg-muted"
+              className="shrink-0 block sm:w-64 sm:self-center aspect-video overflow-hidden rounded-sm bg-muted"
             >
               <Image
                 src={p.img}
@@ -89,7 +89,7 @@ export default function Home() {
               />
             </Link>
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm font-semibold mb-2">
+              <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm font-semibold mb-1.5">
                 {p.tags.map((t, i) => (
                   <span key={t} className="text-accent">
                     {t}
@@ -97,13 +97,13 @@ export default function Home() {
                   </span>
                 ))}
               </div>
-              <h2 className="font-display font-extrabold text-lg sm:text-xl leading-snug text-foreground hover:text-accent transition-colors">
+              <h2 className="font-display font-semibold text-2xl sm:text-3xl leading-tight text-foreground hover:text-accent transition-colors">
                 <Link href={`/posts/${p.slug}`} className="flex gap-2">
-                  {p.pinned && <Pin className="w-4 h-4 shrink-0 mt-1.5 text-accent -rotate-45" />}
+                  {/* {p.pinned && <Pin className="w-4 h-4 shrink-0 mt-2 text-accent -rotate-45" />} */}
                   <span>{p.title}</span>
                 </Link>
               </h2>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-4 mt-4 text-xs font-medium text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Clock className="w-3 h-3" /> {p.time}
                 </span>

@@ -80,7 +80,7 @@ export function Header() {
           <Link href="/" className="flex items-center mr-auto">
             <Image src="/logo.png" alt="Deadtoons India" width={207} height={63} className="h-11 w-auto" priority />
           </Link>
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1 font-sans-alt">
             {NAV.map((item) => {
               const isCat = item === "Categories";
               const isGenre = item === "Genre";
@@ -168,7 +168,7 @@ export function Header() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <nav className="py-2">
+            <nav className="py-2 font-sans-alt">
               {SIDEBAR_LINKS.map((label) => (
                 <a
                   key={label}

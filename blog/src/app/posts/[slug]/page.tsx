@@ -29,7 +29,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return (
     <Layout>
       <article>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl leading-tight mb-4">
+        <h1 className="font-display font-semibold text-2xl sm:text-3xl leading-tight mb-4">
           Placeholder Anime Post #{slug} — Multi Audio Demo Release [A-B-C-D] 480p, 720p & 1080p HD WEB-DL |
           10bit HEVC
         </h1>
