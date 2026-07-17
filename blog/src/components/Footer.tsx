@@ -30,14 +30,8 @@ export function Footer() {
             We just index those links which are already available on the internet.
           </p>
           <p className="text-sm text-white/80 leading-relaxed mt-3">
-            If you want to remove any post from this website check out our
+            If you want to remove any post from this website check out our DMCA page
           </p>
-          <a
-            href="#"
-            className="mt-3 inline-block bg-[oklch(0.5_0.2_310)] text-white text-sm font-semibold px-4 py-2 rounded-md hover:opacity-90"
-          >
-            DMCA Page
-          </a>
         </div>
       </div>
       <div className="border-t border-sidebar-border">

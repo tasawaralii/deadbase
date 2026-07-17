@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search, Menu, X, ChevronDown } from "lucide-react";
 
 const NAV = ["Home", "Latest", "Movies", "Series", "Categories", "Genre"];
@@ -65,22 +65,27 @@ export function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus();
+  }, [searchOpen]);
 
   return (
     <>
       <header className="bg-sidebar text-sidebar-foreground sticky top-0 z-40 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-3 h-16">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3 h-16">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 hover:bg-sidebar-accent rounded"
+            className="lg:hidden justify-self-start p-2 -ml-2 hover:bg-sidebar-accent rounded"
             aria-label="Open menu"
           >
             <Menu className="w-6 h-6" />
           </button>
-          <Link href="/" className="flex items-center mr-auto">
+          <Link href="/" className="flex items-center justify-self-center lg:justify-self-start">
             <Image src="/logo.png" alt="Deadtoons India" width={207} height={63} className="h-11 w-auto" priority />
           </Link>
-          <nav className="hidden lg:flex items-center gap-1 font-sans-alt">
+          <nav className="hidden lg:flex items-center justify-self-center gap-1 font-sans-alt">
             {NAV.map((item) => {
               const isCat = item === "Categories";
               const isGenre = item === "Genre";
@@ -94,10 +99,10 @@ export function Header() {
                   >
                     <button
                       onClick={() => setCatOpen((v) => !v)}
-                      className="px-3 py-2 text-sm font-semibold tracking-wide uppercase hover:text-accent transition-colors bg-white/5"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold tracking-wide uppercase hover:text-black hover:bg-white transition-color"
                     >
                       {item}
-                      <ChevronDown className="inline w-3 h-3 ml-1" />
+                      <ChevronDown className="w-3 h-3" />
                     </button>
                     {catOpen && (
                       <div className="absolute top-full left-0 min-w-[220px] bg-white text-foreground shadow-xl border-t-2 border-accent z-50">
@@ -119,40 +124,42 @@ export function Header() {
                 <a
                   key={item}
                   href="#"
-                  className="px-3 py-2 text-sm font-semibold tracking-wide uppercase hover:text-accent transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded font-semibold tracking-wide uppercase hover:bg-white hover:text-black transition-colors"
                 >
                   {item}
-                  {isGenre && <ChevronDown className="inline w-3 h-3 ml-1" />}
+                  {isGenre && <ChevronDown className="w-3 h-3" />}
                 </a>
               );
             })}
           </nav>
           <button
             onClick={() => setSearchOpen((v) => !v)}
-            className="p-2 hover:bg-sidebar-accent rounded"
+            className="justify-self-end p-2 hover:bg-sidebar-accent rounded"
             aria-label="Search"
           >
             {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
           </button>
         </div>
-        {searchOpen && (
-          <div className="bg-white border-t border-border">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-2">
-              <input
-                autoFocus
-                type="search"
-                placeholder="Type here to search..."
-                className="flex-1 h-12 px-4 border border-border rounded text-foreground bg-white outline-none focus:border-primary"
-              />
-              <button
-                className="h-12 w-12 grid place-items-center text-foreground hover:text-primary"
-                aria-label="Submit search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-            </div>
+        <div
+          className={`absolute inset-x-0 top-full lg:inset-x-auto lg:right-4 lg:w-96 lg:rounded-b-md bg-white border-t lg:border border-border shadow-lg z-50 transition-all duration-200 ease-out ${
+            searchOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-4 py-3 lg:px-3 flex items-center gap-2">
+            <input
+              ref={searchInputRef}
+              type="search"
+              placeholder="Type here to search..."
+              className="flex-1 h-12 px-4 border border-border rounded text-foreground bg-white outline-none focus:border-primary"
+            />
+            <button
+              className="h-12 w-12 grid place-items-center text-foreground hover:text-primary"
+              aria-label="Submit search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
           </div>
-        )}
+        </div>
       </header>
 
       {sidebarOpen && (

@@ -73,7 +73,7 @@ const POSTS: Post[] = [
 export default function Home() {
   return (
     <Layout>
-      <ul className="divide-y divide-border">
+      <ul>
         {POSTS.map((p) => (
           <li key={p.slug} className="py-6 flex flex-col sm:flex-row gap-5">
             <Link
