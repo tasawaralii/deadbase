@@ -613,6 +613,7 @@ class LinkShorteners(SQLModel, table=True):
     quick_url_template: str = Field(max_length=500)
     how_to_video_url: str | None = Field(default=None, max_length=500)
     message: str | None = Field(default=None, max_length=255)
+    logo_url: str | None = Field(default=None, max_length=500)
     is_enabled: bool = Field(default=True)
     sort_order: int = Field(default=0)
 

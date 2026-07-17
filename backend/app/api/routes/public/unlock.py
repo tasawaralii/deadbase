@@ -103,6 +103,7 @@ def unlock_status(
                 name=s.name,
                 message=s.message,
                 how_to_video_url=s.how_to_video_url,
+                logo_url=s.logo_url,
                 already_solved=s.id in solved_ids,
                 reported=s.id in reported_ids,
             )

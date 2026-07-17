@@ -75,6 +75,7 @@ export type ShortenerOption = {
   name: string;
   message: string | null;
   how_to_video_url: string | null;
+  logo_url: string | null;
   already_solved: boolean;
   reported: boolean;
 };

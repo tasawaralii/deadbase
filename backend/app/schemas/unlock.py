@@ -6,6 +6,7 @@ class ShortenerOption(SQLModel):
     name: str
     message: str | None
     how_to_video_url: str | None
+    logo_url: str | None
     already_solved: bool
     reported: bool
 
