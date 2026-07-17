@@ -1,4 +1,4 @@
-import type { AnimeDetail, EpisodeDetail } from "@/lib/types";
+import type { AnimeDetail, EpisodeDetail, LinkPublic, PackDetail } from "@/lib/types";
 
 export type DownloadLink = {
   name: string;
@@ -13,12 +13,19 @@ export type DownloadQuality = {
   links: DownloadLink[];
 };
 
+// Shared view-model for anything with a download-links page: episodes,
+// movies, and packs all render through EpisodeHero + DownloadCard.
+// seasonNumber/episodeNumber are only set for episodes (packs get a season
+// but no single episode number; movies get neither) - EpisodeHero hides
+// those badges when they're absent. contentId is only set for movies/
+// episodes - packs aren't individually trackable, so it's left out and no
+// view gets recorded for them.
 export type Episode = {
   animeSlug: string;
   animeTitle: string;
-  contentId: number;
-  seasonNumber: number;
-  episodeNumber: number;
+  contentId?: number;
+  seasonNumber?: number;
+  episodeNumber?: number;
   title: string;
   description: string;
   poster: string;
@@ -27,6 +34,9 @@ export type Episode = {
   releaseDate: string;
   duration: string;
   qualities: DownloadQuality[];
+  // Streaming isn't built yet - always false until a real source exists.
+  // EpisodeHero hides the "Watch Online" action when this is false.
+  hasWatchServers: boolean;
 };
 
 function formatDuration(minutes: number | null | undefined): string {
@@ -37,6 +47,19 @@ function formatDuration(minutes: number | null | undefined): string {
 function bestImage(img: { low: string; mid: string; high: string } | undefined): string {
   if (!img) return "";
   return img.high || img.mid || img.low;
+}
+
+function mapLinksToQualities(links: LinkPublic[]): DownloadQuality[] {
+  return links.map((link, i) => ({
+    id: `${link.quality}-${i}`,
+    quality: link.quality,
+    size: link.size,
+    links: link.servers.map((s) => ({
+      name: s.name,
+      link_server_id: s.link_server_id,
+      color: s.color,
+    })),
+  }));
 }
 
 export function buildEpisodeViewModel(
@@ -57,15 +80,45 @@ export function buildEpisodeViewModel(
     rating: Number(ep.episode_rating ?? anime.rating ?? 0),
     releaseDate: ep.air_date ?? anime.release_date ?? "",
     duration: formatDuration(ep.episode_runtime ?? anime.duration),
-    qualities: ep.links.map((link, i) => ({
-      id: `${link.quality}-${i}`,
-      quality: link.quality,
-      size: link.size,
-      links: link.servers.map((s) => ({
-        name: s.name,
-        link_server_id: s.link_server_id,
-        color: s.color,
-      })),
-    })),
+    qualities: mapLinksToQualities(ep.links),
+    hasWatchServers: ep.watch_servers.length > 0,
+  };
+}
+
+export function buildPackViewModel(
+  anime: AnimeDetail,
+  seasonNumber: number,
+  pack: PackDetail,
+): Episode {
+  return {
+    animeSlug: anime.slug,
+    animeTitle: anime.anime_name,
+    seasonNumber,
+    title: pack.pack_name || `Episodes ${pack.start_ep}-${pack.end_ep}`,
+    description: anime.overview,
+    poster: bestImage(anime.poster),
+    images: [],
+    rating: Number(anime.rating ?? 0),
+    releaseDate: anime.release_date ?? "",
+    duration: formatDuration(anime.duration),
+    qualities: mapLinksToQualities(pack.links),
+    hasWatchServers: false,
+  };
+}
+
+export function buildMovieViewModel(anime: AnimeDetail): Episode {
+  return {
+    animeSlug: anime.slug,
+    animeTitle: anime.anime_name,
+    contentId: anime.content_id,
+    title: anime.anime_name,
+    description: anime.overview,
+    poster: bestImage(anime.poster),
+    images: anime.backdrop ? [bestImage(anime.backdrop)].filter(Boolean) : [],
+    rating: Number(anime.rating ?? 0),
+    releaseDate: anime.release_date ?? "",
+    duration: formatDuration(anime.duration),
+    qualities: mapLinksToQualities(anime.links ?? []),
+    hasWatchServers: (anime.watch_servers ?? []).length > 0,
   };
 }

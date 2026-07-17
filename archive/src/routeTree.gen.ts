@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnlockRouteImport } from './routes/unlock'
 import { Route as TrendingRouteImport } from './routes/trending'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MovieSlugRouteImport } from './routes/movie.$slug'
+import { Route as PackSlugRangeRouteImport } from './routes/pack.$slug.$range'
 import { Route as EpisodeSlugEpRouteImport } from './routes/episode.$slug.$ep'
 
 const UnlockRoute = UnlockRouteImport.update({
@@ -29,6 +31,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MovieSlugRoute = MovieSlugRouteImport.update({
+  id: '/movie/$slug',
+  path: '/movie/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PackSlugRangeRoute = PackSlugRangeRouteImport.update({
+  id: '/pack/$slug/$range',
+  path: '/pack/$slug/$range',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EpisodeSlugEpRoute = EpisodeSlugEpRouteImport.update({
   id: '/episode/$slug/$ep',
   path: '/episode/$slug/$ep',
@@ -39,34 +51,61 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/trending': typeof TrendingRoute
   '/unlock': typeof UnlockRoute
+  '/movie/$slug': typeof MovieSlugRoute
   '/episode/$slug/$ep': typeof EpisodeSlugEpRoute
+  '/pack/$slug/$range': typeof PackSlugRangeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/trending': typeof TrendingRoute
   '/unlock': typeof UnlockRoute
+  '/movie/$slug': typeof MovieSlugRoute
   '/episode/$slug/$ep': typeof EpisodeSlugEpRoute
+  '/pack/$slug/$range': typeof PackSlugRangeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/trending': typeof TrendingRoute
   '/unlock': typeof UnlockRoute
+  '/movie/$slug': typeof MovieSlugRoute
   '/episode/$slug/$ep': typeof EpisodeSlugEpRoute
+  '/pack/$slug/$range': typeof PackSlugRangeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/trending' | '/unlock' | '/episode/$slug/$ep'
+  fullPaths:
+    | '/'
+    | '/trending'
+    | '/unlock'
+    | '/movie/$slug'
+    | '/episode/$slug/$ep'
+    | '/pack/$slug/$range'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/trending' | '/unlock' | '/episode/$slug/$ep'
-  id: '__root__' | '/' | '/trending' | '/unlock' | '/episode/$slug/$ep'
+  to:
+    | '/'
+    | '/trending'
+    | '/unlock'
+    | '/movie/$slug'
+    | '/episode/$slug/$ep'
+    | '/pack/$slug/$range'
+  id:
+    | '__root__'
+    | '/'
+    | '/trending'
+    | '/unlock'
+    | '/movie/$slug'
+    | '/episode/$slug/$ep'
+    | '/pack/$slug/$range'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TrendingRoute: typeof TrendingRoute
   UnlockRoute: typeof UnlockRoute
+  MovieSlugRoute: typeof MovieSlugRoute
   EpisodeSlugEpRoute: typeof EpisodeSlugEpRoute
+  PackSlugRangeRoute: typeof PackSlugRangeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +131,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/movie/$slug': {
+      id: '/movie/$slug'
+      path: '/movie/$slug'
+      fullPath: '/movie/$slug'
+      preLoaderRoute: typeof MovieSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pack/$slug/$range': {
+      id: '/pack/$slug/$range'
+      path: '/pack/$slug/$range'
+      fullPath: '/pack/$slug/$range'
+      preLoaderRoute: typeof PackSlugRangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/episode/$slug/$ep': {
       id: '/episode/$slug/$ep'
       path: '/episode/$slug/$ep'
@@ -106,7 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TrendingRoute: TrendingRoute,
   UnlockRoute: UnlockRoute,
+  MovieSlugRoute: MovieSlugRoute,
   EpisodeSlugEpRoute: EpisodeSlugEpRoute,
+  PackSlugRangeRoute: PackSlugRangeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

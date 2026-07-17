@@ -12,7 +12,12 @@ export function EpisodeHero({ episode }: Props) {
           .toUpperCase()} ${d.getUTCFullYear()}`
       : null;
 
-  const epNum = episode.episodeNumber.toString().padStart(2, "0");
+  // Movies have neither season nor episode number. Packs have a season but
+  // span multiple episodes, so there's no single episode number either.
+  const hasSeason = episode.seasonNumber !== undefined;
+  const hasEpisodeNumber = episode.episodeNumber !== undefined;
+  const showWatchAction = (hasEpisodeNumber || !hasSeason) && episode.hasWatchServers;
+  const epNum = episode.episodeNumber?.toString().padStart(2, "0");
 
   return (
     <section className="panel overflow-hidden">
@@ -22,11 +27,13 @@ export function EpisodeHero({ episode }: Props) {
           <span className="grid h-6 w-6 place-items-center bg-primary text-[10px] font-black text-primary-foreground sm:h-7 sm:w-7">
             ▶
           </span>
-          <span className="label-cap">{episode.animeTitle}</span>
+          <span className="label-cap">{hasSeason ? episode.animeTitle : "Movie"}</span>
         </div>
-        <div className="ml-auto flex items-center border-l-2 border-border bg-accent px-3 text-accent-foreground">
-          <span className="label-cap">S{episode.seasonNumber}</span>
-        </div>
+        {hasSeason && (
+          <div className="ml-auto flex items-center border-l-2 border-border bg-accent px-3 text-accent-foreground">
+            <span className="label-cap">S{episode.seasonNumber}</span>
+          </div>
+        )}
       </div>
 
       {/* Body: poster (vertical) beside info */}
@@ -34,28 +41,38 @@ export function EpisodeHero({ episode }: Props) {
         <div className="relative border-r-2 border-border bg-ink">
           <img
             src={episode.poster}
-            alt={`${episode.animeTitle} season ${episode.seasonNumber} poster`}
+            alt={`${episode.animeTitle} poster`}
             className="aspect-[2/3] h-full w-full object-cover"
           />
-          <span className="absolute left-1.5 top-1.5 border-2 border-border bg-background/90 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-foreground">
-            S{episode.seasonNumber}
-          </span>
-          {/* Rating stamp — bottom-right, tilted, bleeds off corner */}
-          <span className="absolute -bottom-2 -right-2 inline-flex rotate-[-8deg] items-center gap-1 border-2 border-border bg-accent px-2 py-1 font-mono text-xs font-black text-accent-foreground shadow-[3px_3px_0_0_var(--color-border)]">
+          {hasSeason && (
+            <span className="absolute left-1.5 top-1.5 border-2 border-border bg-background/90 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-foreground">
+              S{episode.seasonNumber}
+            </span>
+          )}
+          {/* Rating stamp — bottom-right, tilted, bleeds off corner. z-10 so
+              it paints above the action bar it overlaps into. */}
+          <span className="absolute -bottom-2 -right-2 z-10 inline-flex rotate-[-8deg] items-center gap-1 border-2 border-border bg-accent px-2 py-1 font-mono text-xs font-black text-accent-foreground shadow-[3px_3px_0_0_var(--color-border)]">
             <Star className="h-3 w-3 fill-current" />
             {episode.rating.toFixed(1)}
           </span>
         </div>
 
         <div className="flex min-w-0 flex-col p-3 sm:p-6">
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-xs font-bold text-primary">EP</span>
-            <span className="font-display text-4xl leading-none text-primary sm:text-6xl">
-              {epNum}
-            </span>
-          </div>
+          {hasEpisodeNumber && (
+            <div className="flex items-baseline gap-2">
+              <span className="font-mono text-xs font-bold text-primary">EP</span>
+              <span className="font-display text-4xl leading-none text-primary sm:text-6xl">
+                {epNum}
+              </span>
+            </div>
+          )}
 
-          <h1 className="mt-1 font-display text-lg leading-tight sm:mt-2 sm:text-4xl">
+          <h1
+            className={
+              "font-display text-lg leading-tight sm:text-4xl " +
+              (hasEpisodeNumber ? "mt-1 sm:mt-2" : "")
+            }
+          >
             {episode.title}
           </h1>
 
@@ -88,23 +105,25 @@ export function EpisodeHero({ episode }: Props) {
 
       {/* Action bar */}
       <div className="halftone grid grid-cols-1 items-stretch border-t-2 border-border bg-muted/40 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <button className="group relative flex items-center justify-center gap-3 bg-primary px-4 py-4 text-primary-foreground transition hover:brightness-110 sm:justify-start sm:px-6 sm:py-5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center border-2 border-primary-foreground/90 bg-primary-foreground/10 sm:h-11 sm:w-11">
-            <Play className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
-          </span>
-          <span className="flex flex-col items-start leading-none">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-widest opacity-80">
-              Stream now
+        {showWatchAction && (
+          <button className="group relative flex items-center justify-center gap-3 bg-primary px-4 py-4 text-primary-foreground transition hover:brightness-110 sm:justify-start sm:px-6 sm:py-5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center border-2 border-primary-foreground/90 bg-primary-foreground/10 sm:h-11 sm:w-11">
+              <Play className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
             </span>
-            <span className="font-display text-xl sm:text-2xl">Watch Online</span>
-          </span>
-          <span className="ml-auto hidden font-mono text-[10px] font-bold uppercase tracking-widest opacity-80 sm:inline">
-            HD · Multi-server →
-          </span>
-        </button>
+            <span className="flex flex-col items-start leading-none">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest opacity-80">
+                Stream now
+              </span>
+              <span className="font-display text-xl sm:text-2xl">Watch Online</span>
+            </span>
+            <span className="ml-auto hidden font-mono text-[10px] font-bold uppercase tracking-widest opacity-80 sm:inline">
+              HD · Multi-server →
+            </span>
+          </button>
+        )}
         <a
           href="#downloads"
-          className="hidden items-center gap-2 border-l-2 border-border bg-accent px-6 text-accent-foreground transition hover:brightness-105 sm:flex"
+          className="flex items-center justify-center gap-2 border-border bg-accent px-6 text-accent-foreground transition hover:brightness-105 sm:border-l-2"
         >
           <span className="label-cap">Downloads</span>
           <span className="font-display text-xl">↓</span>

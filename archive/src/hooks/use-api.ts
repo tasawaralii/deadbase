@@ -4,6 +4,7 @@ import type {
   AnimeDetail,
   EpisodeDetail,
   Message,
+  PackDetail,
   StartUnlockResponse,
   TrendingEpisodeList,
   UnlockStatus,
@@ -24,6 +25,18 @@ export function useEpisode(slug: string, season: number, episode: number) {
     queryKey: ["episode", slug, season, episode],
     queryFn: () => api.get<EpisodeDetail>(`/anime/${slug}/season/${season}/episode/${episode}`),
     enabled: Boolean(slug) && Number.isFinite(season) && Number.isFinite(episode),
+  });
+}
+
+export function usePack(slug: string, season: number, startEp: number, endEp: number) {
+  return useQuery({
+    queryKey: ["pack", slug, season, startEp, endEp],
+    queryFn: () => api.get<PackDetail>(`/anime/${slug}/season/${season}/pack/${startEp}-${endEp}`),
+    enabled:
+      Boolean(slug) &&
+      Number.isFinite(season) &&
+      Number.isFinite(startEp) &&
+      Number.isFinite(endEp),
   });
 }
 

@@ -16,6 +16,7 @@ router = APIRouter()
 
 def build_anime_detail(session: Session, anime: Animes) -> AnimeDetail:
     base = {
+        "content_id": anime.content_id,
         "slug": anime.slug,
         "anime_name": anime.anime_name,
         "type": anime.type,

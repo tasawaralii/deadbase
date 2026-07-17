@@ -22,6 +22,7 @@ export type LinkPublic = {
 };
 
 export type AnimeDetail = {
+  content_id: number;
   slug: string;
   anime_name: string;
   type: string;
@@ -36,6 +37,14 @@ export type AnimeDetail = {
   seasons?: unknown[] | null;
   links?: LinkPublic[] | null;
   watch_servers?: DownloadLink[] | null;
+};
+
+export type PackDetail = {
+  pack_name: string;
+  start_ep: number;
+  end_ep: number;
+  links: LinkPublic[];
+  watch_servers: DownloadLink[];
 };
 
 export type EpisodeDetail = {

@@ -19,6 +19,7 @@ class AnimeSummary(SQLModel):
 
 
 class AnimeDetail(SQLModel):
+    content_id: int
     slug: str
     anime_name: str
     type: str
