@@ -62,6 +62,9 @@ def unlock_callback(session: SessionDep, token: str) -> RedirectResponse:
     session.add(attempt)
     session.commit()
 
+    # Every solve immediately unlocks the file it was solved for - that's the
+    # reward for solving it. The required-count threshold (see unlock_status)
+    # is a separate bonus: once hit, later files skip the shortener entirely.
     link_server = _get_link_server(session, attempt.link_server_id)
     url = _resolve_url(link_server)
     record_download_event(

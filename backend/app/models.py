@@ -575,6 +575,31 @@ class Comments(SQLModel, table=True):
     post: Posts = Relationship(back_populates='comments')
 
 
+class StreamComments(SQLModel, table=True):
+    """
+    Comments on player pages (movie/episode), keyed on content_id. Kept fully
+    separate from Posts/Comments: download-page feedback (link slow, wrong
+    quality) and streaming-page feedback (video lagging) are different
+    audiences on different sites and shouldn't mix threads.
+    """
+
+    __tablename__ = 'stream_comments'
+
+    id: int | None = Field(default=None, primary_key=True)
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
+    parent_id: int | None = Field(
+        default=None, foreign_key='stream_comments.id', ondelete='CASCADE'
+    )
+    author_name: str = Field(max_length=50)
+    author_email: str = Field(max_length=50)
+    author_url: str | None = Field(default=None, max_length=255)
+    body: str
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    status: CommentStatus = Field(default=CommentStatus.PENDING)
+
+
 # --- LINK SHORTENER / UNLOCK GATE MODELS ---
 
 

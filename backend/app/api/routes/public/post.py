@@ -1,4 +1,3 @@
-import re
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -10,6 +9,7 @@ from sqlmodel import col, func, select
 from app.api.deps import SessionDep
 from app.api.routes.public.anime import build_anime_detail
 from app.api.routes.public.season import build_season_detail
+from app.comments import initial_status, is_blocked_email, is_rejected_body
 from app.models import (
     Animes,
     Comments,
@@ -30,12 +30,6 @@ from app.schemas.post import (
 )
 
 router = APIRouter()
-
-# Ported from the old blog's comment handler: URLs get held for review, Cyrillic
-# text and this known spam-bot honeypot domain get rejected outright.
-SPAM_TERMS = ("https://", "http://", "url")
-BLOCKED_EMAIL_DOMAINS = ("testing-your-form.info",)
-CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
 
 
 def _comment_public(comment: Comments) -> CommentPublic:
@@ -254,10 +248,10 @@ def create_comment(
                 status_code=400, detail="parent_id does not belong to this post"
             )
 
-    if any(domain in comment_in.author_email for domain in BLOCKED_EMAIL_DOMAINS):
+    if is_blocked_email(comment_in.author_email):
         raise HTTPException(status_code=400, detail="Comment rejected")
 
-    if CYRILLIC_RE.search(comment_in.body):
+    if is_rejected_body(comment_in.body):
         raise HTTPException(status_code=400, detail="Comment rejected")
 
     duplicate = session.exec(
@@ -271,11 +265,7 @@ def create_comment(
     if duplicate:
         return _comment_public(duplicate)
 
-    status = (
-        CommentStatus.PENDING
-        if any(term in comment_in.body for term in SPAM_TERMS)
-        else CommentStatus.APPROVED
-    )
+    status = initial_status(comment_in.body)
 
     comment = Comments(
         post_id=post.id,

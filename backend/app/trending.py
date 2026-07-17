@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, func, select
 
+from app.content import get_playable_content
 from app.models import (
     Animes,
     AnimeViewDaily,
@@ -26,11 +27,7 @@ VIEW_ROW_RETENTION = timedelta(days=2)
 
 
 def record_view(session: Session, visitor_id: uuid.UUID, content_id: int) -> None:
-    content = session.get(Content, content_id)
-    if not content or content.content_type not in (
-        ContentContentType.MOVIE,
-        ContentContentType.EPISODE,
-    ):
+    if not get_playable_content(session, content_id):
         raise ValueError("Content is not trackable")
 
     stmt = (

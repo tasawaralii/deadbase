@@ -1,4 +1,24 @@
-from sqlmodel import SQLModel
+import datetime as dt
+
+from pydantic import EmailStr
+from sqlmodel import Field, SQLModel
+
+
+class CommentPublic(SQLModel):
+    id: int
+    parent_id: int | None
+    author_name: str
+    author_url: str | None
+    body: str
+    created_at: dt.datetime
+
+
+class CommentCreate(SQLModel):
+    author_name: str = Field(min_length=1, max_length=50)
+    author_email: EmailStr
+    author_url: str | None = Field(default=None, max_length=255)
+    body: str = Field(min_length=1, max_length=2000)
+    parent_id: int | None = None
 
 
 class ImageUrls(SQLModel):

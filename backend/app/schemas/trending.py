@@ -12,12 +12,14 @@ class TrendingAnimeItem(SQLModel):
 
 class TrendingSeasonItem(SQLModel):
     anime_slug: str
+    anime_name: str
     season: SeasonSummary
     views: int
 
 
 class TrendingEpisodeItem(SQLModel):
     anime_slug: str
+    anime_name: str
     season_number: int
     episode: EpisodeSummary
     views: int

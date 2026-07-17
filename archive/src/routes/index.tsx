@@ -37,8 +37,8 @@ function Index() {
             <span className="text-primary">Enjoy.</span>
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-foreground/75 sm:text-base">
-            Head over to Deadtoons for the full library of subbed & dubbed episodes,
-            multiple qualities, and lightning-fast download mirrors.
+            Head over to Deadtoons for the full library of subbed & dubbed episodes, multiple
+            qualities, and lightning-fast download mirrors.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -50,10 +50,7 @@ function Index() {
             >
               Visit DeadToons <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <Link
-              to="/trending"
-              className="btn-base bg-card text-foreground"
-            >
+            <Link to="/trending" className="btn-base bg-card text-foreground">
               <Flame className="h-3.5 w-3.5 text-primary" /> Trending
             </Link>
           </div>

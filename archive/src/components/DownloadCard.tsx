@@ -1,18 +1,21 @@
 import { Download } from "lucide-react";
-import type { DownloadQuality, DownloadLink } from "@/data/episode";
+import type { DownloadQuality } from "@/data/episode";
 import { Link } from "@tanstack/react-router";
 
 type Props = { item: DownloadQuality };
 
-// Per-host color mapping — each mirror gets its own distinct color
-// so users can pick their preferred host at a glance.
-const HOST_STYLES: Record<DownloadLink["label"], string> = {
-  HUBCLOUD: "bg-primary text-primary-foreground",
-  FILEPRESS: "bg-secondary text-secondary-foreground",
-  GDFLIX: "bg-[#2563eb] text-white",         // blue
-  PIXELDRAIN: "bg-[#0d9488] text-white",     // teal
-  "CLOUD RESUME": "bg-accent text-accent-foreground", // yellow
+// Servers carry a semantic color keyword from the admin-configured server_info
+// row (danger/warning/etc, Bootstrap-style) - map it to the theme's palette so
+// admins control mirror colors without a frontend deploy.
+const COLOR_STYLES: Record<string, string> = {
+  primary: "bg-primary text-primary-foreground",
+  secondary: "bg-secondary text-secondary-foreground",
+  danger: "bg-[#dc2626] text-white",
+  warning: "bg-[#d97706] text-white",
+  success: "bg-[#16a34a] text-white",
+  info: "bg-[#0284c7] text-white",
 };
+const DEFAULT_STYLE = "bg-secondary text-secondary-foreground";
 
 export function DownloadCard({ item }: Props) {
   const [q, ...codec] = item.quality.split(" ");
@@ -32,9 +35,7 @@ export function DownloadCard({ item }: Props) {
         <div className="flex min-w-0 flex-1 items-center gap-3 p-3 sm:p-4">
           <div className="min-w-0">
             <p className="label-cap text-muted-foreground">File Size</p>
-            <p className="font-mono text-sm font-bold text-foreground sm:text-base">
-              {item.size}
-            </p>
+            <p className="font-mono text-sm font-bold text-foreground sm:text-base">{item.size}</p>
           </div>
           <div className="ml-auto hidden sm:block">
             <span className="label-cap text-muted-foreground">
@@ -48,16 +49,16 @@ export function DownloadCard({ item }: Props) {
       <div className="flex flex-wrap gap-1.5 border-t-2 border-dashed border-border bg-muted/40 p-2 sm:gap-2 sm:p-3">
         {item.links.map((link) => (
           <Link
-            key={link.label}
-            to={link.href}
-            rel="noreferrer noopener"
+            key={link.link_server_id}
+            to="/unlock"
+            search={{ link_server_id: link.link_server_id }}
             className={
               "btn-base w-[calc(50%-0.375rem)] max-w-[11rem] justify-center whitespace-nowrap px-2 py-1.5 text-[11px] sm:w-auto sm:min-w-[9rem] sm:px-3 sm:text-xs " +
-              (HOST_STYLES[link.label] ?? "bg-secondary text-secondary-foreground")
+              (COLOR_STYLES[link.color] ?? DEFAULT_STYLE)
             }
           >
             <Download className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
-            <span>{link.label}</span>
+            <span>{link.name}</span>
           </Link>
         ))}
       </div>

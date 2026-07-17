@@ -1,18 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { z } from "zod";
 import {
   AlertTriangle,
   ArrowRight,
   Check,
   Crown,
+  Download,
   HelpCircle,
-  Play,
   Radio,
   X,
   Zap,
 } from "lucide-react";
+import { useReportShortener, useStartUnlock, useUnlockStatus } from "@/hooks/use-api";
+import type { ShortenerOption } from "@/lib/types";
+import { ApiError } from "@/lib/api";
+
+const unlockSearchSchema = z.object({
+  link_server_id: z.coerce.number().optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/unlock")({
+  validateSearch: unlockSearchSchema,
   head: () => ({
     meta: [
       { title: "Unlock Downloads — Deadtoons" },
@@ -26,49 +35,116 @@ export const Route = createFileRoute("/unlock")({
   component: DownloadUnlockGate,
 });
 
-type ShortenerStatus = "pending" | "solved" | "broken";
-type Shortener = { id: string; name: string; status: ShortenerStatus; tint: string };
-
-// tint = the flat brutalist swatch color for that shortener card (on-theme, paper palette)
-const INITIAL_SHORTENERS: Shortener[] = [
-  { id: "shrinkme", name: "ShrinkMe", status: "pending", tint: "bg-[#fde68a]" }, // straw
-  { id: "gplinks", name: "GPLinks", status: "solved", tint: "bg-[#bbf7d0]" },   // mint
-  { id: "cutty", name: "Cutty", status: "pending", tint: "bg-[#fecaca]" },      // rose
-  { id: "exeio", name: "Exe.io", status: "pending", tint: "bg-[#bae6fd]" },     // sky
-];
-
 function DownloadUnlockGate() {
-  const [shorteners, setShorteners] = useState<Shortener[]>(INITIAL_SHORTENERS);
-  const [selectedShortener, setSelectedShortener] = useState<string | null>(null);
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState("captcha");
+  const { link_server_id } = Route.useSearch();
+  const linkServerId = link_server_id ?? null;
+  const { data: status, isLoading, isError, error } = useUnlockStatus(linkServerId);
+  const startUnlock = useStartUnlock(linkServerId);
+  const reportShortener = useReportShortener(linkServerId);
 
-  const solvedCount = shorteners.filter((s) => s.status === "solved").length;
-  const total = shorteners.length;
+  const [selectedShortener, setSelectedShortener] = useState<number | null>(null);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("Not working");
+
+  if (linkServerId === null) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-4 text-center">
+        <div>
+          <h1 className="font-display text-2xl">No download selected</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Head back to an episode and pick a download mirror to unlock.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-4">
+        <p className="label-cap text-muted-foreground">Loading…</p>
+      </main>
+    );
+  }
+
+  if (isError || !status) {
+    const notFound = error instanceof ApiError && error.status === 404;
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-4 text-center">
+        <div>
+          <h1 className="font-display text-2xl">
+            {notFound ? "Link not found" : "Something went wrong"}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {notFound
+              ? "This download link doesn't exist or was removed."
+              : "Please go back and try again."}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (status.unlocked && status.url) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-4 text-center">
+        <div className="panel max-w-sm overflow-hidden">
+          <div className="bg-secondary px-4 py-3 text-secondary-foreground">
+            <p className="label-cap">VIP Pass Active</p>
+          </div>
+          <div className="p-5">
+            <Crown className="mx-auto h-10 w-10 text-accent" />
+            <h1 className="mt-3 font-display text-2xl">You're unlocked</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Free downloads for the next 24 hours.
+            </p>
+            <a
+              href={status.url}
+              className="btn-base mt-5 w-full justify-center bg-primary py-3 text-primary-foreground"
+            >
+              <Download className="h-4 w-4" />
+              Download now
+            </a>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const shorteners = status.shorteners ?? [];
+  const solvedCount = status.solved ?? 0;
+  const total = status.required ?? shorteners.length;
   const selected = shorteners.find((s) => s.id === selectedShortener) ?? null;
   const selectedName = selected?.name ?? "any link";
-  const pct = Math.round((solvedCount / total) * 100);
+  const pct = total > 0 ? Math.round((solvedCount / total) * 100) : 0;
 
   const submitReport = () => {
-    if (selected) {
-      setShorteners((prev) =>
-        prev.map((s) => (s.id === selected.id ? { ...s, status: "broken" } : s)),
-      );
-      setSelectedShortener(null);
-    }
-    setIsReportOpen(false);
+    if (!selected) return;
+    reportShortener.mutate(
+      { shortener_id: selected.id, reason: reportReason },
+      {
+        onSuccess: () => {
+          setSelectedShortener(null);
+          setIsReportOpen(false);
+        },
+      },
+    );
   };
 
-  const openTutorial = () => {
-    if (!selected) return;
-    setIsPlayerOpen(true);
+  const solveAndUnlock = () => {
+    if (!selectedShortener) return;
+    startUnlock.mutate(selectedShortener, {
+      onSuccess: (data) => {
+        window.location.href = data.redirect_url;
+      },
+    });
   };
 
   return (
     <main className="min-h-screen bg-background px-3 py-3 sm:px-6 sm:py-8">
       <div className="mx-auto flex max-w-xl flex-col gap-3 sm:gap-5">
-        {/* Progress header — on-theme ink slab with acid-yellow accent */}
+        {/* Progress header */}
         <header className="panel relative overflow-hidden border-[3px] bg-secondary text-secondary-foreground">
           <div className="halftone absolute inset-0 opacity-[0.10]" aria-hidden />
           <div className="relative px-3 py-3 sm:px-5 sm:py-5">
@@ -82,8 +158,7 @@ function DownloadUnlockGate() {
                 </p>
                 <p className="font-display text-xl leading-none sm:text-3xl">
                   <span className="text-accent">{solvedCount}</span>
-                  <span className="opacity-50">/{total}</span>{" "}
-                  <span>SOLVED</span>
+                  <span className="opacity-50">/{total}</span> <span>SOLVED</span>
                 </p>
               </div>
               <span className="shrink-0 border-2 border-accent bg-accent px-1.5 py-0.5 font-mono text-[10px] font-black text-accent-foreground sm:px-2 sm:py-1 sm:text-xs">
@@ -96,18 +171,17 @@ function DownloadUnlockGate() {
                   key={s.id}
                   className={
                     "h-2 flex-1 border-2 border-secondary-foreground/70 sm:h-2.5 " +
-                    (s.status === "solved"
-                      ? "bg-accent"
-                      : s.status === "broken"
-                        ? "stripes"
-                        : "bg-transparent")
+                    (s.already_solved ? "bg-accent" : s.reported ? "stripes" : "bg-transparent")
                   }
                 />
               ))}
             </div>
             <p className="mt-2.5 text-[11px] leading-snug opacity-90 sm:mt-3 sm:text-sm">
-              Solve <span className="font-black text-accent">1 link below</span> → get ad-free
-              downloads for <span className="font-black">24 hours</span>.
+              Solve{" "}
+              <span className="font-black text-accent">
+                {Math.max(total - solvedCount, 0)} more link{total - solvedCount === 1 ? "" : "s"}
+              </span>{" "}
+              below → get ad-free downloads for <span className="font-black">24 hours</span>.
             </p>
           </div>
         </header>
@@ -126,71 +200,28 @@ function DownloadUnlockGate() {
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
-            {shorteners.map((s) => {
-              const disabled = s.status !== "pending";
-              const isSelected = selectedShortener === s.id;
-              const base =
-                "relative flex min-h-[60px] flex-col items-start justify-center gap-1 border-2 border-border px-2.5 py-2 text-left transition sm:min-h-[76px] sm:px-3 sm:py-2.5";
-              const state =
-                s.status === "solved"
-                  ? "bg-muted text-muted-foreground cursor-not-allowed opacity-70"
-                  : s.status === "broken"
-                    ? "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
-                    : isSelected
-                      ? `${s.tint} text-foreground border-primary shadow-[4px_4px_0_0_var(--color-primary)] -translate-x-[1px] -translate-y-[1px]`
-                      : `${s.tint} text-foreground hover:-translate-y-[1px] shadow-[3px_3px_0_0_var(--color-border)]`;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setSelectedShortener(s.id)}
-                  className={`${base} ${state}`}
-                >
-                  <span
-                    className={
-                      "font-display text-base leading-none sm:text-2xl " +
-                      (s.status === "broken" ? "line-through" : "")
-                    }
-                  >
-                    {s.name}
-                  </span>
-                  {s.status === "solved" && (
-                    <span className="absolute right-1 top-1 inline-flex items-center gap-1 border-2 border-border bg-[#bbf7d0] px-1 py-0.5 font-mono text-[8px] font-black uppercase tracking-widest text-foreground sm:right-1.5 sm:top-1.5 sm:px-1.5 sm:text-[9px]">
-                      <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                      Done
-                    </span>
-                  )}
-                  {s.status === "broken" && (
-                    <span className="absolute right-1 top-1 inline-flex items-center gap-1 border-2 border-border bg-primary px-1 py-0.5 font-mono text-[8px] font-black uppercase tracking-widest text-primary-foreground sm:right-1.5 sm:top-1.5 sm:px-1.5 sm:text-[9px]">
-                      <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                      Broken
-                    </span>
-                  )}
-                  {s.status === "pending" && isSelected && (
-                    <span className="absolute right-1 top-1 inline-flex items-center gap-1 border-2 border-border bg-primary px-1 py-0.5 font-mono text-[8px] font-black uppercase tracking-widest text-primary-foreground sm:right-1.5 sm:top-1.5 sm:px-1.5 sm:text-[9px]">
-                      <Radio className="h-2.5 w-2.5 fill-current sm:h-3 sm:w-3" />
-                      Picked
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+            {shorteners.map((s) => (
+              <ShortenerCard
+                key={s.id}
+                shortener={s}
+                isSelected={selectedShortener === s.id}
+                onSelect={() => setSelectedShortener(s.id)}
+              />
+            ))}
           </div>
         </section>
 
-        {/* Step 2: compact video tutorial — text left, thumb right */}
+        {/* Step 2: tip + tutorial */}
         <section className="flex flex-col gap-2">
           <h2 className="label-cap flex items-center gap-2 text-foreground">
             <span className="grid h-5 w-5 place-items-center border-2 border-border bg-accent font-mono text-[10px] font-black text-accent-foreground">
               2
             </span>
-            Stuck? Watch 30s guide
+            Stuck? Watch the guide
           </h2>
 
           <div className="panel overflow-hidden border-[3px] bg-accent text-accent-foreground">
             <div className="flex items-stretch gap-0">
-              {/* TEXT */}
               <div
                 className={`flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-3 py-3 sm:px-4 sm:py-4 ${
                   selected ? "items-start" : "items-center text-center py-4 sm:py-6"
@@ -205,33 +236,20 @@ function DownloadUnlockGate() {
                   {selected ? selectedName : "Pick a link first"}
                 </p>
 
-                {selected && (
+                {selected?.message && (
+                  <p className="mt-1 text-xs opacity-90 sm:text-sm">{selected.message}</p>
+                )}
+
+                {selected?.how_to_video_url && (
                   <button
                     type="button"
-                    onClick={openTutorial}
+                    onClick={() => setIsTutorialOpen(true)}
                     className="mt-1.5 inline-flex w-fit items-center gap-1 border-b-2 border-current pb-0.5 font-mono text-[10px] font-black uppercase tracking-widest hover:opacity-70 transition-opacity sm:text-[11px]"
                   >
                     Play tutorial <ArrowRight className="h-3 w-3" />
                   </button>
                 )}
               </div>
-
-              {/* THUMB */}
-              {selected && (
-                <button
-                  type="button"
-                  onClick={openTutorial}
-                  aria-label="Play tutorial video"
-                  className="group relative aspect-video w-[38%] shrink-0 border-l-[3px] border-border bg-secondary sm:w-[46%]"
-                >
-                  <div className="halftone absolute inset-0 opacity-25" aria-hidden />
-                  <span className="absolute inset-0 grid place-items-center">
-                    <span className="grid h-9 w-9 place-items-center rounded-full border-[3px] border-accent bg-accent/20 text-accent transition group-hover:scale-110 sm:h-12 sm:w-12">
-                      <Play className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
-                    </span>
-                  </span>
-                </button>
-              )}
             </div>
           </div>
         </section>
@@ -246,12 +264,24 @@ function DownloadUnlockGate() {
           </h2>
           <button
             type="button"
-            disabled={!selectedShortener}
+            disabled={!selectedShortener || startUnlock.isPending}
+            onClick={solveAndUnlock}
             className="btn-base w-full justify-center bg-primary py-3.5 text-sm text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:py-4 sm:text-lg"
           >
             <Zap className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
-            {selectedShortener ? `Solve ${selectedName} & Unlock` : "Pick a link above first"}
+            {startUnlock.isPending
+              ? "Redirecting…"
+              : selectedShortener
+                ? `Solve ${selectedName} & Unlock`
+                : "Pick a link above first"}
           </button>
+          {startUnlock.isError && (
+            <p className="text-center text-xs font-bold text-destructive">
+              {startUnlock.error instanceof ApiError
+                ? startUnlock.error.message
+                : "Couldn't start that shortener, try another."}
+            </p>
+          )}
           <p className="text-center font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             Free · No signup · 24h pass
           </p>
@@ -269,39 +299,35 @@ function DownloadUnlockGate() {
         </button>
       </div>
 
-      {/* Video player modal */}
-      {isPlayerOpen && (
+      {/* Tutorial modal */}
+      {isTutorialOpen && selected?.how_to_video_url && (
         <div
           role="dialog"
           aria-modal="true"
-          onClick={() => setIsPlayerOpen(false)}
+          onClick={() => setIsTutorialOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex aspect-[9/16] h-full max-h-[92vh] w-auto max-w-full flex-col border-[3px] border-border bg-background shadow-[6px_6px_0_0_var(--color-border)]"
+            className="flex aspect-video h-full max-h-[80vh] w-auto max-w-full flex-col border-[3px] border-border bg-background shadow-[6px_6px_0_0_var(--color-border)]"
           >
             <div className="flex items-center gap-2 border-b-[3px] border-border bg-secondary px-3 py-2 text-secondary-foreground">
-              <span className="label-cap truncate">Bypassing {selectedName}</span>
+              <span className="label-cap truncate">How to solve {selectedName}</span>
               <button
                 type="button"
-                onClick={() => setIsPlayerOpen(false)}
+                onClick={() => setIsTutorialOpen(false)}
                 aria-label="Close"
                 className="ml-auto grid h-8 w-8 place-items-center border-2 border-secondary-foreground bg-primary text-primary-foreground hover:brightness-110"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="relative flex-1 bg-secondary">
-              <span className="absolute inset-0 grid place-items-center text-accent">
-                <span className="grid h-20 w-20 place-items-center rounded-full border-4 border-accent bg-accent/10">
-                  <Play className="h-10 w-10 fill-current" />
-                </span>
-              </span>
-              <span className="absolute bottom-3 left-3 border-2 border-accent bg-secondary px-1.5 py-0.5 font-mono text-[10px] font-black uppercase tracking-widest text-accent">
-                LIVE · Tutorial
-              </span>
-            </div>
+            <iframe
+              src={selected.how_to_video_url}
+              title={`How to solve ${selectedName}`}
+              allowFullScreen
+              className="flex-1 bg-black"
+            />
           </div>
         </div>
       )}
@@ -336,9 +362,10 @@ function DownloadUnlockGate() {
               </p>
               <div className="mt-4 flex flex-col gap-2">
                 {[
-                  { id: "captcha", label: "Captcha broken" },
-                  { id: "loop", label: "Infinite loop" },
-                  { id: "ads", label: "Inappropriate ads" },
+                  { id: "Captcha broken", label: "Captcha broken" },
+                  { id: "Infinite loop", label: "Infinite loop" },
+                  { id: "Inappropriate ads", label: "Inappropriate ads" },
+                  { id: "Not working", label: "Doesn't work at all" },
                 ].map((opt) => (
                   <label
                     key={opt.id}
@@ -363,9 +390,10 @@ function DownloadUnlockGate() {
                 <button
                   type="button"
                   onClick={submitReport}
-                  className="btn-base flex-1 justify-center bg-primary text-primary-foreground"
+                  disabled={reportShortener.isPending}
+                  className="btn-base flex-1 justify-center bg-primary text-primary-foreground disabled:opacity-60"
                 >
-                  Submit
+                  {reportShortener.isPending ? "Submitting…" : "Submit"}
                 </button>
                 <button
                   type="button"
@@ -375,10 +403,62 @@ function DownloadUnlockGate() {
                   Cancel
                 </button>
               </div>
+              {reportShortener.isError && (
+                <p className="mt-2 text-xs font-bold text-destructive">
+                  {reportShortener.error instanceof ApiError
+                    ? reportShortener.error.message
+                    : "Couldn't submit the report."}
+                </p>
+              )}
             </div>
           </div>
         </div>
       )}
     </main>
+  );
+}
+
+function ShortenerCard({
+  shortener,
+  isSelected,
+  onSelect,
+}: {
+  shortener: ShortenerOption;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const disabled = shortener.already_solved || shortener.reported;
+  const base =
+    "relative flex min-h-[60px] flex-col items-start justify-center gap-1 border-2 border-border px-2.5 py-2 text-left transition sm:min-h-[76px] sm:px-3 sm:py-2.5";
+  const state = shortener.already_solved
+    ? "bg-muted text-muted-foreground cursor-not-allowed opacity-70"
+    : shortener.reported
+      ? "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
+      : isSelected
+        ? "bg-card text-foreground border-primary shadow-[4px_4px_0_0_var(--color-primary)] -translate-x-[1px] -translate-y-[1px]"
+        : "bg-card text-foreground hover:-translate-y-[1px] shadow-[3px_3px_0_0_var(--color-border)]";
+
+  return (
+    <button type="button" disabled={disabled} onClick={onSelect} className={`${base} ${state}`}>
+      <span className="font-display text-base leading-none sm:text-2xl">{shortener.name}</span>
+      {shortener.already_solved && (
+        <span className="absolute right-1 top-1 inline-flex items-center gap-1 border-2 border-border bg-[#bbf7d0] px-1 py-0.5 font-mono text-[8px] font-black uppercase tracking-widest text-foreground sm:right-1.5 sm:top-1.5 sm:px-1.5 sm:text-[9px]">
+          <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+          Done
+        </span>
+      )}
+      {shortener.reported && (
+        <span className="absolute right-1 top-1 inline-flex items-center gap-1 border-2 border-border bg-primary px-1 py-0.5 font-mono text-[8px] font-black uppercase tracking-widest text-primary-foreground sm:right-1.5 sm:top-1.5 sm:px-1.5 sm:text-[9px]">
+          <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+          Reported
+        </span>
+      )}
+      {!disabled && isSelected && (
+        <span className="absolute right-1 top-1 inline-flex items-center gap-1 border-2 border-border bg-primary px-1 py-0.5 font-mono text-[8px] font-black uppercase tracking-widest text-primary-foreground sm:right-1.5 sm:top-1.5 sm:px-1.5 sm:text-[9px]">
+          <Radio className="h-2.5 w-2.5 fill-current sm:h-3 sm:w-3" />
+          Picked
+        </span>
+      )}
+    </button>
   );
 }

@@ -36,6 +36,7 @@ def read_episode(
         raise HTTPException(status_code=404, detail="Episode not found")
 
     return EpisodeDetail(
+        content_id=episode.content_id,
         episode_number=episode.episode_number,
         episode_name=episode.episode_name,
         overview=episode.overview,

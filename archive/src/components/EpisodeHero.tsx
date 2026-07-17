@@ -4,10 +4,13 @@ import type { Episode } from "@/data/episode";
 type Props = { episode: Episode };
 
 export function EpisodeHero({ episode }: Props) {
-  const d = new Date(episode.releaseDate);
-  const formattedDate = `${d.getUTCDate().toString().padStart(2, "0")} ${d
-    .toLocaleString("en-US", { month: "short", timeZone: "UTC" })
-    .toUpperCase()} ${d.getUTCFullYear()}`;
+  const d = episode.releaseDate ? new Date(episode.releaseDate) : null;
+  const formattedDate =
+    d && !Number.isNaN(d.getTime())
+      ? `${d.getUTCDate().toString().padStart(2, "0")} ${d
+          .toLocaleString("en-US", { month: "short", timeZone: "UTC" })
+          .toUpperCase()} ${d.getUTCFullYear()}`
+      : null;
 
   const epNum = episode.episodeNumber.toString().padStart(2, "0");
 
@@ -42,7 +45,6 @@ export function EpisodeHero({ episode }: Props) {
             <Star className="h-3 w-3 fill-current" />
             {episode.rating.toFixed(1)}
           </span>
-
         </div>
 
         <div className="flex min-w-0 flex-col p-3 sm:p-6">
@@ -58,11 +60,15 @@ export function EpisodeHero({ episode }: Props) {
           </h1>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-muted-foreground sm:mt-3 sm:text-xs">
-            <span className="inline-flex items-center gap-1">
-              <CalendarDays className="h-3 w-3" />
-              {formattedDate}
-            </span>
-            <span aria-hidden>·</span>
+            {formattedDate && (
+              <>
+                <span className="inline-flex items-center gap-1">
+                  <CalendarDays className="h-3 w-3" />
+                  {formattedDate}
+                </span>
+                <span aria-hidden>·</span>
+              </>
+            )}
             <span className="inline-flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {episode.duration.toUpperCase()}

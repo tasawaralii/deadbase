@@ -145,8 +145,11 @@ services:
       db:
         condition: service_healthy
         restart: true
-      prestart:
-        condition: service_completed_successfully
+      # Not gated on prestart's completion in this same `up` invocation - the
+      # rollup script is idempotent and just needs the schema to exist by the
+      # time it actually runs, not before the container starts. This also
+      # lets `cron` come up standalone when backend/prestart aren't running
+      # (e.g. local dev running the API via `fastapi run` on the host).
     env_file:
       - .env
     environment:

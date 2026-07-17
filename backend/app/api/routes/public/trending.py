@@ -95,6 +95,7 @@ def trending_seasons(
         data.append(
             TrendingSeasonItem(
                 anime_slug=season.anime.slug,
+                anime_name=season.anime.anime_name,
                 season=SeasonSummary(
                     season_number=season.season_number,
                     season_name=season.season_name,
@@ -130,6 +131,7 @@ def trending_episodes(
         data.append(
             TrendingEpisodeItem(
                 anime_slug=episode.season.anime.slug,
+                anime_name=episode.season.anime.anime_name,
                 season_number=episode.season.season_number,
                 episode=EpisodeSummary(
                     episode_number=episode.episode_number,

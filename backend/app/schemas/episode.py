@@ -16,6 +16,7 @@ class EpisodeSummary(SQLModel):
 
 
 class EpisodeDetail(SQLModel):
+    content_id: int
     episode_number: int
     episode_name: str | None
     overview: str | None

@@ -1,11 +1,9 @@
-import posterImg from "@/assets/episode-poster.jpg";
-import backdropImg from "@/assets/episode-backdrop.jpg";
-import heroImg from "@/assets/bg-hero.jpg";
+import type { AnimeDetail, EpisodeDetail } from "@/lib/types";
 
 export type DownloadLink = {
-  label: "HUBCLOUD" | "FILEPRESS" | "CLOUD RESUME" | "GDFLIX" | "PIXELDRAIN";
-  href: string;
-  variant: "secondary" | "danger" | "warning";
+  name: string;
+  link_server_id: number;
+  color: string;
 };
 
 export type DownloadQuality = {
@@ -18,6 +16,7 @@ export type DownloadQuality = {
 export type Episode = {
   animeSlug: string;
   animeTitle: string;
+  contentId: number;
   seasonNumber: number;
   episodeNumber: number;
   title: string;
@@ -27,160 +26,46 @@ export type Episode = {
   rating: number;
   releaseDate: string;
   duration: string;
-  language: string;
-  genres: string[];
   qualities: DownloadQuality[];
 };
 
-export const episode: Episode = {
-  animeSlug: "tamon-s-b-side",
-  animeTitle: "Tamon's B-Side",
-  seasonNumber: 1,
-  episodeNumber: 1,
-  title: "You Need Money to Support Your Oshi",
-  description:
-    "Utage is a huge fan of Tamon from F/ACE and one day, her work leads her to an unexpected meeting.",
-  poster: posterImg,
-  images: [backdropImg, backdropImg, backdropImg, backdropImg, backdropImg, backdropImg],
-  rating: 8.4,
-  releaseDate: "2026-07-02",
-  duration: "24 min",
-  language: "JP · Subbed",
-  genres: ["Romance", "Slice of Life", "Comedy"],
-  qualities: [
-    {
-      id: "480p-x264",
-      quality: "480p x264",
-      size: "105.4 MB",
-      links: [
-        { label: "HUBCLOUD", href: "/unlock", variant: "danger" },
-      ],
-    },
-    {
-      id: "720p-x265-10bit",
-      quality: "720p x265 10bit",
-      size: "154.8 MB",
-      links: [
-        { label: "HUBCLOUD", href: "/unlock", variant: "danger" },
-        { label: "FILEPRESS", href: "/unlock", variant: "secondary" },
-      ],
-    },
-    {
-      id: "720p-x264",
-      quality: "720p x264",
-      size: "207.66 MB",
-      links: [
-        { label: "HUBCLOUD", href: "/unlock", variant: "danger" },
-        { label: "FILEPRESS", href: "/unlock", variant: "secondary" },
-        { label: "GDFLIX", href: "/unlock", variant: "warning" },
-      ],
-    },
-    {
-      id: "1080p-x265-10bit",
-      quality: "1080p x265 10bit",
-      size: "391.38 MB",
-      links: [
-        { label: "HUBCLOUD", href: "/unlock", variant: "danger" },
-        { label: "FILEPRESS", href: "/unlock", variant: "secondary" },
-        { label: "GDFLIX", href: "/unlock", variant: "secondary" },
-        { label: "PIXELDRAIN", href: "/unlock", variant: "secondary" },
-      ],
-    },
-    {
-      id: "1080p-hq",
-      quality: "1080p HQ",
-      size: "1.24 GB",
-      links: [
-        { label: "HUBCLOUD", href: "/unlock", variant: "danger" },
-        { label: "FILEPRESS", href: "/unlock", variant: "secondary" },
-        { label: "CLOUD RESUME", href: "/unlock-hq", variant: "secondary" },
-        { label: "GDFLIX", href: "/unlock", variant: "secondary" },
-        { label: "PIXELDRAIN", href: "/unlock", variant: "secondary" },
-      ],
-    },
-  ],
-};
+function formatDuration(minutes: number | null | undefined): string {
+  if (!minutes) return "—";
+  return `${minutes} min`;
+}
 
-export type TrendingEpisode = {
-  animeSlug: string;
-  animeTitle: string;
-  seasonNumber: number;
-  episodeNumber: number;
-  title: string;
-  rating: number;
-  releaseDate: string;
-  poster: string;
-};
+function bestImage(img: { low: string; mid: string; high: string } | undefined): string {
+  if (!img) return "";
+  return img.high || img.mid || img.low;
+}
 
-export const trendingEpisodes: TrendingEpisode[] = [
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 1,
-    title: "You Need Money to Support Your Oshi",
-    rating: 8.4,
-    releaseDate: "2026-07-02",
-    poster: backdropImg,
-  },
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 2,
-    title: "The First Meeting",
-    rating: 8.2,
-    releaseDate: "2026-07-03",
-    poster: backdropImg,
-  },
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 3,
-    title: "Backstage Pass",
-    rating: 8.6,
-    releaseDate: "2026-07-04",
-    poster: backdropImg,
-  },
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 4,
-    title: "A Fan's Dilemma",
-    rating: 8.1,
-    releaseDate: "2026-07-05",
-    poster: backdropImg,
-  },
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 5,
-    title: "Under the Stage Lights",
-    rating: 8.7,
-    releaseDate: "2026-07-06",
-    poster: backdropImg,
-  },
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 6,
-    title: "Between the Notes",
-    rating: 8.5,
-    releaseDate: "2026-07-07",
-    poster: backdropImg,
-  },
-  {
-    animeSlug: "tamon-s-b-side",
-    animeTitle: "Tamon's B-Side",
-    seasonNumber: 1,
-    episodeNumber: 7,
-    title: "Encore",
-    rating: 8.9,
-    releaseDate: "2026-07-08",
-    poster: backdropImg,
-  },
-];
+export function buildEpisodeViewModel(
+  anime: AnimeDetail,
+  seasonNumber: number,
+  ep: EpisodeDetail,
+): Episode {
+  return {
+    animeSlug: anime.slug,
+    animeTitle: anime.anime_name,
+    contentId: ep.content_id,
+    seasonNumber,
+    episodeNumber: ep.episode_number,
+    title: ep.episode_name ?? `Episode ${ep.episode_number}`,
+    description: ep.overview || anime.overview,
+    poster: bestImage(anime.poster),
+    images: ep.img ? [bestImage(ep.img)].filter(Boolean) : [],
+    rating: Number(ep.episode_rating ?? anime.rating ?? 0),
+    releaseDate: ep.air_date ?? anime.release_date ?? "",
+    duration: formatDuration(ep.episode_runtime ?? anime.duration),
+    qualities: ep.links.map((link, i) => ({
+      id: `${link.quality}-${i}`,
+      quality: link.quality,
+      size: link.size,
+      links: link.servers.map((s) => ({
+        name: s.name,
+        link_server_id: s.link_server_id,
+        color: s.color,
+      })),
+    })),
+  };
+}

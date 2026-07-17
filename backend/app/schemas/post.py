@@ -1,28 +1,13 @@
 import datetime as dt
 
-from pydantic import EmailStr
-from sqlmodel import Field, SQLModel
+from sqlmodel import SQLModel
 
 from app.models import PostStatus
 from app.schemas.anime import AnimeDetail
+from app.schemas.common import CommentCreate, CommentPublic
 from app.schemas.season import SeasonDetail
 
-
-class CommentPublic(SQLModel):
-    id: int
-    parent_id: int | None
-    author_name: str
-    author_url: str | None
-    body: str
-    created_at: dt.datetime
-
-
-class CommentCreate(SQLModel):
-    author_name: str = Field(min_length=1, max_length=50)
-    author_email: EmailStr
-    author_url: str | None = Field(default=None, max_length=255)
-    body: str = Field(min_length=1, max_length=2000)
-    parent_id: int | None = None
+__all__ = ["CommentCreate", "CommentPublic", "PostDetail", "PostListPublic", "PostSummary"]
 
 
 class PostSummary(SQLModel):

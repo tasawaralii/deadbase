@@ -12,7 +12,7 @@ export function Header() {
     const stored = window.localStorage.getItem("dt-theme");
     const initial = stored
       ? stored === "dark"
-      : window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+      : (window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false);
     setDark(initial);
     setMounted(true);
   }, []);

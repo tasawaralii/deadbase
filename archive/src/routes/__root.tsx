@@ -78,15 +78,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Deadtoons — Anime Archive" },
-      { name: "description", content: "Deadtoons — download and watch your favorite anime. Check the trending episodes this week." },
+      {
+        name: "description",
+        content:
+          "Deadtoons — download and watch your favorite anime. Check the trending episodes this week.",
+      },
       { property: "og:title", content: "Deadtoons — Anime Archive" },
-      { property: "og:description", content: "Deadtoons — download and watch your favorite anime. Check the trending episodes this week." },
+      {
+        property: "og:description",
+        content:
+          "Deadtoons — download and watch your favorite anime. Check the trending episodes this week.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Deadtoons — Anime Archive" },
-      { name: "twitter:description", content: "Deadtoons — download and watch your favorite anime. Check the trending episodes this week." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ce5c18e5-4b28-46a9-90d7-f56e38dad96f/id-preview-f8f6da51--f0d4adb0-a212-46d0-bb17-65f081d3e956.lovable.app-1783407014279.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ce5c18e5-4b28-46a9-90d7-f56e38dad96f/id-preview-f8f6da51--f0d4adb0-a212-46d0-bb17-65f081d3e956.lovable.app-1783407014279.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Deadtoons — download and watch your favorite anime. Check the trending episodes this week.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ce5c18e5-4b28-46a9-90d7-f56e38dad96f/id-preview-f8f6da51--f0d4adb0-a212-46d0-bb17-65f081d3e956.lovable.app-1783407014279.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ce5c18e5-4b28-46a9-90d7-f56e38dad96f/id-preview-f8f6da51--f0d4adb0-a212-46d0-bb17-65f081d3e956.lovable.app-1783407014279.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
