@@ -87,6 +87,12 @@ services:
       SMTP_TLS: "false"
       EMAILS_FROM_EMAIL: "noreply@example.com"
 
+  cron:
+    restart: "no"
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.cron
+
   mailcatcher:
     image: schickling/mailcatcher
     ports:

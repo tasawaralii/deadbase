@@ -654,3 +654,76 @@ class DownloadEvents(SQLModel, table=True):
 
     link_server: LinkServers = Relationship(back_populates='download_events')
     via_shortener: LinkShorteners | None = Relationship()
+
+
+# --- VIEW TRACKING / TRENDING MODELS ---
+
+
+class ContentViews(SQLModel, table=True):
+    """
+    Raw dedup log: one row per (visitor, content, day). Only exists to make
+    the same visitor watching the same episode twice in a day count once;
+    once a row is rolled up it's only kept until the day is over, then
+    pruned - it is not a permanent history.
+    """
+
+    __tablename__ = 'content_views'
+    __table_args__ = (
+        UniqueConstraint(
+            'visitor_id', 'content_id', 'view_date',
+            name='content_views_visitor_content_date_key',
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    visitor_id: uuid.UUID = Field(index=True)
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
+    view_date: dt.date = Field(index=True)
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    rolled_up: bool = Field(default=False, index=True)
+
+
+class ContentViewDaily(SQLModel, table=True):
+    __tablename__ = 'content_view_daily'
+    __table_args__ = (
+        UniqueConstraint(
+            'content_id', 'view_date', name='content_view_daily_content_date_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
+    view_date: dt.date = Field(index=True)
+    view_count: int = Field(default=0)
+
+
+class SeasonViewDaily(SQLModel, table=True):
+    __tablename__ = 'season_view_daily'
+    __table_args__ = (
+        UniqueConstraint(
+            'season_id', 'view_date', name='season_view_daily_season_date_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    season_id: int = Field(
+        foreign_key='seasons.season_id', ondelete='CASCADE', index=True
+    )
+    view_date: dt.date = Field(index=True)
+    view_count: int = Field(default=0)
+
+
+class AnimeViewDaily(SQLModel, table=True):
+    __tablename__ = 'anime_view_daily'
+    __table_args__ = (
+        UniqueConstraint(
+            'anime_id', 'view_date', name='anime_view_daily_anime_date_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    anime_id: int = Field(foreign_key='animes.anime_id', ondelete='CASCADE', index=True)
+    view_date: dt.date = Field(index=True)
+    view_count: int = Field(default=0)
