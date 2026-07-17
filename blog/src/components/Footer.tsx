@@ -30,7 +30,10 @@ export function Footer() {
             We just index those links which are already available on the internet.
           </p>
           <p className="text-sm text-white/80 leading-relaxed mt-3">
-            If you want to remove any post from this website check out our DMCA page
+            If you want to remove any post from this website check out our{" "}
+            <a href="/dmca" className="hover:underline">
+              DMCA page
+            </a>
           </p>
         </div>
       </div>
@@ -38,14 +41,14 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3 text-xs">
           <span className="text-white/60">Copyright DeadToons © 2016 - 2026.</span>
           <div className="flex gap-5 text-white/80 uppercase tracking-wide font-semibold">
-            <a href="#" className="hover:text-accent">
+            <a href="/about" className="hover:text-accent">
               About
             </a>
-            <a href="#" className="hover:text-accent">
+            <a href="/privacy-policy" className="hover:text-accent">
               Privacy Policy
             </a>
-            <a href="#" className="hover:text-accent">
-              Request Anime
+            <a href="/dmca" className="hover:text-accent">
+              DMCA
             </a>
           </div>
         </div>
