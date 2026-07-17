@@ -384,6 +384,8 @@ class LinkServers(SQLModel, table=True):
 
     link: Links = Relationship(back_populates='link_servers')
     server: ServerInfo = Relationship(back_populates='link_servers')
+    shortener_attempts: list["ShortenerAttempts"] = Relationship(back_populates='link_server')
+    download_events: list["DownloadEvents"] = Relationship(back_populates='link_server')
 
 
 class Seasons(SQLModel, table=True):
@@ -571,3 +573,84 @@ class Comments(SQLModel, table=True):
     status: CommentStatus = Field(default=CommentStatus.PENDING)
 
     post: Posts = Relationship(back_populates='comments')
+
+
+# --- LINK SHORTENER / UNLOCK GATE MODELS ---
+
+
+class LinkShorteners(SQLModel, table=True):
+    __tablename__ = 'link_shorteners'
+
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(max_length=50)
+    slug: str = Field(unique=True, max_length=50)
+    api_url_template: str = Field(max_length=500)
+    quick_url_template: str = Field(max_length=500)
+    how_to_video_url: str | None = Field(default=None, max_length=500)
+    message: str | None = Field(default=None, max_length=255)
+    is_enabled: bool = Field(default=True)
+    sort_order: int = Field(default=0)
+
+    attempts: list["ShortenerAttempts"] = Relationship(back_populates='shortener')
+
+
+class UnlockConfig(SQLModel, table=True):
+    __tablename__ = 'unlock_config'
+    __table_args__ = (
+        CheckConstraint('id = 1', name='unlock_config_singleton'),
+    )
+
+    id: int = Field(default=1, primary_key=True)
+    required_solves: int = Field(default=4)
+    report_threshold: int = Field(default=5)
+
+
+class ShortenerAttempts(SQLModel, table=True):
+    __tablename__ = 'shortener_attempts'
+
+    id: int | None = Field(default=None, primary_key=True)
+    token: str = Field(unique=True, index=True, max_length=64)
+    visitor_id: uuid.UUID = Field(index=True)
+    shortener_id: int = Field(
+        foreign_key='link_shorteners.id', ondelete='CASCADE', index=True
+    )
+    link_server_id: int = Field(
+        foreign_key='link_servers.ser_link_id', ondelete='CASCADE', index=True
+    )
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    solved_at: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    reported_at: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    report_reason: str | None = Field(default=None, max_length=255)
+
+    shortener: LinkShorteners = Relationship(back_populates='attempts')
+    link_server: LinkServers = Relationship(back_populates='shortener_attempts')
+
+
+class DownloadEvents(SQLModel, table=True):
+    __tablename__ = 'download_events'
+
+    id: int | None = Field(default=None, primary_key=True)
+    link_server_id: int = Field(
+        foreign_key='link_servers.ser_link_id', ondelete='CASCADE', index=True
+    )
+    visitor_id: uuid.UUID = Field(index=True)
+    via_shortener_id: int | None = Field(
+        default=None,
+        foreign_key='link_shorteners.id',
+        ondelete='SET NULL',
+        index=True,
+    )
+    occurred_at: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+        index=True,
+    )
+
+    link_server: LinkServers = Relationship(back_populates='download_events')
+    via_shortener: LinkShorteners | None = Relationship()

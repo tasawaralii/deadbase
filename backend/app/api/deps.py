@@ -1,8 +1,9 @@
+import uuid
 from collections.abc import Generator
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
@@ -55,3 +56,30 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+VISITOR_COOKIE_NAME = "visitor_id"
+VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
+
+
+def get_visitor_id(request: Request, response: Response) -> uuid.UUID:
+    raw = request.cookies.get(VISITOR_COOKIE_NAME)
+    if raw:
+        try:
+            return uuid.UUID(raw)
+        except ValueError:
+            pass
+
+    visitor_id = uuid.uuid4()
+    response.set_cookie(
+        VISITOR_COOKIE_NAME,
+        str(visitor_id),
+        max_age=VISITOR_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=settings.ENVIRONMENT != "local",
+        samesite="lax",
+    )
+    return visitor_id
+
+
+VisitorId = Annotated[uuid.UUID, Depends(get_visitor_id)]

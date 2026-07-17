@@ -87,11 +87,18 @@ def build_download_links(session: Session, content_id: int) -> list[LinkPublic]:
         for ls in link.link_servers:
             if not ls.slug or not ls.server.is_enabled:
                 continue
+            # Only used to validate this server config can actually resolve to
+            # something; the real URL is never exposed here (see app/unlock.py) -
+            # it's only ever resolved server-side once a visitor is unlocked.
             href = resolve_server_link(ls.server.server_sid, ls.server.server_domain, ls.slug)
             if not href:
                 continue
             servers.append(
-                DownloadLink(name=ls.server.server_name, link=href, color=ls.server.color)
+                DownloadLink(
+                    name=ls.server.server_name,
+                    link_server_id=ls.ser_link_id,
+                    color=ls.server.color,
+                )
             )
         result.append(
             LinkPublic(

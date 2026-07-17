@@ -9,7 +9,7 @@ class ImageUrls(SQLModel):
 
 class DownloadLink(SQLModel):
     name: str
-    link: str
+    link_server_id: int
     color: str
 
 
