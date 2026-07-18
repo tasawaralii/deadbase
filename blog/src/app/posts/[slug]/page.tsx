@@ -5,7 +5,7 @@ import { Clock } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { CommentsSection } from "@/components/CommentsSection";
 import { ApiError } from "@/lib/api";
-import { getComments, getPost, getPosts } from "@/lib/posts";
+import { getPost, getPosts } from "@/lib/posts";
 import { buildPostView } from "@/lib/post-view";
 import { timeAgo } from "@/lib/format";
 
@@ -18,10 +18,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   });
   const view = buildPostView(post);
 
-  const [related, comments] = await Promise.all([
-    getPosts({ limit: 5 }).then((r) => r.data.filter((p) => p.slug !== post.slug).slice(0, 4)),
-    getComments(post.slug),
-  ]);
+  // Comments are fetched client-side in CommentsSection - they change far
+  // more often than the post content, so they shouldn't share this page's
+  // cache lifetime, and skipping them here keeps the cached HTML smaller.
+  const related = (await getPosts({ limit: 5 })).data
+    .filter((p) => p.slug !== post.slug)
+    .slice(0, 4);
 
   return (
     <Layout>
@@ -249,7 +251,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </div>
         </section>
 
-        <CommentsSection slug={post.slug} initialComments={comments} />
+        <CommentsSection slug={post.slug} />
       </article>
     </Layout>
   );

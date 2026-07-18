@@ -25,6 +25,7 @@ from app.models import (
 )
 from app.schemas.post import (
     CommentCreate,
+    CommentListPublic,
     CommentPublic,
     PostDetail,
     PostListPublic,
@@ -225,17 +226,61 @@ def read_post(session: SessionDep, slug: str) -> PostDetail:
 
 
 @router.get("/posts/{slug}/comments")
-def list_comments(session: SessionDep, slug: str) -> list[CommentPublic]:
+def list_comments(
+    session: SessionDep,
+    slug: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+) -> CommentListPublic:
     post = session.exec(select(Posts).where(Posts.slug == slug)).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    comments = session.exec(
+    approved = (
+        Comments.post_id == post.id,
+        Comments.status == CommentStatus.APPROVED,
+    )
+
+    root_count = session.exec(
+        select(func.count(col(Comments.id))).where(
+            *approved, col(Comments.parent_id).is_(None)
+        )
+    ).one()
+    total_count = session.exec(
+        select(func.count(col(Comments.id))).where(*approved)
+    ).one()
+
+    roots = session.exec(
         select(Comments)
-        .where(Comments.post_id == post.id, Comments.status == CommentStatus.APPROVED)
+        .where(*approved, col(Comments.parent_id).is_(None))
         .order_by(col(Comments.created_at).asc())
+        .offset((page - 1) * limit)
+        .limit(limit)
     ).all()
-    return [_comment_public(c) for c in comments]
+
+    # Comments can reply to replies - pull in each subsequent generation of
+    # descendants until a level comes back empty, so a whole thread always
+    # ships together even though pagination only walks root comments.
+    all_comments = list(roots)
+    frontier_ids = [c.id for c in roots if c.id is not None]
+    while frontier_ids:
+        children = session.exec(
+            select(Comments).where(*approved, col(Comments.parent_id).in_(frontier_ids))
+        ).all()
+        if not children:
+            break
+        all_comments.extend(children)
+        frontier_ids = [c.id for c in children if c.id is not None]
+
+    all_comments.sort(key=lambda c: c.created_at)
+
+    return CommentListPublic(
+        data=[_comment_public(c) for c in all_comments],
+        page=page,
+        limit=limit,
+        root_count=root_count,
+        total_count=total_count,
+    )
 
 
 @router.post("/posts/{slug}/comments", status_code=201)

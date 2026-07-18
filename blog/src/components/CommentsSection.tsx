@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type FormEvent } from "react";
+import { useEffect, useReducer, useState, type FormEvent } from "react";
 import { ApiError } from "@/lib/api";
-import { createComment } from "@/lib/posts";
+import { createComment, getComments } from "@/lib/posts";
 import type { CommentPublic } from "@/lib/types";
 import { formatCommentDate } from "@/lib/format";
 
@@ -202,27 +202,116 @@ function CommentItem({
   );
 }
 
-export function CommentsSection({
-  slug,
-  initialComments,
-}: {
-  slug: string;
-  initialComments: CommentPublic[];
-}) {
-  const [comments, setComments] = useState(initialComments);
+const PAGE_SIZE = 10;
+
+type CommentsState = {
+  comments: CommentPublic[];
+  totalCount: number | null;
+  rootCount: number;
+  page: number;
+  loading: boolean;
+  loadingMore: boolean;
+  loadError: string | null;
+};
+
+type CommentsAction =
+  | { type: "load_start"; isFirst: boolean }
+  | {
+      type: "load_success";
+      isFirst: boolean;
+      page: number;
+      data: CommentPublic[];
+      totalCount: number;
+      rootCount: number;
+    }
+  | { type: "load_error"; isFirst: boolean; message: string }
+  | { type: "comment_posted"; comment: CommentPublic };
+
+const initialCommentsState: CommentsState = {
+  comments: [],
+  totalCount: null,
+  rootCount: 0,
+  page: 0,
+  loading: true,
+  loadingMore: false,
+  loadError: null,
+};
+
+function commentsReducer(state: CommentsState, action: CommentsAction): CommentsState {
+  switch (action.type) {
+    case "load_start":
+      return action.isFirst ? state : { ...state, loadingMore: true };
+    case "load_success":
+      return {
+        ...state,
+        comments: action.isFirst ? action.data : [...state.comments, ...action.data],
+        totalCount: action.totalCount,
+        rootCount: action.rootCount,
+        page: action.page,
+        loading: false,
+        loadingMore: false,
+        loadError: null,
+      };
+    case "load_error":
+      return { ...state, loading: false, loadingMore: false, loadError: action.message };
+    case "comment_posted":
+      return {
+        ...state,
+        comments: [...state.comments, action.comment],
+        totalCount: (state.totalCount ?? 0) + 1,
+        rootCount:
+          action.comment.parent_id === null ? state.rootCount + 1 : state.rootCount,
+      };
+    default:
+      return state;
+  }
+}
+
+export function CommentsSection({ slug }: { slug: string }) {
+  const [state, dispatch] = useReducer(commentsReducer, initialCommentsState);
   const [showForm, setShowForm] = useState(false);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
+  async function loadPage(nextPage: number) {
+    const isFirst = nextPage === 1;
+    dispatch({ type: "load_start", isFirst });
+    try {
+      const res = await getComments(slug, { page: nextPage, limit: PAGE_SIZE });
+      dispatch({
+        type: "load_success",
+        isFirst,
+        page: nextPage,
+        data: res.data,
+        totalCount: res.total_count,
+        rootCount: res.root_count,
+      });
+    } catch (err) {
+      dispatch({
+        type: "load_error",
+        isFirst,
+        message: err instanceof ApiError ? err.message : "Failed to load comments.",
+      });
+    }
+  }
+
+  useEffect(() => {
+    loadPage(1);
+    // Only re-fetch when the post itself changes, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  const { comments, totalCount, rootCount, page, loading, loadingMore, loadError } = state;
   const tree = buildTree(comments);
+  const hasMore = tree.length < rootCount;
 
   function handlePosted(comment: CommentPublic) {
-    setComments((prev) => [...prev, comment]);
+    dispatch({ type: "comment_posted", comment });
   }
 
   return (
     <section>
       <h2 className="bg-muted inline-block px-3 py-1.5 font-display font-semibold text-sm border-b-2 border-primary">
-        {comments.length} Comments
+        {totalCount ?? "…"} Comments
       </h2>
 
       {!showForm ? (
@@ -243,18 +332,36 @@ export function CommentsSection({
         />
       )}
 
-      <ul className="mt-8 space-y-6 divide-y divide-border [&>li]:pt-6 first:[&>li]:pt-0">
-        {tree.map((node) => (
-          <CommentItem
-            key={node.id}
-            slug={slug}
-            node={node}
-            replyingTo={replyingTo}
-            setReplyingTo={setReplyingTo}
-            onPosted={handlePosted}
-          />
-        ))}
-      </ul>
+      {loading ? (
+        <p className="mt-8 text-sm text-muted-foreground">Loading comments...</p>
+      ) : loadError ? (
+        <p className="mt-8 text-sm text-destructive">{loadError}</p>
+      ) : (
+        <>
+          <ul className="mt-8 space-y-6 divide-y divide-border [&>li]:pt-6 first:[&>li]:pt-0">
+            {tree.map((node) => (
+              <CommentItem
+                key={node.id}
+                slug={slug}
+                node={node}
+                replyingTo={replyingTo}
+                setReplyingTo={setReplyingTo}
+                onPosted={handlePosted}
+              />
+            ))}
+          </ul>
+
+          {hasMore && (
+            <button
+              onClick={() => loadPage(page + 1)}
+              disabled={loadingMore}
+              className="mt-6 w-full border border-border rounded p-3 text-sm font-semibold hover:border-primary transition-colors disabled:opacity-60"
+            >
+              {loadingMore ? "Loading..." : "Load more comments"}
+            </button>
+          )}
+        </>
+      )}
     </section>
   );
 }

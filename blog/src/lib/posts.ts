@@ -1,5 +1,20 @@
 import { api } from "@/lib/api";
-import type { CommentCreate, CommentPublic, PostDetail, PostListPublic } from "@/lib/types";
+import type {
+  CommentCreate,
+  CommentListPublic,
+  CommentPublic,
+  PostDetail,
+  PostListPublic,
+} from "@/lib/types";
+
+function buildQuery(params: Record<string, string | number | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") search.set(key, String(value));
+  }
+  const qs = search.toString();
+  return qs ? `?${qs}` : "";
+}
 
 export type PostListParams = {
   q?: string;
@@ -12,15 +27,6 @@ export type PostListParams = {
   limit?: number;
 };
 
-function buildQuery(params: PostListParams): string {
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== "") search.set(key, String(value));
-  }
-  const qs = search.toString();
-  return qs ? `?${qs}` : "";
-}
-
 export function getPosts(params: PostListParams = {}) {
   return api.get<PostListPublic>(`/posts${buildQuery(params)}`);
 }
@@ -29,8 +35,15 @@ export function getPost(slug: string) {
   return api.get<PostDetail>(`/posts/${encodeURIComponent(slug)}`);
 }
 
-export function getComments(slug: string) {
-  return api.get<CommentPublic[]>(`/posts/${encodeURIComponent(slug)}/comments`);
+export type CommentListParams = {
+  page?: number;
+  limit?: number;
+};
+
+export function getComments(slug: string, params: CommentListParams = {}) {
+  return api.get<CommentListPublic>(
+    `/posts/${encodeURIComponent(slug)}/comments${buildQuery(params)}`
+  );
 }
 
 export function createComment(slug: string, data: CommentCreate) {

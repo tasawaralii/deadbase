@@ -4,10 +4,23 @@ from sqlmodel import SQLModel
 
 from app.models import PostStatus
 from app.schemas.anime import AnimeDetail
-from app.schemas.common import AuthorPublic, CommentCreate, CommentPublic, ImageUrls
+from app.schemas.common import (
+    AuthorPublic,
+    CommentCreate,
+    CommentListPublic,
+    CommentPublic,
+    ImageUrls,
+)
 from app.schemas.season import SeasonDetail
 
-__all__ = ["CommentCreate", "CommentPublic", "PostDetail", "PostListPublic", "PostSummary"]
+__all__ = [
+    "CommentCreate",
+    "CommentListPublic",
+    "CommentPublic",
+    "PostDetail",
+    "PostListPublic",
+    "PostSummary",
+]
 
 
 class PostSummary(SQLModel):

@@ -125,3 +125,11 @@ export type CommentCreate = {
   body: string;
   parent_id?: number | null;
 };
+
+export type CommentListPublic = {
+  data: CommentPublic[];
+  page: number;
+  limit: number;
+  root_count: number;
+  total_count: number;
+};

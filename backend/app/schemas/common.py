@@ -22,6 +22,19 @@ class CommentCreate(SQLModel):
     parent_id: int | None = None
 
 
+class CommentListPublic(SQLModel):
+    data: list[CommentPublic]
+    page: int
+    limit: int
+    # Comments are paginated by root (top-level) thread, not by raw row count,
+    # so a reply never gets split onto a different page than its parent -
+    # `data` for one page can contain more than `limit` rows once replies are
+    # included. root_count drives "is there another page"; total_count is the
+    # full comment+reply tally for the "N Comments" header.
+    root_count: int
+    total_count: int
+
+
 class ImageUrls(SQLModel):
     low: str
     mid: str
