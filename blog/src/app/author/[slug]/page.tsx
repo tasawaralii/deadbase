@@ -25,6 +25,7 @@ export default async function AuthorPage({
         limit={limit}
         count={count}
         basePath={`/author/${slug}`}
+        emptyMessage="This author hasn't published anything yet."
       />
     </Layout>
   );

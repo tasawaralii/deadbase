@@ -25,6 +25,7 @@ export default async function GenrePage({
         limit={limit}
         count={count}
         basePath={`/genre/${slug}`}
+        emptyMessage="No posts found in this genre yet."
       />
     </Layout>
   );

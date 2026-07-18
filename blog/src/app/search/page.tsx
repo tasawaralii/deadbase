@@ -39,6 +39,11 @@ export default async function SearchPage({
         count={count}
         basePath="/search"
         query={{ q }}
+        emptyMessage={
+          q
+            ? `No results for "${q}". Try a different search term.`
+            : "Type something above to search."
+        }
       />
     </Layout>
   );

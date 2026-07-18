@@ -31,6 +31,7 @@ export default async function Home({
         count={count}
         basePath="/"
         query={query}
+        emptyMessage="No posts available right now. Check back soon for new releases."
       />
     </Layout>
   );

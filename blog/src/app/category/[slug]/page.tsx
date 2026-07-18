@@ -27,6 +27,7 @@ export default async function CategoryPage({
         limit={limit}
         count={count}
         basePath={`/category/${slug}`}
+        emptyMessage="No posts found in this category yet."
       />
     </Layout>
   );

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, MessageSquare, User } from "lucide-react";
+import { Clock, MessageSquare, SearchX, User } from "lucide-react";
 import type { PostSummary } from "@/lib/types";
 import { timeAgo } from "@/lib/format";
 
@@ -34,6 +34,7 @@ export function PostList({
   count,
   basePath = "/",
   query = {},
+  emptyMessage = "Try a different search, or check back later for new releases.",
 }: {
   posts: PostSummary[];
   page: number;
@@ -41,8 +42,19 @@ export function PostList({
   count: number;
   basePath?: string;
   query?: Record<string, string>;
+  emptyMessage?: string;
 }) {
   const totalPages = Math.max(1, Math.ceil(count / limit));
+
+  if (posts.length === 0) {
+    return (
+      <div className="py-20 text-center">
+        <SearchX className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+        <h3 className="font-display font-semibold text-xl mb-2">No posts found</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">{emptyMessage}</p>
+      </div>
+    );
+  }
 
   return (
     <>
