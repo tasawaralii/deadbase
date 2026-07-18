@@ -254,14 +254,20 @@ function commentsReducer(state: CommentsState, action: CommentsAction): Comments
       };
     case "load_error":
       return { ...state, loading: false, loadingMore: false, loadError: action.message };
-    case "comment_posted":
+    case "comment_posted": {
+      const isRoot = action.comment.parent_id === null;
       return {
         ...state,
-        comments: [...state.comments, action.comment],
+        // Roots are newest-first, so a brand new thread goes at the front;
+        // replies stay oldest-first within their thread, so they go at the
+        // back (buildTree only cares about order within a parent_id group).
+        comments: isRoot
+          ? [action.comment, ...state.comments]
+          : [...state.comments, action.comment],
         totalCount: (state.totalCount ?? 0) + 1,
-        rootCount:
-          action.comment.parent_id === null ? state.rootCount + 1 : state.rootCount,
+        rootCount: isRoot ? state.rootCount + 1 : state.rootCount,
       };
+    }
     default:
       return state;
   }

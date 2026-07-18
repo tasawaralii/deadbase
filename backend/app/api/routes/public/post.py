@@ -250,29 +250,35 @@ def list_comments(
         select(func.count(col(Comments.id))).where(*approved)
     ).one()
 
+    # Newest threads first, so paginating ("load more") surfaces recent
+    # activity before older history - page 1 is the most relevant page, not
+    # the oldest one.
     roots = session.exec(
         select(Comments)
         .where(*approved, col(Comments.parent_id).is_(None))
-        .order_by(col(Comments.created_at).asc())
+        .order_by(col(Comments.created_at).desc())
         .offset((page - 1) * limit)
         .limit(limit)
     ).all()
 
     # Comments can reply to replies - pull in each subsequent generation of
     # descendants until a level comes back empty, so a whole thread always
-    # ships together even though pagination only walks root comments.
+    # ships together even though pagination only walks root comments. Replies
+    # stay oldest-first within their thread (a conversation reads forward),
+    # unlike the newest-first roots above - so no global re-sort afterwards;
+    # the client only cares about order within each parent_id group.
     all_comments = list(roots)
     frontier_ids = [c.id for c in roots if c.id is not None]
     while frontier_ids:
         children = session.exec(
-            select(Comments).where(*approved, col(Comments.parent_id).in_(frontier_ids))
+            select(Comments)
+            .where(*approved, col(Comments.parent_id).in_(frontier_ids))
+            .order_by(col(Comments.created_at).asc())
         ).all()
         if not children:
             break
         all_comments.extend(children)
         frontier_ids = [c.id for c in children if c.id is not None]
-
-    all_comments.sort(key=lambda c: c.created_at)
 
     return CommentListPublic(
         data=[_comment_public(c) for c in all_comments],
