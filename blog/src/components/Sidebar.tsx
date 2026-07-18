@@ -1,21 +1,12 @@
 import Image from "next/image";
+import Link from "next/link";
+import { getPosts } from "@/lib/posts";
+
 const TELEGRAM_JOIN_URL = process.env.NEXT_PUBLIC_TELEGRAM_JOIN_URL || "#";
 
-// Placeholder until wired to the real /public/posts?sort=popular (or similar) endpoint.
-const POPULAR = [
-  "Alt-Verse Ascendant (Demo) Season 02 Placeholder Multi Audio",
-  "Hollow Blade Academy Season 03 Placeholder Audio HQ",
-  "Ledger of Shadows (Demo) Season 01 Placeholder Multi Audio",
-  "Alt-Verse Ascendant Season 01 (Demo) Placeholder Multi Audio",
-  "Ivory Cloverfield (Demo) Season 01 Placeholder Multi Audio",
-  "Hollow Blade Academy Season 02 (Demo) Placeholder Multi Audio",
-  "Kimeru: Blade of Winter (Demo) Season 01 Placeholder Multi Audio",
-  "DAIMA Reborn (Demo) Season 01 Placeholder Multi Audio",
-  "Hollow Blade Academy Season 01 Placeholder Two Track Demo",
-  "That Life I Woke as Slime (Demo) Season 03 Placeholder Multi Audio",
-];
+export async function Sidebar() {
+  const { data: popular } = await getPosts({ sort: "popular", limit: 10 });
 
-export function Sidebar() {
   return (
     <aside className="space-y-8">
       <section>
@@ -49,11 +40,14 @@ export function Sidebar() {
           </h3>
         </div>
         <ul className="mt-4 space-y-3">
-          {POPULAR.map((t) => (
-            <li key={t}>
-              <a href="#" className="text-sm font-semibold text-accent hover:underline leading-snug block">
-                {t}
-              </a>
+          {popular.map((p) => (
+            <li key={p.slug}>
+              <Link
+                href={`/posts/${p.slug}`}
+                className="text-sm font-semibold text-accent hover:underline leading-snug block"
+              >
+                {p.title}
+              </Link>
             </li>
           ))}
         </ul>

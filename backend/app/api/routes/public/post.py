@@ -56,6 +56,7 @@ def list_posts(
     genre: str | None = None,
     tag: str | None = None,
     author: str | None = None,
+    sort: Literal["latest", "popular"] = "latest",
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> PostListPublic:
@@ -111,6 +112,8 @@ def list_posts(
         select(func.count()).select_from(base_query.subquery())
     ).one()
 
+    order_by = col(Posts.views).desc() if sort == "popular" else col(Posts.last_updated).desc()
+
     rows = session.exec(
         select(  # type: ignore[call-overload]
             Posts, Animes, Seasons, ParentAnime, User, comment_count_subq
@@ -120,7 +123,7 @@ def list_posts(
         .outerjoin(ParentAnime, Seasons.anime_id == ParentAnime.anime_id)
         .outerjoin(User, Posts.author_id == User.id)
         .where(*conditions)
-        .order_by(col(Posts.last_updated).desc())
+        .order_by(order_by)
         .offset((page - 1) * limit)
         .limit(limit)
     ).all()

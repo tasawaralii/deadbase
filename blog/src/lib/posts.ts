@@ -23,6 +23,7 @@ export type PostListParams = {
   author?: string;
   type?: "movie" | "tv";
   status?: "ongoing" | "completed";
+  sort?: "latest" | "popular";
   page?: number;
   limit?: number;
 };
