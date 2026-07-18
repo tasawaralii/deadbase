@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description: "Learn more about Dead Toons India and what we do.",
+};
 
 export default function AboutPage() {
   return (

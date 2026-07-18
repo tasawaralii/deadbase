@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
+
+export const metadata: Metadata = {
+  title: "DMCA",
+  description: "How to file a DMCA takedown request with Dead Toons India.",
+};
 
 export default function DmcaPage() {
   return (

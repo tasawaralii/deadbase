@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
 import { getPosts } from "@/lib/posts";
+import { slugToLabel } from "@/lib/format";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const label = slugToLabel(decodeURIComponent(slug));
+  return {
+    title: `${label} Anime`,
+    description: `Browse ${label} anime and cartoons dubbed in Hindi, Tamil, Telugu.`,
+  };
+}
 
 export default async function GenrePage({
   params,

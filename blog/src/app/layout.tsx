@@ -9,7 +9,10 @@ const changa = Changa({
 });
 
 export const metadata: Metadata = {
-  title: "Deadtoons",
+  title: {
+    default: "Deadtoons",
+    template: "%s | Deadtoons",
+  },
   description: "Deadtoons — anime and cartoons dubbed in Hindi, Tamil, Telugu.",
 };
 

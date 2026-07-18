@@ -1,8 +1,23 @@
+import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
 import { getPosts } from "@/lib/posts";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  return {
+    title: q ? `Search results for "${q}"` : "Search",
+    // Internal search-result pages are thin/duplicate content and shouldn't
+    // compete with real post pages in search rankings.
+    robots: { index: false, follow: true },
+  };
+}
 
 export default async function SearchPage({
   searchParams,

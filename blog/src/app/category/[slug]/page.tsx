@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
 import { getPosts } from "@/lib/posts";
+import { slugToLabel } from "@/lib/format";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const label = slugToLabel(decodeURIComponent(slug));
+  return {
+    title: `${label} Downloads`,
+    description: `Browse ${label} anime and cartoons dubbed in Hindi, Tamil, Telugu.`,
+  };
+}
 
 // "Category" here maps to the Tags taxonomy (Tags.slug) - there is no
 // separate category concept in the backend, see app/api/routes/public/post.py.

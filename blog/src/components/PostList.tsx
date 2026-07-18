@@ -65,13 +65,15 @@ export function PostList({
               href={`/posts/${p.slug}`}
               className="shrink-0 block sm:w-64 sm:self-center aspect-video overflow-hidden rounded-sm bg-muted"
             >
-              <Image
-                src={p.backdrop_img.mid || "/poster-1.jpg"}
-                alt=""
-                width={1024}
-                height={768}
-                className="w-full h-full object-cover"
-              />
+              {p.backdrop_img.mid && (
+                <Image
+                  src={p.backdrop_img.mid}
+                  alt=""
+                  width={1024}
+                  height={768}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </Link>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm font-semibold mb-1.5">

@@ -27,3 +27,20 @@ export function formatCommentDate(iso: string): string {
     timeStyle: "short",
   }).format(new Date(iso));
 }
+
+// Standard meta-description length before search engines truncate it anyway.
+export function truncate(text: string, maxLength = 160): string {
+  const clean = text.trim().replace(/\s+/g, " ");
+  if (clean.length <= maxLength) return clean;
+  return clean.slice(0, maxLength - 1).trimEnd() + "…";
+}
+
+// "eng-subbed" -> "Eng Subbed". Good enough for page titles without an extra
+// fetch to look up the tag/genre's real display name.
+export function slugToLabel(slug: string): string {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}

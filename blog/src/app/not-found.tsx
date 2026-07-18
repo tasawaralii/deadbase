@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Send, Home } from "lucide-react";
@@ -6,6 +7,11 @@ import { Footer } from "@/components/Footer";
 import { getTags, getGenres } from "@/lib/taxonomy";
 
 const TELEGRAM_JOIN_URL = process.env.NEXT_PUBLIC_TELEGRAM_JOIN_URL || "#";
+
+export const metadata: Metadata = {
+  title: "Page Not Found",
+  robots: { index: false, follow: true },
+};
 
 export default async function NotFound() {
   const [tags, genres] = await Promise.all([getTags(), getGenres()]);

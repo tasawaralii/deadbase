@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Dead Toons India collects, uses, and protects your information.",
+};
 
 export default function PrivacyPolicyPage() {
   return (

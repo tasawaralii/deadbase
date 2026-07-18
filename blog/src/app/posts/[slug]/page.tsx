@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,7 +8,38 @@ import { CommentsSection } from "@/components/CommentsSection";
 import { ApiError } from "@/lib/api";
 import { getPost, getPosts } from "@/lib/posts";
 import { buildPostView } from "@/lib/post-view";
-import { timeAgo } from "@/lib/format";
+import { timeAgo, truncate } from "@/lib/format";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPost(slug).catch(() => null);
+  if (!post) return {};
+
+  const view = buildPostView(post);
+  const description = truncate(view.overview || post.title);
+  const image = view.backdropUrl || view.posterUrl;
+
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -232,13 +264,15 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   href={`/posts/${r.slug}`}
                   className="block relative rounded overflow-hidden group max-w-100 mx-auto"
                 >
-                  <Image
-                    src={r.backdrop_img.mid || "/poster-1.jpg"}
-                    alt=""
-                    width={1280}
-                    height={720}
-                    className="w-full aspect-video object-cover"
-                  />
+                  {r.backdrop_img.mid && (
+                    <Image
+                      src={r.backdrop_img.mid}
+                      alt=""
+                      width={1280}
+                      height={720}
+                      className="w-full aspect-video object-cover"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
                   <div className="absolute inset-0 grid place-items-center p-6 text-center">
                     <h3 className="text-white font-display font-bold text-lg sm:text-xl leading-tight">

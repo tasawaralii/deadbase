@@ -1,6 +1,21 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PostList } from "@/components/PostList";
 import { getPosts } from "@/lib/posts";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}): Promise<Metadata> {
+  const { type } = await searchParams;
+  // The homepage sits at the same segment as the root layout, so its title
+  // template doesn't apply here the way it does for nested routes - build
+  // the full title explicitly instead of relying on inheritance.
+  if (type === "movie") return { title: "Movies | Deadtoons" };
+  if (type === "tv") return { title: "Series | Deadtoons" };
+  return {};
+}
 
 export default async function Home({
   searchParams,

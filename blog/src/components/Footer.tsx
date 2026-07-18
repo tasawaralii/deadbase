@@ -1,5 +1,7 @@
 import { Send } from "lucide-react";
 
+const TELEGRAM_JOIN_URL = process.env.NEXT_PUBLIC_TELEGRAM_JOIN_URL || "#";
+
 export function Footer() {
   return (
     <footer className="bg-sidebar text-sidebar-foreground mt-12">
@@ -12,12 +14,17 @@ export function Footer() {
             Dead Toons India avails you all animes, cartoons, in Hindi - Tamil - Telugu dubbed episodes in
             multiple qualities like 1080p, 720p, 480p.
           </p>
-          <div className="mt-5 inline-flex items-center gap-3 border-2 border-white/20 rounded-md px-4 py-2">
+          <a
+            href={TELEGRAM_JOIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-3 border-2 border-white/20 rounded-md px-4 py-2 hover:border-white/40 transition-colors"
+          >
             <span className="text-sm font-semibold">Join Telegram channel to get the latest news</span>
             <span className="w-8 h-8 rounded-full bg-white text-primary grid place-items-center">
               <Send className="w-4 h-4" />
             </span>
-          </div>
+          </a>
         </div>
         <div>
           <h4 className="font-display font-bold text-lg mb-3 border-b border-sidebar-border pb-2">

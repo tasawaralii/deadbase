@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
 import { getPosts } from "@/lib/posts";
+import { slugToLabel } from "@/lib/format";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const label = slugToLabel(decodeURIComponent(slug));
+  return {
+    title: `Posts by ${label}`,
+    description: `Browse anime and cartoon posts by ${label} on Deadtoons.`,
+  };
+}
 
 export default async function AuthorPage({
   params,
