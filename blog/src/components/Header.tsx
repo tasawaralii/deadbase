@@ -4,66 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Search, Menu, X, ChevronDown } from "lucide-react";
+import type { GenrePublic, TagPublic } from "@/lib/types";
 
-const NAV = ["Home", "Latest", "Movies", "Series", "Categories", "Genre"];
-
-const SIDEBAR_LINKS = [
-  "Category A",
-  "Category B",
-  "Dub Studio",
-  "Sub Studio",
-  "Cartoons",
-  "Streaming Alpha",
-  "Regional Pack 1",
-  "Regional Pack 2",
-  "Kids Zone",
-  "Live Action",
-  "Regional Pack 3",
-  "Marvel-ish",
-  "Movies",
-  "Studio Beta",
-  "Streaming Beta",
-  "Streaming Gamma",
-  "Ongoing",
-  "OVA",
-  "Kids TV",
-  "Legends",
-  "Scooby-esque",
-  "Sonic-ish",
-  "Sony-esque",
-  "Specials",
-  "Regional Pack 4",
-  "Regional Pack 5",
-  "Top Picks",
-  "Urdu Pack",
-  "Voot-ish",
-  "Zeecafe-ish",
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Popular", href: "/?sort=popular" },
+  { label: "Movies", href: "/?type=movie" },
+  { label: "Series", href: "/?type=tv" },
 ];
 
-const CATEGORIES = [
-  "Alpha",
-  "Anime Booth",
-  "Apple+",
-  "Regional A",
-  "Cartoon",
-  "Cartoon Network",
-  "Kids Cartoon",
-  "Completed",
-  "Streaming Alpha",
-  "Studio Exclusive",
-  "Disney",
-  "Kids TV",
-  "Legends",
-  "Sub Track",
-  "Movies",
-  "Ongoing",
-  "OVA",
-  "Specials",
-];
-
-export function Header() {
+export function Header({ tags, genres }: { tags: TagPublic[]; genres: GenrePublic[] }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
+  const [genreOpen, setGenreOpen] = useState(false);
+  const [mobileGenreOpen, setMobileGenreOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,51 +40,69 @@ export function Header() {
             <Image src="/logo.png" alt="Deadtoons India" width={207} height={63} className="h-11 w-auto" priority />
           </Link>
           <nav className="hidden lg:flex items-center justify-self-center gap-1 font-sans-alt">
-            {NAV.map((item) => {
-              const isCat = item === "Categories";
-              const isGenre = item === "Genre";
-              if (isCat) {
-                return (
-                  <div
-                    key={item}
-                    className="relative"
-                    onMouseEnter={() => setCatOpen(true)}
-                    onMouseLeave={() => setCatOpen(false)}
-                  >
-                    <button
-                      onClick={() => setCatOpen((v) => !v)}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold tracking-wide uppercase hover:text-black hover:bg-white transition-color"
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded font-semibold tracking-wide uppercase hover:bg-white hover:text-black transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            <div
+              className="relative"
+              onMouseEnter={() => setCatOpen(true)}
+              onMouseLeave={() => setCatOpen(false)}
+            >
+              <button
+                onClick={() => setCatOpen((v) => !v)}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold tracking-wide uppercase hover:text-black hover:bg-white transition-color"
+              >
+                Categories
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              {catOpen && (
+                <div className="absolute top-full left-0 min-w-55 max-h-[70vh] overflow-y-auto bg-white text-foreground shadow-xl border-t-2 border-accent z-50">
+                  {tags.map((t) => (
+                    <Link
+                      key={t.slug}
+                      href={`/category/${t.slug}`}
+                      className="block px-5 py-3 text-sm uppercase tracking-wide border-b border-border hover:text-accent"
                     >
-                      {item}
-                      <ChevronDown className="w-3 h-3" />
-                    </button>
-                    {catOpen && (
-                      <div className="absolute top-full left-0 min-w-[220px] bg-white text-foreground shadow-xl border-t-2 border-accent z-50">
-                        {CATEGORIES.map((c) => (
-                          <a
-                            key={c}
-                            href="#"
-                            className="block px-5 py-3 text-sm uppercase tracking-wide border-b border-border hover:text-accent"
-                          >
-                            {c}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-              return (
-                <a
-                  key={item}
-                  href="#"
-                  className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded font-semibold tracking-wide uppercase hover:bg-white hover:text-black transition-colors"
-                >
-                  {item}
-                  {isGenre && <ChevronDown className="w-3 h-3" />}
-                </a>
-              );
-            })}
+                      {t.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div
+              className="relative"
+              onMouseEnter={() => setGenreOpen(true)}
+              onMouseLeave={() => setGenreOpen(false)}
+            >
+              <button
+                onClick={() => setGenreOpen((v) => !v)}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold tracking-wide uppercase hover:text-black hover:bg-white transition-color"
+              >
+                Genre
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              {genreOpen && (
+                <div className="absolute top-full right-0 min-w-55 max-h-[70vh] overflow-y-auto bg-white text-foreground shadow-xl border-t-2 border-accent z-50">
+                  {genres.map((g) => (
+                    <Link
+                      key={g.slug}
+                      href={`/genre/${g.slug}`}
+                      className="block px-5 py-3 text-sm uppercase tracking-wide border-b border-border hover:text-accent"
+                    >
+                      {g.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
           <button
             onClick={() => setSearchOpen((v) => !v)}
@@ -140,7 +112,8 @@ export function Header() {
             {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
           </button>
         </div>
-        <div
+        <form
+          action="/search"
           className={`absolute inset-x-0 top-full lg:inset-x-auto lg:right-4 lg:w-96 lg:rounded-b-md bg-white border-t lg:border border-border shadow-lg z-50 transition-all duration-200 ease-out ${
             searchOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
           }`}
@@ -149,17 +122,19 @@ export function Header() {
             <input
               ref={searchInputRef}
               type="search"
+              name="q"
               placeholder="Type here to search..."
               className="flex-1 h-12 px-4 border border-border rounded text-foreground bg-white outline-none focus:border-primary"
             />
             <button
+              type="submit"
               className="h-12 w-12 grid place-items-center text-foreground hover:text-primary"
               aria-label="Submit search"
             >
               <Search className="w-5 h-5" />
             </button>
           </div>
-        </div>
+        </form>
       </header>
 
       {sidebarOpen && (
@@ -176,21 +151,47 @@ export function Header() {
               </button>
             </div>
             <nav className="py-2 font-sans-alt">
-              {SIDEBAR_LINKS.map((label) => (
-                <a
-                  key={label}
-                  href="#"
+              {NAV_LINKS.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className="block px-5 py-3 text-sm uppercase tracking-wide border-b border-sidebar-border hover:bg-sidebar-accent"
                 >
-                  {label}
-                </a>
+                  {item.label}
+                </Link>
               ))}
-              <a
-                href="#"
-                className="flex items-center justify-between px-5 py-3 text-sm uppercase tracking-wide border-b border-sidebar-border"
+              {tags.map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/category/${t.slug}`}
+                  onClick={() => setSidebarOpen(false)}
+                  className="block px-5 py-3 text-sm uppercase tracking-wide border-b border-sidebar-border hover:bg-sidebar-accent"
+                >
+                  {t.name}
+                </Link>
+              ))}
+              <button
+                onClick={() => setMobileGenreOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-5 py-3 text-sm uppercase tracking-wide border-b border-sidebar-border"
               >
-                Genre <ChevronDown className="w-4 h-4" />
-              </a>
+                Genre
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileGenreOpen ? "rotate-180" : ""}`} />
+              </button>
+              {mobileGenreOpen && (
+                <div className="bg-black/20">
+                  {genres.map((g) => (
+                    <Link
+                      key={g.slug}
+                      href={`/genre/${g.slug}`}
+                      onClick={() => setSidebarOpen(false)}
+                      className="block pl-8 pr-5 py-2.5 text-sm uppercase tracking-wide border-b border-sidebar-border/50 hover:bg-sidebar-accent"
+                    >
+                      {g.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </nav>
           </aside>
         </>

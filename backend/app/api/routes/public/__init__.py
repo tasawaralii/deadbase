@@ -7,6 +7,7 @@ from app.api.routes.public import (
     pack,
     post,
     season,
+    taxonomy,
     trending,
     unlock,
 )
@@ -20,3 +21,4 @@ router.include_router(post.router)
 router.include_router(unlock.router)
 router.include_router(trending.router)
 router.include_router(comments.router)
+router.include_router(taxonomy.router)

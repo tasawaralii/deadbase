@@ -13,6 +13,16 @@ export type AuthorPublic = {
   avatar_url: string;
 };
 
+export type TagPublic = {
+  name: string;
+  slug: string;
+};
+
+export type GenrePublic = {
+  name: string;
+  slug: string;
+};
+
 export type SeasonDub = {
   platform: string;
   language: string;
@@ -75,7 +85,7 @@ export type PostSummary = {
   sticky: boolean;
   views: number;
   last_updated: string;
-  tags: string[];
+  tags: TagPublic[];
   comment_count: number;
   author: AuthorPublic | null;
   anime_slug: string;
@@ -99,7 +109,7 @@ export type PostDetail = {
   sticky: boolean;
   views: number;
   last_updated: string;
-  tags: string[];
+  tags: TagPublic[];
   author: AuthorPublic | null;
   anime_slug: string;
   anime_name: string;

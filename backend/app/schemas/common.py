@@ -64,3 +64,13 @@ class AuthorPublic(SQLModel):
     display_name: str
     slug: str
     avatar_url: str
+
+
+class TagPublic(SQLModel):
+    name: str
+    slug: str
+
+
+class GenrePublic(SQLModel):
+    name: str
+    slug: str

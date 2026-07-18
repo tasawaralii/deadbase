@@ -64,8 +64,10 @@ export function PostList({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm font-semibold mb-1.5">
                 {p.tags.map((t, i) => (
-                  <span key={t} className="text-accent">
-                    {t}
+                  <span key={t.slug}>
+                    <Link href={`/category/${t.slug}`} className="text-accent hover:underline">
+                      {t.name}
+                    </Link>
                     {i < p.tags.length - 1 && <span className="text-muted-foreground ml-2">·</span>}
                   </span>
                 ))}

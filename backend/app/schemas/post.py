@@ -10,6 +10,7 @@ from app.schemas.common import (
     CommentListPublic,
     CommentPublic,
     ImageUrls,
+    TagPublic,
 )
 from app.schemas.season import SeasonDetail
 
@@ -20,6 +21,7 @@ __all__ = [
     "PostDetail",
     "PostListPublic",
     "PostSummary",
+    "TagPublic",
 ]
 
 
@@ -31,7 +33,7 @@ class PostSummary(SQLModel):
     sticky: bool
     views: int
     last_updated: dt.datetime
-    tags: list[str]
+    tags: list[TagPublic]
     comment_count: int
     author: AuthorPublic | None
     anime_slug: str
@@ -55,7 +57,7 @@ class PostDetail(SQLModel):
     sticky: bool
     views: int
     last_updated: dt.datetime
-    tags: list[str]
+    tags: list[TagPublic]
     author: AuthorPublic | None
     anime_slug: str
     anime_name: str

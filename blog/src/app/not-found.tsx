@@ -3,13 +3,16 @@ import Link from "next/link";
 import { Search, Send, Home } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { getTags, getGenres } from "@/lib/taxonomy";
 
 const TELEGRAM_JOIN_URL = process.env.NEXT_PUBLIC_TELEGRAM_JOIN_URL || "#";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const [tags, genres] = await Promise.all([getTags(), getGenres()]);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
-      <Header />
+      <Header tags={tags} genres={genres} />
       <div className="bg-card shadow-[0_0_0_1px_rgba(68,68,68,0.1)] flex flex-col flex-1">
         <main className="flex-1 flex items-center justify-center px-4 py-20">
           <div className="max-w-lg w-full text-center">

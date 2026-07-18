@@ -30,8 +30,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <article>
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm font-semibold mb-2">
           {post.tags.map((t, i) => (
-            <span key={t} className="text-accent">
-              {t}
+            <span key={t.slug}>
+              <Link href={`/category/${t.slug}`} className="text-accent hover:underline">
+                {t.name}
+              </Link>
               {i < post.tags.length - 1 && <span className="text-muted-foreground ml-2">·</span>}
             </span>
           ))}

@@ -30,6 +30,7 @@ from app.schemas.post import (
     PostDetail,
     PostListPublic,
     PostSummary,
+    TagPublic,
 )
 
 router = APIRouter()
@@ -130,13 +131,13 @@ def list_posts(
 
     post_ids = [post.id for post, *_ in rows if post.id is not None]
     tag_rows = session.exec(
-        select(PostTags.post_id, Tags.name)
+        select(PostTags.post_id, Tags.name, Tags.slug)
         .join(Tags, col(Tags.id) == PostTags.tag_id)
         .where(col(PostTags.post_id).in_(post_ids))
     ).all()
-    tags_by_post: dict[int, list[str]] = {}
-    for post_id, tag_name in tag_rows:
-        tags_by_post.setdefault(post_id, []).append(tag_name)
+    tags_by_post: dict[int, list[TagPublic]] = {}
+    for post_id, tag_name, tag_slug in tag_rows:
+        tags_by_post.setdefault(post_id, []).append(TagPublic(name=tag_name, slug=tag_slug))
 
     data = []
     for post, movie_anime, season, parent_anime, author_user, comment_count in rows:
@@ -204,11 +205,12 @@ def read_post(session: SessionDep, slug: str) -> PostDetail:
         anime_slug, anime_name = anime.slug, anime.anime_name
         season_detail = build_season_detail(session, season)
 
-    tags = session.exec(
-        select(Tags.name)
+    tag_rows = session.exec(
+        select(Tags.name, Tags.slug)
         .join(PostTags, col(PostTags.tag_id) == Tags.id)
         .where(PostTags.post_id == post.id)
     ).all()
+    tags = [TagPublic(name=name, slug=slug) for name, slug in tag_rows]
 
     return PostDetail(
         slug=post.slug,
@@ -218,7 +220,7 @@ def read_post(session: SessionDep, slug: str) -> PostDetail:
         sticky=post.sticky,
         views=post.views,
         last_updated=post.last_updated,
-        tags=list(tags),
+        tags=tags,
         author=build_author_public(post.author),
         anime_slug=anime_slug,
         anime_name=anime_name,
