@@ -65,7 +65,7 @@ def resolve_server_link(server_sid: str, domain: str, slug: str) -> str | None:
 def gravatar_url(email: str, size: int = 64) -> str:
     normalized = email.strip().lower().encode("utf-8")
     digest = hashlib.md5(normalized, usedforsecurity=False).hexdigest()
-    return f"https://www.gravatar.com/avatar/{digest}?s={size}"
+    return f"https://secure.gravatar.com/avatar/{digest}?s={size}&d=wavatar&r=g"
 
 
 def _slugify(value: str) -> str:

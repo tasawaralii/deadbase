@@ -54,6 +54,7 @@ def list_posts(
     post_type: Literal["movie", "tv"] | None = Query(None, alias="type"),
     genre: str | None = None,
     tag: str | None = None,
+    author: str | None = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> PostListPublic:
@@ -80,6 +81,13 @@ def list_posts(
             .where(PostTags.post_id == Posts.id, Tags.slug == tag)
             .exists()
         )
+    if author:
+        matching_author_ids = []
+        for user in session.exec(select(User)).all():
+            author_public = build_author_public(user)
+            if author_public and author_public.slug == author:
+                matching_author_ids.append(user.id)
+        conditions.append(col(Posts.author_id).in_(matching_author_ids))
 
     comment_count_subq = (
         select(func.count(col(Comments.id)))
@@ -127,7 +135,7 @@ def list_posts(
         tags_by_post.setdefault(post_id, []).append(tag_name)
 
     data = []
-    for post, movie_anime, season, parent_anime, author, comment_count in rows:
+    for post, movie_anime, season, parent_anime, author_user, comment_count in rows:
         anime = movie_anime or parent_anime
         assert anime is not None
         data.append(
@@ -141,7 +149,7 @@ def list_posts(
                 last_updated=post.last_updated,
                 tags=tags_by_post.get(post.id, []) if post.id is not None else [],
                 comment_count=comment_count,
-                author=build_author_public(author),
+                author=build_author_public(author_user),
                 anime_slug=anime.slug,
                 anime_name=anime.anime_name,
                 season_number=season.season_number if season else None,

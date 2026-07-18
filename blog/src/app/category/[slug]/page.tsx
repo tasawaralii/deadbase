@@ -1,16 +1,33 @@
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
-import { POSTS } from "@/data/posts";
+import { getPosts } from "@/lib/posts";
 
-// Placeholder until wired to GET /api/v1/public/posts?category={slug}
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+// "Category" here maps to the Tags taxonomy (Tags.slug) - there is no
+// separate category concept in the backend, see app/api/routes/public/post.py.
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { slug } = await params;
+  const { page } = await searchParams;
+  const currentPage = Number(page) > 0 ? Number(page) : 1;
+  const category = decodeURIComponent(slug);
+  const { data, limit, count } = await getPosts({ tag: category, page: currentPage });
 
   return (
     <Layout>
-      <PageBanner label={`Category - ${decodeURIComponent(slug)}`} />
-      <PostList posts={POSTS} />
+      <PageBanner label={`Category - ${category}`} />
+      <PostList
+        posts={data}
+        page={currentPage}
+        limit={limit}
+        count={count}
+        basePath={`/category/${slug}`}
+      />
     </Layout>
   );
 }

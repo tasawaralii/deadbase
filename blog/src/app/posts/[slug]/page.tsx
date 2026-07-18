@@ -1,93 +1,231 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Clock } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { CommentsSection } from "@/components/CommentsSection";
-
-// Placeholder until wired to GET /api/v1/public/posts/{slug}
-const POSTERS = ["/poster-1.jpg", "/poster-2.jpg", "/poster-3.jpg", "/poster-4.jpg"];
-const TAGS = ["Hindi Dub", "Crunchyroll", "Ongoing", "Tamil", "Telugu"];
-const POSTED_AGO = "2 months ago";
-
-const RELATED = [
-  { slug: "2", title: "Placeholder Movie Alpha (2023) Multi Audio [A-B-C-D]", img: "/poster-2.jpg" },
-  {
-    slug: "3",
-    title: "Placeholder Dark Hero (2017) Official Dubbed Dual Audio [Track A-B] Esubs",
-    img: "/poster-3.jpg",
-  },
-  {
-    slug: "4",
-    title:
-      "The Placeholder Adventures of Demo Rider (2010) Official Dubbed Dual Audio in 480p & 720p & 1080p.",
-    img: "/poster-4.jpg",
-  },
-];
+import { ApiError } from "@/lib/api";
+import { getComments, getPost, getPosts } from "@/lib/posts";
+import { buildPostView } from "@/lib/post-view";
+import { timeAgo } from "@/lib/format";
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const idx = (parseInt(slug, 10) - 1) % POSTERS.length;
-  const cover = POSTERS[idx >= 0 ? idx : 0];
+
+  const post = await getPost(slug).catch((err) => {
+    if (err instanceof ApiError && err.status === 404) notFound();
+    throw err;
+  });
+  const view = buildPostView(post);
+
+  const [related, comments] = await Promise.all([
+    getPosts({ limit: 5 }).then((r) => r.data.filter((p) => p.slug !== post.slug).slice(0, 4)),
+    getComments(post.slug),
+  ]);
 
   return (
     <Layout>
       <article>
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm font-semibold mb-2">
-          {TAGS.map((t, i) => (
+          {post.tags.map((t, i) => (
             <span key={t} className="text-accent">
               {t}
-              {i < TAGS.length - 1 && <span className="text-muted-foreground ml-2">·</span>}
+              {i < post.tags.length - 1 && <span className="text-muted-foreground ml-2">·</span>}
             </span>
           ))}
         </div>
         <h1 className="font-display font-semibold text-2xl sm:text-3xl leading-tight mb-3">
-          Placeholder Anime Post #{slug} — Multi Audio Demo Release [A-B-C-D] 480p, 720p & 1080p HD WEB-DL |
-          10bit HEVC
+          {post.title}
         </h1>
         <div className="flex items-center gap-1 mb-6 text-xs font-medium text-muted-foreground">
-          <Clock className="w-3 h-3" /> {POSTED_AGO}
+          <Clock className="w-3 h-3" /> {timeAgo(post.last_updated)}
         </div>
-        <Image
-          src={cover}
-          alt=""
-          width={1280}
-          height={720}
-          className="w-full aspect-video object-cover rounded-md mb-6"
-        />
+
+        {view.backdropUrl && (
+          <Image
+            src={view.backdropUrl}
+            alt={post.title}
+            width={1280}
+            height={720}
+            className="w-full aspect-video object-cover rounded-md mb-6"
+          />
+        )}
+
+        {!view.isMovie && view.languageMode && (
+          <>
+            <p className="text-sm leading-relaxed text-foreground/90 mb-4">
+              ✅ Download <b>{post.anime_name}</b> Season {post.season?.season_number} Dubbed by{" "}
+              <b>{view.otts.join(",")}</b> {view.languageMode} Audio{" "}
+              <b>[{view.languages.join("-")}]</b> Complete All Episodes WEB-DL HD in 480p & 720p & 1080p.
+              This season was released on <b>{view.releaseDate}</b>. It is based on{" "}
+              <b>{view.genres.join(",")}</b>. This Season has <b>{view.totalEpisodes} Episodes</b>. This
+              Series is now available in <strong>Hindi Dubbed at Deadtoons.</strong>
+            </p>
+            <hr className="mb-6 border-border" />
+          </>
+        )}
+
+
+        <ul className="text-sm leading-relaxed mb-6 space-y-1">
+          <li>
+            Full Name: <strong>{post.anime_name}</strong>
+          </li>
+          {!view.isMovie && (
+            <>
+              <li>
+                Season: <strong>{post.season?.season_number}</strong>
+              </li>
+              <li>
+                Episodes: <strong>{view.totalEpisodes}</strong>
+              </li>
+            </>
+          )}
+          {view.releaseYear && (
+            <li>
+              Year: <strong>{view.releaseYear}</strong>
+            </li>
+          )}
+          {view.genres.length > 0 && (
+            <li>
+              Genre: <strong>{view.genres.join(", ")}</strong>
+            </li>
+          )}
+          {view.languageMode && (
+            <li>
+              Language:{" "}
+              <strong>
+                {view.languageMode} Audio ({view.languages.join("-")})
+              </strong>
+            </li>
+          )}
+          {view.releaseDate && (
+            <li>
+              Release Date: <strong>{view.releaseDate}</strong>
+            </li>
+          )}
+          <li>
+            Format: <strong>Mkv</strong>
+          </li>
+        </ul>
 
         <h2 className="font-display font-bold text-xl mb-3">Storyline</h2>
-        <p className="text-sm leading-relaxed text-foreground/90 mb-4">
-          This is a placeholder storyline standing in until real post content (migrated from the legacy
-          blog DB) is wired up.
-        </p>
+        <p className="text-sm leading-relaxed text-foreground/90 mb-4">{view.overview}</p>
+
+        {view.screenshots.length > 0 && (
+          <section className="mb-10">
+            <h2 className="bg-muted inline-block px-3 py-1.5 font-display font-semibold text-sm border-b-2 border-primary mb-4">
+              Screenshots
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2">
+              {view.screenshots.map((src, i) => (
+                <Image
+                  key={src + i}
+                  src={src}
+                  alt=""
+                  width={334}
+                  height={188}
+                  className="w-full aspect-auto object-cover rounded-sm"
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mb-10">
-          <h2 className="bg-muted inline-block px-3 py-1.5 font-display font-semibold text-sm border-b-2 border-primary">
-            You may also like
+          <h2 className="bg-muted inline-block px-3 py-1.5 font-display font-semibold text-sm border-b-2 border-primary mb-4">
+            Download {post.anime_name}
           </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {RELATED.map((r) => (
-              <Link
-                key={r.slug}
-                href={`/posts/${r.slug}`}
-                className="block relative rounded overflow-hidden group max-w-100 mx-auto"
-              >
-                <Image src={r.img} alt="" width={1280} height={720} className="w-full aspect-video object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                <div className="absolute inset-0 grid place-items-center p-6 text-center">
-                  <h3 className="text-white font-display font-bold text-lg sm:text-xl leading-tight">
-                    {r.title}
-                  </h3>
+
+          {view.isMovie ? (
+            <a
+              href={view.movieHref ?? "#"}
+              rel="nofollow"
+              className="block text-center bg-accent text-accent-foreground font-bold px-6 py-3 uppercase text-sm rounded-sm hover:opacity-90"
+            >
+              Download
+            </a>
+          ) : (
+            <>
+              <ul className="divide-y divide-border">
+                {view.episodes.map((e) => (
+                  <li key={e.episodeNumber} className="py-4 text-center">
+                    <div className="font-semibold text-sm mb-2">
+                      Episode {e.episodeNumber}: {e.name}
+                      {e.note && <span className="text-accent"> ({e.note})</span>}
+                    </div>
+                    <a
+                      href={e.href}
+                      rel="nofollow"
+                      className="inline-block bg-accent text-accent-foreground font-bold px-6 py-2 uppercase text-xs rounded-sm hover:opacity-90"
+                    >
+                      Download
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {view.skippedEpisodes.length > 0 && (
+                <p className="text-center text-xs text-muted-foreground mt-4">
+                  {view.skippedEpisodes.length === 1
+                    ? `Note: Episode ${view.skippedEpisodes[0]} is not available and will be added when available.`
+                    : `Note: Following episodes are skipped and will be added when available: ${view.skippedEpisodes.join(", ")}`}
+                </p>
+              )}
+
+              {view.packs.length > 0 && (
+                <div className="pack-links mt-6 max-w-100 mx-auto bg-muted rounded-md p-4">
+                  <h3 className="text-center font-display font-semibold text-sm mb-3">Pack Links</h3>
+                  {view.packs.map((p) => (
+                    <a
+                      key={p.label}
+                      href={p.href}
+                      rel="nofollow"
+                      className="block text-center px-4 py-2 mb-2 last:mb-0 bg-white border border-border rounded text-sm font-medium hover:border-accent hover:text-accent transition-colors"
+                    >
+                      {p.label}
+                    </a>
+                  ))}
                 </div>
-              </Link>
-            ))}
-          </div>
+              )}
+            </>
+          )}
         </section>
+
+        {related.length > 0 && (
+          <section className="mb-10">
+            <h2 className="bg-muted inline-block px-3 py-1.5 font-display font-semibold text-sm border-b-2 border-primary">
+              You may also like
+            </h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={`/posts/${r.slug}`}
+                  className="block relative rounded overflow-hidden group max-w-100 mx-auto"
+                >
+                  <Image
+                    src={r.backdrop_img.mid || "/poster-1.jpg"}
+                    alt=""
+                    width={1280}
+                    height={720}
+                    className="w-full aspect-video object-cover"
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
+                  <div className="absolute inset-0 grid place-items-center p-6 text-center">
+                    <h3 className="text-white font-display font-bold text-lg sm:text-xl leading-tight">
+                      {r.title}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mb-10 border border-border rounded p-4 flex items-start gap-4">
           <Image
-            src="/favicon.png"
-            alt="Admin"
+            src={post.author?.avatar_url ?? "/favicon.png"}
+            alt={post.author?.display_name ?? "Admin"}
             width={64}
             height={64}
             className="w-16 h-16 rounded-full object-cover shrink-0"
@@ -95,16 +233,23 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2 border-b border-border pb-2">
               <h3 className="bg-muted px-3 py-1 text-sm font-display font-semibold">About the author</h3>
-              <button className="bg-accent text-accent-foreground text-xs font-bold px-3 py-1.5 uppercase">
-                View all posts
-              </button>
+              {post.author && (
+                <Link
+                  href={`/author/${post.author.slug}`}
+                  className="bg-accent text-accent-foreground text-xs font-bold px-3 py-1.5 uppercase"
+                >
+                  View all posts
+                </Link>
+              )}
             </div>
-            <div className="font-display font-bold text-lg">Admin</div>
+            <div className="font-display font-bold text-lg">
+              {post.author?.display_name ?? "Admin"}
+            </div>
             <p className="text-sm text-muted-foreground">Deadtoons isn&apos;t Dead. So don&apos;t worry.</p>
           </div>
         </section>
 
-        <CommentsSection />
+        <CommentsSection slug={post.slug} initialComments={comments} />
       </article>
     </Layout>
   );

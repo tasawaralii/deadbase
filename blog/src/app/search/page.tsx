@@ -2,15 +2,16 @@ import { Search } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
-import { POSTS } from "@/data/posts";
+import { getPosts } from "@/lib/posts";
 
-// Placeholder until wired to GET /api/v1/public/posts/search?q=
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
-  const { q = "" } = await searchParams;
+  const { q = "", page } = await searchParams;
+  const currentPage = Number(page) > 0 ? Number(page) : 1;
+  const { data, limit, count } = await getPosts({ q, page: currentPage });
 
   return (
     <Layout>
@@ -31,7 +32,14 @@ export default async function SearchPage({
           <Search className="w-5 h-5" />
         </button>
       </form>
-      <PostList posts={POSTS} />
+      <PostList
+        posts={data}
+        page={currentPage}
+        limit={limit}
+        count={count}
+        basePath="/search"
+        query={{ q }}
+      />
     </Layout>
   );
 }

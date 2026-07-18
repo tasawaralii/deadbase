@@ -1,16 +1,31 @@
 import { Layout } from "@/components/Layout";
 import { PageBanner } from "@/components/PageBanner";
 import { PostList } from "@/components/PostList";
-import { POSTS } from "@/data/posts";
+import { getPosts } from "@/lib/posts";
 
-// Placeholder until wired to GET /api/v1/public/posts?genre={slug}
-export default async function GenrePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function GenrePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { slug } = await params;
+  const { page } = await searchParams;
+  const currentPage = Number(page) > 0 ? Number(page) : 1;
+  const genre = decodeURIComponent(slug);
+  const { data, limit, count } = await getPosts({ genre, page: currentPage });
 
   return (
     <Layout>
-      <PageBanner label={`Genre - ${decodeURIComponent(slug)}`} />
-      <PostList posts={POSTS} />
+      <PageBanner label={`Genre - ${genre}`} />
+      <PostList
+        posts={data}
+        page={currentPage}
+        limit={limit}
+        count={count}
+        basePath={`/genre/${slug}`}
+      />
     </Layout>
   );
 }
