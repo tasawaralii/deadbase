@@ -107,6 +107,14 @@ export function PostList({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-8 flex-wrap gap-3">
+          {page > 1 && (
+            <Link
+              href={pageHref(basePath, query, page - 1)}
+              className="bg-accent text-accent-foreground font-semibold text-sm px-6 h-9 grid place-items-center rounded-sm hover:opacity-90"
+            >
+              ‹ PREV
+            </Link>
+          )}
           <div className="flex items-center gap-1">
             {buildPageWindow(page, totalPages).map((n, i) =>
               n === "…" ? (
