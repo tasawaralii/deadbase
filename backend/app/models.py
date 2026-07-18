@@ -32,6 +32,12 @@ def get_datetime_utc() -> datetime:
     return datetime.now(UTC)
 
 
+class AuthorAccessScope(enum.StrEnum):
+    ALL = "all"
+    ONGOING = "ongoing"
+    ACCESS_LIST = "access_list"
+
+
 # Shared properties
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
@@ -39,17 +45,17 @@ class UserBase(SQLModel):
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
     username: str | None = Field(default=None, unique=True, index=True, max_length=255)
+    # None = no author/content-management access. Superusers implicitly have
+    # full author access regardless of this field - see get_current_author.
+    access_scope: AuthorAccessScope | None = Field(default=None)
 
 
-# Properties to receive via API on creation
+# Properties to receive via API on creation. This is an admin-only,
+# invite-based system (see users.py create_user) - password is optional here
+# because the superuser doesn't set it; the account gets a random unusable
+# password and the new author sets their own via the activation email link.
 class UserCreate(UserBase):
-    password: str = Field(min_length=8, max_length=128)
-
-
-class UserRegister(SQLModel):
-    email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=128)
-    full_name: str | None = Field(default=None, max_length=255)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
 
 
 # Properties to receive via API on update, all are optional
@@ -59,6 +65,7 @@ class UserUpdate(SQLModel):
     is_superuser: bool | None = None
     full_name: str | None = Field(default=None, max_length=255)
     password: str | None = Field(default=None, min_length=8, max_length=128)
+    access_scope: AuthorAccessScope | None = Field(default=None)
 
 
 class UserUpdateMe(SQLModel):
@@ -320,6 +327,16 @@ class Animes(SQLModel, table=True):
     genre: list["Genres"] = Relationship(back_populates='anime', sa_relationship_kwargs={'secondary': 'anime_genres'})
     seasons: list["Seasons"] = Relationship(back_populates='anime')
     post: Optional["Posts"] = Relationship(back_populates='anime')  # noqa: UP045
+
+
+class AuthorAnimeAccess(SQLModel, table=True):
+    """Grants an access_list-scoped author permission to manage one anime
+    (and everything under it - seasons, episodes, links, its post)."""
+
+    __tablename__ = 'author_anime_access'
+
+    user_id: uuid.UUID = Field(foreign_key='user.id', primary_key=True, ondelete='CASCADE')
+    anime_id: int = Field(foreign_key='animes.anime_id', primary_key=True, ondelete='CASCADE')
 
 
 class Links(SQLModel, table=True):

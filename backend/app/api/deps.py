@@ -41,7 +41,13 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
         )
     user = session.get(User, token_data.sub)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # This is an auth failure (a stale token no longer resolving to a
+        # real account), not a REST "resource not found" - the frontend's
+        # global error handler treats 401/403 as "log out and redirect to
+        # /login", which is exactly what should happen here.
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+        )
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
@@ -56,6 +62,18 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+def get_current_author(current_user: CurrentUser) -> User:
+    # Superusers can do everything an author can, on top of config access.
+    if not current_user.is_superuser and current_user.access_scope is None:
+        raise HTTPException(
+            status_code=403, detail="The user doesn't have enough privileges"
+        )
+    return current_user
+
+
+CurrentAuthor = Annotated[User, Depends(get_current_author)]
 
 
 VISITOR_COOKIE_NAME = "visitor_id"

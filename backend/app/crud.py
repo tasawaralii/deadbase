@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from typing import Any
 
@@ -8,8 +9,12 @@ from app.models import Item, ItemCreate, User, UserCreate, UserUpdate
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
+    # Invited users (see users.py create_user) get no password from the
+    # caller - they set their own via the activation email link, so this
+    # placeholder is never meant to be logged in with.
+    password = user_create.password or secrets.token_urlsafe(32)
     db_obj = User.model_validate(
-        user_create, update={"hashed_password": get_password_hash(user_create.password)}
+        user_create, update={"hashed_password": get_password_hash(password)}
     )
     session.add(db_obj)
     session.commit()

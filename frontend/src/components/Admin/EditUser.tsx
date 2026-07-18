@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type UserPublic, UsersService } from "@/client"
+import { type UserPublic, UsersService, type UserUpdate } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -28,13 +28,28 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
+
+const ACCESS_SCOPE_OPTIONS = [
+  { value: "none", label: "No author access" },
+  { value: "all", label: "Author - all content" },
+  { value: "ongoing", label: "Author - ongoing content only" },
+  { value: "access_list", label: "Author - assigned anime only" },
+] as const
 
 const formSchema = z
   .object({
     email: z.email({ message: "Invalid email address" }),
     full_name: z.string().optional(),
+    access_scope: z.enum(["none", "all", "ongoing", "access_list"]),
     password: z
       .string()
       .min(8, { message: "Password must be at least 8 characters" })
@@ -68,13 +83,14 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
     defaultValues: {
       email: user.email,
       full_name: user.full_name ?? undefined,
+      access_scope: user.access_scope ?? "none",
       is_superuser: user.is_superuser,
       is_active: user.is_active,
     },
   })
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) =>
+    mutationFn: (data: UserUpdate) =>
       UsersService.updateUser({ userId: user.id, requestBody: data }),
     onSuccess: () => {
       showSuccessToast("User updated successfully")
@@ -89,11 +105,14 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
 
   const onSubmit = (data: FormData) => {
     // exclude confirm_password from submission data and remove password if empty
-    const { confirm_password: _, ...submitData } = data
+    const { confirm_password: _, access_scope, ...submitData } = data
     if (!submitData.password) {
       delete submitData.password
     }
-    mutation.mutate(submitData)
+    mutation.mutate({
+      ...submitData,
+      access_scope: access_scope === "none" ? null : access_scope,
+    })
   }
 
   return (
@@ -152,13 +171,38 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
 
               <FormField
                 control={form.control}
+                name="access_scope"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Access</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ACCESS_SCOPE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Set Password</FormLabel>
+                    <FormLabel>Reset Password</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder="Leave blank to keep current password"
                         type="password"
                         {...field}
                       />

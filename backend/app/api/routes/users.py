@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Any
 
@@ -19,12 +20,17 @@ from app.models import (
     User,
     UserCreate,
     UserPublic,
-    UserRegister,
     UsersPublic,
     UserUpdate,
     UserUpdateMe,
 )
-from app.utils import generate_new_account_email, send_email
+from app.utils import (
+    generate_new_account_email,
+    generate_password_reset_token,
+    send_email,
+)
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -66,14 +72,25 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
         )
 
     user = crud.create_user(session=session, user_create=user_in)
-    if settings.emails_enabled and user_in.email:
+
+    # Invite-only account creation: the author sets their own password via
+    # this link rather than the superuser choosing one for them.
+    token = generate_password_reset_token(email=user_in.email)
+    if settings.emails_enabled:
         email_data = generate_new_account_email(
-            email_to=user_in.email, username=user_in.email, password=user_in.password
+            email_to=user_in.email, username=user_in.email, token=token
         )
         send_email(
             email_to=user_in.email,
             subject=email_data.subject,
             html_content=email_data.html_content,
+        )
+    else:
+        link = f"{settings.FRONTEND_HOST}/reset-password?token={token}"
+        logger.warning(
+            "Email sending is disabled - activation link for %s: %s",
+            user_in.email,
+            link,
         )
     return user
 
@@ -141,22 +158,6 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     session.delete(current_user)
     session.commit()
     return Message(message="User deleted successfully")
-
-
-@router.post("/signup", response_model=UserPublic)
-def register_user(session: SessionDep, user_in: UserRegister) -> Any:
-    """
-    Create new user without the need to be logged in.
-    """
-    user = crud.get_user_by_email(session=session, email=user_in.email)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this email already exists in the system",
-        )
-    user_create = UserCreate.model_validate(user_in)
-    user = crud.create_user(session=session, user_create=user_create)
-    return user
 
 
 @router.get("/{user_id}", response_model=UserPublic)

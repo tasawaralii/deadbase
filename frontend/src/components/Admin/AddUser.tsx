@@ -5,7 +5,8 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type UserCreate, UsersService } from "@/client"
+import type { UserCreate } from "@/client"
+import { UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -28,27 +29,30 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
-const formSchema = z
-  .object({
-    email: z.email({ message: "Invalid email address" }),
-    full_name: z.string().optional(),
-    password: z
-      .string()
-      .min(1, { message: "Password is required" })
-      .min(8, { message: "Password must be at least 8 characters" }),
-    confirm_password: z
-      .string()
-      .min(1, { message: "Please confirm your password" }),
-    is_superuser: z.boolean(),
-    is_active: z.boolean(),
-  })
-  .refine((data) => data.password === data.confirm_password, {
-    message: "The passwords don't match",
-    path: ["confirm_password"],
-  })
+const ACCESS_SCOPE_OPTIONS = [
+  { value: "none", label: "No author access" },
+  { value: "all", label: "Author - all content" },
+  { value: "ongoing", label: "Author - ongoing content only" },
+  { value: "access_list", label: "Author - assigned anime only" },
+] as const
+
+const formSchema = z.object({
+  email: z.email({ message: "Invalid email address" }),
+  full_name: z.string().optional(),
+  access_scope: z.enum(["none", "all", "ongoing", "access_list"]),
+  is_superuser: z.boolean(),
+  is_active: z.boolean(),
+})
 
 type FormData = z.infer<typeof formSchema>
 
@@ -64,8 +68,7 @@ const AddUser = () => {
     defaultValues: {
       email: "",
       full_name: "",
-      password: "",
-      confirm_password: "",
+      access_scope: "none",
       is_superuser: false,
       is_active: false,
     },
@@ -75,7 +78,9 @@ const AddUser = () => {
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("User created successfully")
+      showSuccessToast(
+        "User created - an activation email has been sent to set their password",
+      )
       form.reset()
       setIsOpen(false)
     },
@@ -86,7 +91,11 @@ const AddUser = () => {
   })
 
   const onSubmit = (data: FormData) => {
-    mutation.mutate(data)
+    const { access_scope, ...rest } = data
+    mutation.mutate({
+      ...rest,
+      access_scope: access_scope === "none" ? undefined : access_scope,
+    })
   }
 
   return (
@@ -144,42 +153,24 @@ const AddUser = () => {
 
               <FormField
                 control={form.control}
-                name="password"
+                name="access_scope"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Set Password <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Password"
-                        type="password"
-                        {...field}
-                        required
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirm_password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Confirm Password{" "}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Password"
-                        type="password"
-                        {...field}
-                        required
-                      />
-                    </FormControl>
+                    <FormLabel>Access</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ACCESS_SCOPE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

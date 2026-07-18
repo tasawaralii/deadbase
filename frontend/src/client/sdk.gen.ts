@@ -3,23 +3,24 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { AdminListCommentsData, AdminListCommentsResponse, AdminUpdateCommentStatusData, AdminUpdateCommentStatusResponse, AdminDeleteCommentData, AdminDeleteCommentResponse, AdminListStreamCommentsData, AdminListStreamCommentsResponse, AdminUpdateStreamCommentStatusData, AdminUpdateStreamCommentStatusResponse, AdminDeleteStreamCommentData, AdminDeleteStreamCommentResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, PrivateCreateUserData, PrivateCreateUserResponse, PublicListAnimeData, PublicListAnimeResponse, PublicReadAnimeData, PublicReadAnimeResponse, PublicReadSeasonData, PublicReadSeasonResponse, PublicReadEpisodeData, PublicReadEpisodeResponse, PublicReadPackData, PublicReadPackResponse, PublicListPostsData, PublicListPostsResponse, PublicReadPostData, PublicReadPostResponse, PublicListCommentsData, PublicListCommentsResponse, PublicCreateCommentData, PublicCreateCommentResponse, PublicUnlockCallbackData, PublicUnlockCallbackResponse, PublicUnlockStatusData, PublicUnlockStatusResponse, PublicStartUnlockData, PublicStartUnlockResponse, PublicReportShortenerData, PublicReportShortenerResponse, PublicTrackViewData, PublicTrackViewResponse, PublicTrendingAnimeData, PublicTrendingAnimeResponse, PublicTrendingSeasonsData, PublicTrendingSeasonsResponse, PublicTrendingEpisodesData, PublicTrendingEpisodesResponse, PublicListContentCommentsData, PublicListContentCommentsResponse, PublicCreateContentCommentData, PublicCreateContentCommentResponse, PublicListTagsResponse, PublicListGenresResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
-export class ItemsService {
+export class AdminService {
     /**
-     * Read Items
-     * Retrieve items.
+     * List Comments
      * @param data The data for the request.
+     * @param data.status
      * @param data.skip
      * @param data.limit
-     * @returns ItemsPublic Successful Response
+     * @returns AdminCommentListPublic Successful Response
      * @throws ApiError
      */
-    public static readItems(data: ItemsReadItemsData = {}): CancelablePromise<ItemsReadItemsResponse> {
+    public static listComments(data: AdminListCommentsData = {}): CancelablePromise<AdminListCommentsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/items/',
+            url: '/api/v1/admin/comments/',
             query: {
+                status: data.status,
                 skip: data.skip,
                 limit: data.limit
             },
@@ -30,61 +31,19 @@ export class ItemsService {
     }
     
     /**
-     * Create Item
-     * Create new item.
+     * Update Comment Status
      * @param data The data for the request.
+     * @param data.commentId
      * @param data.requestBody
-     * @returns ItemPublic Successful Response
+     * @returns AdminCommentPublic Successful Response
      * @throws ApiError
      */
-    public static createItem(data: ItemsCreateItemData): CancelablePromise<ItemsCreateItemResponse> {
+    public static updateCommentStatus(data: AdminUpdateCommentStatusData): CancelablePromise<AdminUpdateCommentStatusResponse> {
         return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/items/',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Read Item
-     * Get item by ID.
-     * @param data The data for the request.
-     * @param data.id
-     * @returns ItemPublic Successful Response
-     * @throws ApiError
-     */
-    public static readItem(data: ItemsReadItemData): CancelablePromise<ItemsReadItemResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/items/{id}',
+            method: 'PATCH',
+            url: '/api/v1/admin/comments/{comment_id}',
             path: {
-                id: data.id
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Update Item
-     * Update an item.
-     * @param data The data for the request.
-     * @param data.id
-     * @param data.requestBody
-     * @returns ItemPublic Successful Response
-     * @throws ApiError
-     */
-    public static updateItem(data: ItemsUpdateItemData): CancelablePromise<ItemsUpdateItemResponse> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/v1/items/{id}',
-            path: {
-                id: data.id
+                comment_id: data.commentId
             },
             body: data.requestBody,
             mediaType: 'application/json',
@@ -95,19 +54,85 @@ export class ItemsService {
     }
     
     /**
-     * Delete Item
-     * Delete an item.
+     * Delete Comment
      * @param data The data for the request.
-     * @param data.id
-     * @returns Message Successful Response
+     * @param data.commentId
+     * @returns void Successful Response
      * @throws ApiError
      */
-    public static deleteItem(data: ItemsDeleteItemData): CancelablePromise<ItemsDeleteItemResponse> {
+    public static deleteComment(data: AdminDeleteCommentData): CancelablePromise<AdminDeleteCommentResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/items/{id}',
+            url: '/api/v1/admin/comments/{comment_id}',
             path: {
-                id: data.id
+                comment_id: data.commentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Stream Comments
+     * @param data The data for the request.
+     * @param data.status
+     * @param data.skip
+     * @param data.limit
+     * @returns AdminStreamCommentListPublic Successful Response
+     * @throws ApiError
+     */
+    public static listStreamComments(data: AdminListStreamCommentsData = {}): CancelablePromise<AdminListStreamCommentsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/admin/stream-comments/',
+            query: {
+                status: data.status,
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Stream Comment Status
+     * @param data The data for the request.
+     * @param data.commentId
+     * @param data.requestBody
+     * @returns AdminStreamCommentPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateStreamCommentStatus(data: AdminUpdateStreamCommentStatusData): CancelablePromise<AdminUpdateStreamCommentStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/admin/stream-comments/{comment_id}',
+            path: {
+                comment_id: data.commentId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Stream Comment
+     * @param data The data for the request.
+     * @param data.commentId
+     * @returns void Successful Response
+     * @throws ApiError
+     */
+    public static deleteStreamComment(data: AdminDeleteStreamCommentData): CancelablePromise<AdminDeleteStreamCommentResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/admin/stream-comments/{comment_id}',
+            path: {
+                comment_id: data.commentId
             },
             errors: {
                 422: 'Validation Error'
@@ -190,27 +215,6 @@ export class LoginService {
             }
         });
     }
-    
-    /**
-     * Recover Password Html Content
-     * HTML Content for Password Recovery
-     * @param data The data for the request.
-     * @param data.email
-     * @returns string Successful Response
-     * @throws ApiError
-     */
-    public static recoverPasswordHtmlContent(data: LoginRecoverPasswordHtmlContentData): CancelablePromise<LoginRecoverPasswordHtmlContentResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/password-recovery-html-content/{email}',
-            path: {
-                email: data.email
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
 }
 
 export class PrivateService {
@@ -231,6 +235,472 @@ export class PrivateService {
             errors: {
                 422: 'Validation Error'
             }
+        });
+    }
+}
+
+export class PublicService {
+    /**
+     * List Anime
+     * @param data The data for the request.
+     * @param data.q
+     * @param data.genre
+     * @param data.type
+     * @param data.sort
+     * @param data.page
+     * @param data.limit
+     * @returns AnimeListPublic Successful Response
+     * @throws ApiError
+     */
+    public static listAnime(data: PublicListAnimeData = {}): CancelablePromise<PublicListAnimeResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/anime',
+            query: {
+                q: data.q,
+                genre: data.genre,
+                type: data.type,
+                sort: data.sort,
+                page: data.page,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Anime
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns AnimeDetail Successful Response
+     * @throws ApiError
+     */
+    public static readAnime(data: PublicReadAnimeData): CancelablePromise<PublicReadAnimeResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/anime/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Season
+     * @param data The data for the request.
+     * @param data.slug
+     * @param data.seasonNumber
+     * @returns SeasonDetail Successful Response
+     * @throws ApiError
+     */
+    public static readSeason(data: PublicReadSeasonData): CancelablePromise<PublicReadSeasonResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/anime/{slug}/season/{season_number}',
+            path: {
+                slug: data.slug,
+                season_number: data.seasonNumber
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Episode
+     * @param data The data for the request.
+     * @param data.slug
+     * @param data.seasonNumber
+     * @param data.episodeNumber
+     * @returns EpisodeDetail Successful Response
+     * @throws ApiError
+     */
+    public static readEpisode(data: PublicReadEpisodeData): CancelablePromise<PublicReadEpisodeResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/anime/{slug}/season/{season_number}/episode/{episode_number}',
+            path: {
+                slug: data.slug,
+                season_number: data.seasonNumber,
+                episode_number: data.episodeNumber
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Pack
+     * @param data The data for the request.
+     * @param data.slug
+     * @param data.seasonNumber
+     * @param data.episodeRange
+     * @returns PackDetail Successful Response
+     * @throws ApiError
+     */
+    public static readPack(data: PublicReadPackData): CancelablePromise<PublicReadPackResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/anime/{slug}/season/{season_number}/pack/{episode_range}',
+            path: {
+                slug: data.slug,
+                season_number: data.seasonNumber,
+                episode_range: data.episodeRange
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Posts
+     * @param data The data for the request.
+     * @param data.q
+     * @param data.status
+     * @param data.type
+     * @param data.genre
+     * @param data.tag
+     * @param data.author
+     * @param data.sort
+     * @param data.page
+     * @param data.limit
+     * @returns PostListPublic Successful Response
+     * @throws ApiError
+     */
+    public static listPosts(data: PublicListPostsData = {}): CancelablePromise<PublicListPostsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/posts',
+            query: {
+                q: data.q,
+                status: data.status,
+                type: data.type,
+                genre: data.genre,
+                tag: data.tag,
+                author: data.author,
+                sort: data.sort,
+                page: data.page,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Post
+     * @param data The data for the request.
+     * @param data.slug
+     * @returns PostDetail Successful Response
+     * @throws ApiError
+     */
+    public static readPost(data: PublicReadPostData): CancelablePromise<PublicReadPostResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/posts/{slug}',
+            path: {
+                slug: data.slug
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Comments
+     * @param data The data for the request.
+     * @param data.slug
+     * @param data.page
+     * @param data.limit
+     * @returns CommentListPublic Successful Response
+     * @throws ApiError
+     */
+    public static listComments(data: PublicListCommentsData): CancelablePromise<PublicListCommentsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/posts/{slug}/comments',
+            path: {
+                slug: data.slug
+            },
+            query: {
+                page: data.page,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Comment
+     * @param data The data for the request.
+     * @param data.slug
+     * @param data.requestBody
+     * @returns CommentPublic Successful Response
+     * @throws ApiError
+     */
+    public static createComment(data: PublicCreateCommentData): CancelablePromise<PublicCreateCommentResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/public/posts/{slug}/comments',
+            path: {
+                slug: data.slug
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Unlock Callback
+     * @param data The data for the request.
+     * @param data.token
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static unlockCallback(data: PublicUnlockCallbackData): CancelablePromise<PublicUnlockCallbackResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/unlock/callback',
+            query: {
+                token: data.token
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Unlock Status
+     * @param data The data for the request.
+     * @param data.linkServerId
+     * @returns UnlockStatus Successful Response
+     * @throws ApiError
+     */
+    public static unlockStatus(data: PublicUnlockStatusData): CancelablePromise<PublicUnlockStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/unlock/{link_server_id}',
+            path: {
+                link_server_id: data.linkServerId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Start Unlock
+     * @param data The data for the request.
+     * @param data.linkServerId
+     * @param data.requestBody
+     * @returns StartUnlockResponse Successful Response
+     * @throws ApiError
+     */
+    public static startUnlock(data: PublicStartUnlockData): CancelablePromise<PublicStartUnlockResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/public/unlock/{link_server_id}/start',
+            path: {
+                link_server_id: data.linkServerId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Report Shortener
+     * @param data The data for the request.
+     * @param data.linkServerId
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static reportShortener(data: PublicReportShortenerData): CancelablePromise<PublicReportShortenerResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/public/unlock/{link_server_id}/report',
+            path: {
+                link_server_id: data.linkServerId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Track View
+     * @param data The data for the request.
+     * @param data.contentId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static trackView(data: PublicTrackViewData): CancelablePromise<PublicTrackViewResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/public/track/view/{content_id}',
+            path: {
+                content_id: data.contentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Trending Anime
+     * @param data The data for the request.
+     * @param data.window
+     * @param data.limit
+     * @returns TrendingAnimeList Successful Response
+     * @throws ApiError
+     */
+    public static trendingAnime(data: PublicTrendingAnimeData = {}): CancelablePromise<PublicTrendingAnimeResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/trending/anime',
+            query: {
+                window: data.window,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Trending Seasons
+     * @param data The data for the request.
+     * @param data.window
+     * @param data.limit
+     * @returns TrendingSeasonList Successful Response
+     * @throws ApiError
+     */
+    public static trendingSeasons(data: PublicTrendingSeasonsData = {}): CancelablePromise<PublicTrendingSeasonsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/trending/seasons',
+            query: {
+                window: data.window,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Trending Episodes
+     * @param data The data for the request.
+     * @param data.window
+     * @param data.limit
+     * @returns TrendingEpisodeList Successful Response
+     * @throws ApiError
+     */
+    public static trendingEpisodes(data: PublicTrendingEpisodesData = {}): CancelablePromise<PublicTrendingEpisodesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/trending/episodes',
+            query: {
+                window: data.window,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Content Comments
+     * @param data The data for the request.
+     * @param data.contentId
+     * @returns CommentPublic Successful Response
+     * @throws ApiError
+     */
+    public static listContentComments(data: PublicListContentCommentsData): CancelablePromise<PublicListContentCommentsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/content/{content_id}/comments',
+            path: {
+                content_id: data.contentId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Content Comment
+     * @param data The data for the request.
+     * @param data.contentId
+     * @param data.requestBody
+     * @returns CommentPublic Successful Response
+     * @throws ApiError
+     */
+    public static createContentComment(data: PublicCreateContentCommentData): CancelablePromise<PublicCreateContentCommentResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/public/content/{content_id}/comments',
+            path: {
+                content_id: data.contentId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Tags
+     * @returns TagPublic Successful Response
+     * @throws ApiError
+     */
+    public static listTags(): CancelablePromise<PublicListTagsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/tags'
+        });
+    }
+    
+    /**
+     * List Genres
+     * @returns GenrePublic Successful Response
+     * @throws ApiError
+     */
+    public static listGenres(): CancelablePromise<PublicListGenresResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/public/genres'
         });
     }
 }
@@ -337,26 +807,6 @@ export class UsersService {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/v1/users/me/password',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Register User
-     * Create new user without the need to be logged in.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns UserPublic Successful Response
-     * @throws ApiError
-     */
-    public static registerUser(data: UsersRegisterUserData): CancelablePromise<UsersRegisterUserResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/users/signup',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
