@@ -4,7 +4,7 @@ from sqlmodel import SQLModel
 
 from app.models import PostStatus
 from app.schemas.anime import AnimeDetail
-from app.schemas.common import CommentCreate, CommentPublic
+from app.schemas.common import AuthorPublic, CommentCreate, CommentPublic, ImageUrls
 from app.schemas.season import SeasonDetail
 
 __all__ = ["CommentCreate", "CommentPublic", "PostDetail", "PostListPublic", "PostSummary"]
@@ -13,13 +13,14 @@ __all__ = ["CommentCreate", "CommentPublic", "PostDetail", "PostListPublic", "Po
 class PostSummary(SQLModel):
     slug: str
     title: str
-    backdrop_img: str | None
+    backdrop_img: ImageUrls
     status: PostStatus
     sticky: bool
     views: int
     last_updated: dt.datetime
     tags: list[str]
     comment_count: int
+    author: AuthorPublic | None
     anime_slug: str
     anime_name: str
     season_number: int | None
@@ -36,15 +37,15 @@ class PostListPublic(SQLModel):
 class PostDetail(SQLModel):
     slug: str
     title: str
-    backdrop_img: str | None
+    backdrop_img: ImageUrls
     status: PostStatus
     sticky: bool
     views: int
     last_updated: dt.datetime
     tags: list[str]
+    author: AuthorPublic | None
     anime_slug: str
     anime_name: str
     genres: list[str]
     anime: AnimeDetail | None
     season: SeasonDetail | None
-    comments: list[CommentPublic]

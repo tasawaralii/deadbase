@@ -136,6 +136,7 @@ def trending_episodes(
                 episode=EpisodeSummary(
                     episode_number=episode.episode_number,
                     episode_name=episode.episode_name,
+                    note=episode.note,
                     img=resolve_image_urls("tmdb", episode.img, "backdrop"),
                     air_date=episode.air_date,
                     episode_rating=episode.episode_rating,

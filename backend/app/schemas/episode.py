@@ -9,6 +9,7 @@ from app.schemas.common import DownloadLink, ImageUrls, LinkPublic
 class EpisodeSummary(SQLModel):
     episode_number: int
     episode_name: str | None
+    note: str | None
     img: ImageUrls
     air_date: dt.date | None
     episode_rating: decimal.Decimal | None

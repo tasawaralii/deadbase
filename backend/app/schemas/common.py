@@ -9,6 +9,7 @@ class CommentPublic(SQLModel):
     parent_id: int | None
     author_name: str
     author_url: str | None
+    avatar_url: str
     body: str
     created_at: dt.datetime
 
@@ -44,3 +45,9 @@ class LinkPublic(SQLModel):
 class SeasonDub(SQLModel):
     platform: str
     language: str
+
+
+class AuthorPublic(SQLModel):
+    display_name: str
+    slug: str
+    avatar_url: str

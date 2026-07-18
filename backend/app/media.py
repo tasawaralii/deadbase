@@ -1,12 +1,14 @@
 import decimal
+import hashlib
+import re
 from typing import Literal
 
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.core.config import settings
-from app.models import Links, LinkServers
-from app.schemas.common import DownloadLink, ImageUrls, LinkPublic
+from app.models import Links, LinkServers, User
+from app.schemas.common import AuthorPublic, DownloadLink, ImageUrls, LinkPublic
 
 TMDB_IMAGE_DOMAIN = "https://image.tmdb.org/t/p/"
 
@@ -58,6 +60,28 @@ def resolve_server_link(server_sid: str, domain: str, slug: str) -> str | None:
     if not pattern:
         return None
     return pattern.format(domain=domain, slug=slug)
+
+
+def gravatar_url(email: str, size: int = 64) -> str:
+    normalized = email.strip().lower().encode("utf-8")
+    digest = hashlib.md5(normalized, usedforsecurity=False).hexdigest()
+    return f"https://www.gravatar.com/avatar/{digest}?s={size}"
+
+
+def _slugify(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
+    return slug or "user"
+
+
+def build_author_public(user: User | None) -> AuthorPublic | None:
+    if user is None:
+        return None
+    display_name = user.full_name or user.email.split("@")[0]
+    return AuthorPublic(
+        display_name=display_name,
+        slug=user.username or _slugify(display_name),
+        avatar_url=gravatar_url(user.email),
+    )
 
 
 def format_size(size: decimal.Decimal | None) -> str:

@@ -10,6 +10,7 @@ from app.api.deps import SessionDep
 from app.api.routes.public.anime import build_anime_detail
 from app.api.routes.public.season import build_season_detail
 from app.comments import initial_status, is_blocked_email, is_rejected_body
+from app.media import build_author_public, gravatar_url, resolve_image_urls
 from app.models import (
     Animes,
     Comments,
@@ -20,6 +21,7 @@ from app.models import (
     PostTags,
     Seasons,
     Tags,
+    User,
 )
 from app.schemas.post import (
     CommentCreate,
@@ -38,6 +40,7 @@ def _comment_public(comment: Comments) -> CommentPublic:
         parent_id=comment.parent_id,
         author_name=comment.author_name,
         author_url=comment.author_url,
+        avatar_url=gravatar_url(comment.author_email),
         body=comment.body,
         created_at=comment.created_at,
     )
@@ -101,11 +104,12 @@ def list_posts(
 
     rows = session.exec(
         select(  # type: ignore[call-overload]
-            Posts, Animes, Seasons, ParentAnime, comment_count_subq
+            Posts, Animes, Seasons, ParentAnime, User, comment_count_subq
         )
         .outerjoin(Animes, Posts.anime_id == Animes.anime_id)
         .outerjoin(Seasons, Posts.season_id == Seasons.season_id)
         .outerjoin(ParentAnime, Seasons.anime_id == ParentAnime.anime_id)
+        .outerjoin(User, Posts.author_id == User.id)
         .where(*conditions)
         .order_by(col(Posts.last_updated).desc())
         .offset((page - 1) * limit)
@@ -123,20 +127,21 @@ def list_posts(
         tags_by_post.setdefault(post_id, []).append(tag_name)
 
     data = []
-    for post, movie_anime, season, parent_anime, comment_count in rows:
+    for post, movie_anime, season, parent_anime, author, comment_count in rows:
         anime = movie_anime or parent_anime
         assert anime is not None
         data.append(
             PostSummary(
                 slug=post.slug,
                 title=post.title,
-                backdrop_img=post.backdrop_img,
+                backdrop_img=resolve_image_urls("url", post.backdrop_img, "backdrop"),
                 status=post.status,
                 sticky=post.sticky,
                 views=post.views,
                 last_updated=post.last_updated,
                 tags=tags_by_post.get(post.id, []) if post.id is not None else [],
                 comment_count=comment_count,
+                author=build_author_public(author),
                 anime_slug=anime.slug,
                 anime_name=anime.anime_name,
                 season_number=season.season_number if season else None,
@@ -149,7 +154,9 @@ def list_posts(
 
 @router.get("/posts/{slug}")
 def read_post(session: SessionDep, slug: str) -> PostDetail:
-    post = session.exec(select(Posts).where(Posts.slug == slug)).first()
+    post = session.exec(
+        select(Posts).where(Posts.slug == slug).options(selectinload(Posts.author))  # type: ignore[arg-type]
+    ).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
@@ -191,27 +198,21 @@ def read_post(session: SessionDep, slug: str) -> PostDetail:
         .where(PostTags.post_id == post.id)
     ).all()
 
-    comments = session.exec(
-        select(Comments)
-        .where(Comments.post_id == post.id, Comments.status == CommentStatus.APPROVED)
-        .order_by(col(Comments.created_at).asc())
-    ).all()
-
     return PostDetail(
         slug=post.slug,
         title=post.title,
-        backdrop_img=post.backdrop_img,
+        backdrop_img=resolve_image_urls("url", post.backdrop_img, "backdrop"),
         status=post.status,
         sticky=post.sticky,
         views=post.views,
         last_updated=post.last_updated,
         tags=list(tags),
+        author=build_author_public(post.author),
         anime_slug=anime_slug,
         anime_name=anime_name,
         genres=[g.genre_name for g in anime.genre],
         anime=anime_detail,
         season=season_detail,
-        comments=[_comment_public(c) for c in comments],
     )
 
 
