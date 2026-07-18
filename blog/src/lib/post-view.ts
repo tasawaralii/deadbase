@@ -24,6 +24,9 @@ export type PostView = {
   releaseDate: string | null;
   releaseYear: string | null;
   genres: string[];
+  rating: string | null;
+  ageRating: string | null;
+  durationMinutes: number | null;
   languageMode: LanguageMode | null;
   languages: string[];
   otts: string[];
@@ -83,6 +86,13 @@ export function buildPostView(post: PostDetail): PostView {
 
   const releaseDate = season?.release_date ?? anime?.release_date ?? null;
 
+  // TMDB-sourced ratings/duration are often "0" or "0.00" when not yet
+  // populated - treat those as absent rather than rendering "0.00 / 10".
+  const ratingValue = season?.rating ?? anime?.rating ?? null;
+  const rating = ratingValue && parseFloat(ratingValue) > 0 ? ratingValue : null;
+  const ageRating = anime?.age_rating || null;
+  const durationMinutes = anime?.duration && anime.duration > 0 ? anime.duration : null;
+
   return {
     isMovie,
     overview: season?.overview ?? anime?.overview ?? "",
@@ -91,6 +101,9 @@ export function buildPostView(post: PostDetail): PostView {
     releaseDate,
     releaseYear: releaseDate ? releaseDate.slice(0, 4) : null,
     genres: post.genres,
+    rating,
+    ageRating,
+    durationMinutes,
     languageMode,
     languages,
     otts,

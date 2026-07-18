@@ -89,6 +89,21 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               Year: <strong>{view.releaseYear}</strong>
             </li>
           )}
+          {view.rating && (
+            <li>
+              Rating: <strong>{view.rating} / 10</strong>
+            </li>
+          )}
+          {view.isMovie && view.ageRating && (
+            <li>
+              Age Rating: <strong>{view.ageRating}</strong>
+            </li>
+          )}
+          {view.isMovie && view.durationMinutes && (
+            <li>
+              Duration: <strong>{view.durationMinutes} min</strong>
+            </li>
+          )}
           {view.genres.length > 0 && (
             <li>
               Genre: <strong>{view.genres.join(", ")}</strong>
@@ -139,6 +154,16 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <h2 className="bg-muted inline-block px-3 py-1.5 font-display font-semibold text-sm border-b-2 border-primary mb-4">
             Download {post.anime_name}
           </h2>
+
+          {view.posterUrl && (
+            <Image
+              src={view.posterUrl}
+              alt={post.anime_name}
+              width={200}
+              height={300}
+              className="w-50 aspect-2/3 object-cover rounded-md mx-auto mb-6"
+            />
+          )}
 
           {view.isMovie ? (
             <a
