@@ -275,7 +275,7 @@ class ServerInfo(SQLModel, table=True):
     color: str = Field(sa_column=Column('color', String(10), nullable=False))
     is_enabled: bool = Field(sa_column=Column('is_enabled', Boolean, nullable=False, server_default=text('true')))
 
-    link_servers: list["LinkServers"] = Relationship(back_populates='server')
+    link_servers: list["LinkServers"] = Relationship(back_populates='server', cascade_delete=True)
 
 
 class Source(SQLModel, table=True):
@@ -328,8 +328,8 @@ class Animes(SQLModel, table=True):
     age: AgeRatings = Relationship(back_populates='animes')
     content: Content = Relationship(back_populates='animes')
     genre: list["Genres"] = Relationship(back_populates='anime', sa_relationship_kwargs={'secondary': 'anime_genres'})
-    seasons: list["Seasons"] = Relationship(back_populates='anime')
-    post: Optional["Posts"] = Relationship(back_populates='anime')  # noqa: UP045
+    seasons: list["Seasons"] = Relationship(back_populates='anime', cascade_delete=True)
+    post: Optional["Posts"] = Relationship(back_populates='anime', cascade_delete=True)  # noqa: UP045
 
 
 class AuthorAnimeAccess(SQLModel, table=True):
@@ -370,7 +370,7 @@ class Links(SQLModel, table=True):
     quality_id: int | None = Field(default=None, sa_column=Column('quality_id', BigInteger))
 
     quality: Qualities | None = Relationship(back_populates='links')
-    link_servers: list["LinkServers"] = Relationship(back_populates='link')
+    link_servers: list["LinkServers"] = Relationship(back_populates='link', cascade_delete=True)
     content: Content = Relationship(back_populates="links")
 
 
@@ -405,8 +405,12 @@ class LinkServers(SQLModel, table=True):
 
     link: Links = Relationship(back_populates='link_servers')
     server: ServerInfo = Relationship(back_populates='link_servers')
-    shortener_attempts: list["ShortenerAttempts"] = Relationship(back_populates='link_server')
-    download_events: list["DownloadEvents"] = Relationship(back_populates='link_server')
+    shortener_attempts: list["ShortenerAttempts"] = Relationship(
+        back_populates='link_server', cascade_delete=True
+    )
+    download_events: list["DownloadEvents"] = Relationship(
+        back_populates='link_server', cascade_delete=True
+    )
 
 
 class Seasons(SQLModel, table=True):
@@ -429,10 +433,10 @@ class Seasons(SQLModel, table=True):
     poster_img: str | None = Field(default=None, sa_column=Column('poster_img', String(255), server_default=text('NULL::character varying')))
 
     anime: Animes = Relationship(back_populates='seasons')
-    episodes: list["Episodes"] = Relationship(back_populates='season')
-    packs: list["Packs"] = Relationship(back_populates='season')
-    post: Optional["Posts"] = Relationship(back_populates='season')  # noqa: UP045
-    dubs: list["SeasonDubs"] = Relationship(back_populates='season')
+    episodes: list["Episodes"] = Relationship(back_populates='season', cascade_delete=True)
+    packs: list["Packs"] = Relationship(back_populates='season', cascade_delete=True)
+    post: Optional["Posts"] = Relationship(back_populates='season', cascade_delete=True)  # noqa: UP045
+    dubs: list["SeasonDubs"] = Relationship(back_populates='season', cascade_delete=True)
 
 
 class Episodes(SQLModel, table=True):
@@ -638,7 +642,9 @@ class LinkShorteners(SQLModel, table=True):
     is_enabled: bool = Field(default=True)
     sort_order: int = Field(default=0)
 
-    attempts: list["ShortenerAttempts"] = Relationship(back_populates='shortener')
+    attempts: list["ShortenerAttempts"] = Relationship(
+        back_populates='shortener', cascade_delete=True
+    )
 
 
 class UnlockConfig(SQLModel, table=True):

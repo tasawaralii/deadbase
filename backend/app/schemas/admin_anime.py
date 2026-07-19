@@ -29,6 +29,11 @@ class AnimeAdminPublic(SQLModel):
     slug: str
     anime_name: str
     type: str
+    # For type="movie" this is what POST /admin/content/{content_id}/links
+    # expects. TV shows have one too (every anime gets a Content row) but
+    # downloads for a TV show live on its episodes/packs instead - this
+    # isn't the one authors attach links to for type="tv".
+    content_id: int
     poster: ImageUrls
     backdrop: ImageUrls
     overview: str

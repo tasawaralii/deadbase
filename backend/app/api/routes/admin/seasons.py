@@ -25,6 +25,11 @@ def create_season(
     if anime is None:
         raise HTTPException(status_code=404, detail="Anime not found")
 
+    if anime.type != "tv":
+        raise HTTPException(
+            status_code=400, detail="Only TV-type anime can have seasons added"
+        )
+
     require_anime_write_access(session, author, anime_id)
 
     existing = session.exec(

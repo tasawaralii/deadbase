@@ -5,6 +5,8 @@ from app.api.routes.admin import (
     comments,
     episodes,
     images,
+    links,
+    packs,
     seasons,
     stream_comments,
     tmdb,
@@ -18,3 +20,8 @@ router.include_router(tmdb.router)
 router.include_router(animes.router)
 router.include_router(seasons.router)
 router.include_router(episodes.router)
+router.include_router(packs.router)
+router.include_router(links.router)
+router.include_router(links.single_link_router)
+router.include_router(links.season_links_router)
+router.include_router(links.gdrive_router)

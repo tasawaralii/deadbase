@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import select
+from sqlmodel import col, select
 
 from app.api.deps import CurrentAuthor, SessionDep, get_current_author
 from app.media import resolve_image_urls
@@ -16,6 +16,41 @@ router = APIRouter(
     tags=["admin"],
     dependencies=[Depends(get_current_author)],
 )
+
+
+def _to_public(episode: Episodes) -> EpisodeAdminPublic:
+    return EpisodeAdminPublic(
+        episode_id=episode.episode_id,
+        season_id=episode.season_id,
+        content_id=episode.content_id,
+        episode_number=episode.episode_number,
+        episode_name=episode.episode_name,
+        overview=episode.overview,
+        img=resolve_image_urls("tmdb", episode.img, "backdrop"),
+        air_date=episode.air_date,
+        episode_runtime=episode.episode_runtime,
+        episode_rating=episode.episode_rating,
+        episode_tmdb_id=episode.episode_tmdb_id,
+        note=episode.note,
+    )
+
+
+@router.get("/")
+def list_episodes(
+    session: SessionDep, author: CurrentAuthor, season_id: int
+) -> EpisodeBatchPublic:
+    season = session.get(Seasons, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail="Season not found")
+
+    require_anime_write_access(session, author, season.anime_id)
+
+    episodes = session.exec(
+        select(Episodes)
+        .where(Episodes.season_id == season_id)
+        .order_by(col(Episodes.episode_number).asc())
+    ).all()
+    return EpisodeBatchPublic(data=[_to_public(e) for e in episodes])
 
 
 @router.post("/")
@@ -86,21 +121,4 @@ def create_episodes(
     for episode in created:
         session.refresh(episode)
 
-    return EpisodeBatchPublic(
-        data=[
-            EpisodeAdminPublic(
-                episode_id=e.episode_id,
-                season_id=e.season_id,
-                episode_number=e.episode_number,
-                episode_name=e.episode_name,
-                overview=e.overview,
-                img=resolve_image_urls("tmdb", e.img, "backdrop"),
-                air_date=e.air_date,
-                episode_runtime=e.episode_runtime,
-                episode_rating=e.episode_rating,
-                episode_tmdb_id=e.episode_tmdb_id,
-                note=e.note,
-            )
-            for e in created
-        ]
-    )
+    return EpisodeBatchPublic(data=[_to_public(e) for e in created])

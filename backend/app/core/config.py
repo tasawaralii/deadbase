@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     S3_REGION: str = "us-east-1"
 
     TMDB_API_KEY: str = ""
+    GOOGLE_API_KEY: str = ""
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)

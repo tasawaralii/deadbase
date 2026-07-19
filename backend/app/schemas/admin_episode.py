@@ -31,6 +31,8 @@ class EpisodeBatchCreate(SQLModel):
 class EpisodeAdminPublic(SQLModel):
     episode_id: int
     season_id: int
+    # What POST /admin/content/{content_id}/links expects.
+    content_id: int
     episode_number: int
     episode_name: str | None
     overview: str | None
