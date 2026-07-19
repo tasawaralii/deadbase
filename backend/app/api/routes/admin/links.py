@@ -2,7 +2,7 @@ import decimal
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import select
+from sqlmodel import col, select
 
 from app.api.deps import CurrentAuthor, SessionDep, get_current_author
 from app.content import resolve_anime_id_for_content
@@ -23,6 +23,7 @@ from app.schemas.admin_link import (
     LinkBatchCreate,
     LinkBatchResult,
     LinkBatchResultItem,
+    LinkBulkDeleteResult,
 )
 
 router = APIRouter(
@@ -160,6 +161,19 @@ def create_links(
     return LinkBatchResult(results=results)
 
 
+@router.delete("/")
+def delete_all_links(
+    session: SessionDep, author: CurrentAuthor, content_id: int
+) -> LinkBulkDeleteResult:
+    _get_content_with_access(session, author, content_id)
+    links = session.exec(select(Links).where(Links.content_id == content_id)).all()
+    count = len(links)
+    for link in links:
+        session.delete(link)
+    session.commit()
+    return LinkBulkDeleteResult(deleted_count=count)
+
+
 @season_links_router.post("/batch")
 def create_season_links_batch(
     session: SessionDep, author: CurrentAuthor, season_id: int, body: LinkBatchCreate
@@ -221,6 +235,31 @@ def create_season_links_batch(
             )
 
     return LinkBatchResult(results=results)
+
+
+@season_links_router.delete("/")
+def delete_all_season_episode_links(
+    session: SessionDep, author: CurrentAuthor, season_id: int
+) -> LinkBulkDeleteResult:
+    season = session.get(Seasons, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail="Season not found")
+    require_anime_write_access(session, author, season.anime_id)
+
+    episode_content_ids = session.exec(
+        select(Episodes.content_id).where(Episodes.season_id == season_id)
+    ).all()
+    if not episode_content_ids:
+        return LinkBulkDeleteResult(deleted_count=0)
+
+    links = session.exec(
+        select(Links).where(col(Links.content_id).in_(episode_content_ids))
+    ).all()
+    count = len(links)
+    for link in links:
+        session.delete(link)
+    session.commit()
+    return LinkBulkDeleteResult(deleted_count=count)
 
 
 @gdrive_router.get("/folder")

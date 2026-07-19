@@ -51,3 +51,7 @@ class GdriveFolderFile(SQLModel):
 
 class GdriveFolderListing(SQLModel):
     files: list[GdriveFolderFile]
+
+
+class LinkBulkDeleteResult(SQLModel):
+    deleted_count: int
