@@ -4,12 +4,8 @@ from typing import Literal
 
 from sqlmodel import SQLModel
 
-from app.schemas.common import ImageUrls
-
-# New content only ever gets created with a tmdb-sourced or freshly-uploaded
-# bucket image - "url" and legacy "local" are read-only holdovers from the
-# old PHP migration, never offered for new rows.
-NewImageSource = Literal["tmdb", "bucket"]
+from app.schemas.admin_season import SeasonAdminSummary
+from app.schemas.common import ImageUrls, NewImageSource
 
 
 class AnimeCreate(SQLModel):
@@ -46,6 +42,10 @@ class AnimeAdminPublic(SQLModel):
     # request. TV shows get a Post per season instead, created when a season
     # is added, not here.
     post_slug: str | None
+
+
+class AnimeAdminDetail(AnimeAdminPublic):
+    seasons: list[SeasonAdminSummary]
 
 
 class AnimeAdminSummary(SQLModel):

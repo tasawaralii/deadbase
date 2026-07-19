@@ -1,7 +1,13 @@
 import datetime as dt
+from typing import Literal
 
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
+
+# New content only ever gets created with a tmdb-sourced or freshly-uploaded
+# bucket image - "url" and legacy "local" are read-only holdovers from the
+# old PHP migration, never offered for new rows.
+NewImageSource = Literal["tmdb", "bucket"]
 
 
 class CommentPublic(SQLModel):

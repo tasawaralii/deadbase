@@ -3,8 +3,7 @@ import decimal
 
 from sqlmodel import SQLModel
 
-from app.schemas.admin_anime import NewImageSource
-from app.schemas.common import ImageUrls
+from app.schemas.common import ImageUrls, NewImageSource
 
 
 class SeasonCreate(SQLModel):
@@ -31,3 +30,15 @@ class SeasonAdminPublic(SQLModel):
     season_tmdb_id: str | None
     season_rel_date: dt.date | None
     post_slug: str
+
+
+class SeasonAdminSummary(SQLModel):
+    season_id: int
+    season_number: int
+    season_name: str
+    poster: ImageUrls
+    # episode_count: episodes actually added so far. total_episodes: what
+    # the season is expected to have (from TMDB or the author's own count).
+    episode_count: int
+    total_episodes: int
+    post_slug: str | None

@@ -14,17 +14,21 @@ from app.models import (
     AuthorAnimeAccess,
     Content,
     ContentContentType,
+    Episodes,
     Genres,
+    Posts,
     Seasons,
 )
-from app.permissions import require_can_create_anime
+from app.permissions import require_anime_write_access, require_can_create_anime
 from app.posts import create_post_for_anime
 from app.schemas.admin_anime import (
+    AnimeAdminDetail,
     AnimeAdminListPublic,
     AnimeAdminPublic,
     AnimeAdminSummary,
     AnimeCreate,
 )
+from app.schemas.admin_season import SeasonAdminSummary
 from app.slugs import ensure_unique_slug, slugify
 
 router = APIRouter(
@@ -87,6 +91,66 @@ def list_animes(
         for anime, season_count in rows
     ]
     return AnimeAdminListPublic(data=data, count=count)
+
+
+@router.get("/{anime_id}")
+def get_anime(session: SessionDep, author: CurrentAuthor, anime_id: int) -> AnimeAdminDetail:
+    anime = session.get(Animes, anime_id)
+    if anime is None:
+        raise HTTPException(status_code=404, detail="Anime not found")
+
+    require_anime_write_access(session, author, anime_id)
+
+    seasons = session.exec(
+        select(Seasons)
+        .where(Seasons.anime_id == anime_id)
+        .order_by(col(Seasons.season_number).asc())
+    ).all()
+
+    season_summaries = []
+    for season in seasons:
+        post = session.exec(
+            select(Posts).where(Posts.season_id == season.season_id)
+        ).first()
+        episode_count = session.exec(
+            select(func.count())
+            .select_from(Episodes)
+            .where(Episodes.season_id == season.season_id)
+        ).one()
+        season_summaries.append(
+            SeasonAdminSummary(
+                season_id=season.season_id,
+                season_number=season.season_number,
+                season_name=season.season_name,
+                poster=resolve_image_urls(season.poster_source, season.poster_img, "poster"),
+                episode_count=episode_count,
+                total_episodes=season.total_episodes,
+                post_slug=post.slug if post else None,
+            )
+        )
+
+    post_slug = None
+    if anime.type == "movie":
+        post = session.exec(select(Posts).where(Posts.anime_id == anime_id)).first()
+        post_slug = post.slug if post else None
+
+    return AnimeAdminDetail(
+        anime_id=anime.anime_id,
+        slug=anime.slug,
+        anime_name=anime.anime_name,
+        type=anime.type,
+        poster=resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
+        backdrop=resolve_image_urls(anime.backdrop_source, anime.backdrop_img, "backdrop"),
+        overview=anime.overview,
+        duration=anime.duration,
+        rating=anime.rating,
+        age_id=anime.age_id,
+        anime_tmdb_id=anime.anime_tmdb_id,
+        anime_rel_date=anime.anime_rel_date,
+        genres=[g.genre_name for g in anime.genre],
+        post_slug=post_slug,
+        seasons=season_summaries,
+    )
 
 
 @router.post("/")
