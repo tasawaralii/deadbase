@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import ColumnElement
+from sqlmodel import col, func, select
 
 from app.api.deps import CurrentAuthor, SessionDep, get_current_author
 from app.media import resolve_image_urls
@@ -9,14 +11,20 @@ from app.models import (
     AgeRatings,
     Animes,
     AuthorAccessScope,
+    AuthorAnimeAccess,
     Content,
     ContentContentType,
     Genres,
-    Posts,
-    PostStatus,
-    User,
+    Seasons,
 )
-from app.schemas.admin_anime import AnimeAdminPublic, AnimeCreate
+from app.permissions import require_can_create_anime
+from app.posts import create_post_for_anime
+from app.schemas.admin_anime import (
+    AnimeAdminListPublic,
+    AnimeAdminPublic,
+    AnimeAdminSummary,
+    AnimeCreate,
+)
 from app.slugs import ensure_unique_slug, slugify
 
 router = APIRouter(
@@ -24,39 +32,68 @@ router = APIRouter(
 )
 
 
-def _create_post_for_anime(session: SessionDep, anime: Animes, author: User) -> Posts:
-    year = anime.anime_rel_date.year if anime.anime_rel_date else None
-    title = f"{anime.anime_name} ({year}) Movie" if year else f"{anime.anime_name} Movie"
-    post_slug = ensure_unique_slug(session, slugify(title), Posts, col(Posts.slug))
-    backdrop_url = resolve_image_urls(
-        anime.backdrop_source, anime.backdrop_img, "backdrop"
-    ).high
+@router.get("/")
+def list_animes(
+    session: SessionDep,
+    author: CurrentAuthor,
+    q: str | None = None,
+    anime_type: Literal["movie", "tv"] | None = Query(None, alias="type"),
+    skip: int = 0,
+    limit: int = 50,
+) -> AnimeAdminListPublic:
+    filters: list[ColumnElement[bool]] = []
+    if q:
+        filters.append(col(Animes.anime_name).ilike(f"%{q}%"))
+    if anime_type:
+        filters.append(col(Animes.type) == anime_type)
 
-    post = Posts(
-        anime_id=anime.anime_id,
-        title=title,
-        slug=post_slug,
-        backdrop_img=backdrop_url or None,
-        status=PostStatus.ONGOING,
-        author_id=author.id,
-        last_updated=datetime.now(UTC),
+    # access_list authors only ever see anime explicitly granted to them.
+    # all/ongoing (and superuser) see the full catalog - matches their
+    # unrestricted write access to add new seasons under any anime, see
+    # app.permissions.require_anime_write_access.
+    if not author.is_superuser and author.access_scope == AuthorAccessScope.ACCESS_LIST:
+        allowed_ids = select(AuthorAnimeAccess.anime_id).where(
+            AuthorAnimeAccess.user_id == author.id
+        )
+        filters.append(col(Animes.anime_id).in_(allowed_ids))
+
+    count = session.exec(select(func.count()).select_from(Animes).where(*filters)).one()
+
+    season_count_subquery = (
+        select(func.count())
+        .select_from(Seasons)
+        .where(Seasons.anime_id == Animes.anime_id)
+        .scalar_subquery()
     )
-    session.add(post)
-    session.flush()
-    return post
+
+    rows = session.exec(
+        select(Animes, season_count_subquery)
+        .where(*filters)
+        .order_by(col(Animes.anime_id).desc())
+        .offset(skip)
+        .limit(limit)
+    ).all()
+
+    data = [
+        AnimeAdminSummary(
+            anime_id=anime.anime_id,
+            slug=anime.slug,
+            anime_name=anime.anime_name,
+            type=anime.type,
+            poster=resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
+            rating=anime.rating,
+            season_count=season_count,
+        )
+        for anime, season_count in rows
+    ]
+    return AnimeAdminListPublic(data=data, count=count)
 
 
 @router.post("/")
 def create_anime(
     session: SessionDep, author: CurrentAuthor, body: AnimeCreate
 ) -> AnimeAdminPublic:
-    # access_list authors only manage anime already assigned to them - net
-    # new content creation is out of scope for that tier.
-    if not author.is_superuser and author.access_scope == AuthorAccessScope.ACCESS_LIST:
-        raise HTTPException(
-            status_code=403,
-            detail="Your account can only manage anime already assigned to it",
-        )
+    require_can_create_anime(author)
 
     if session.get(AgeRatings, body.age_id) is None:
         raise HTTPException(status_code=400, detail=f"No age rating with id {body.age_id}")
@@ -110,7 +147,7 @@ def create_anime(
 
     post_slug = None
     if body.type == "movie":
-        post = _create_post_for_anime(session, anime, author)
+        post = create_post_for_anime(session, anime, author)
         post_slug = post.slug
 
     session.commit()

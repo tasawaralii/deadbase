@@ -46,3 +46,18 @@ class AnimeAdminPublic(SQLModel):
     # request. TV shows get a Post per season instead, created when a season
     # is added, not here.
     post_slug: str | None
+
+
+class AnimeAdminSummary(SQLModel):
+    anime_id: int
+    slug: str
+    anime_name: str
+    type: str
+    poster: ImageUrls
+    rating: decimal.Decimal
+    season_count: int
+
+
+class AnimeAdminListPublic(SQLModel):
+    data: list[AnimeAdminSummary]
+    count: int
