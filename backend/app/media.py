@@ -1,6 +1,5 @@
 import decimal
 import hashlib
-import re
 from typing import Literal
 
 from sqlalchemy.orm import selectinload
@@ -9,6 +8,7 @@ from sqlmodel import Session, select
 from app.core.config import settings
 from app.models import Links, LinkServers, User
 from app.schemas.common import AuthorPublic, DownloadLink, ImageUrls, LinkPublic
+from app.slugs import slugify
 
 TMDB_IMAGE_DOMAIN = "https://image.tmdb.org/t/p/"
 
@@ -83,18 +83,13 @@ def gravatar_url(email: str, size: int = 64) -> str:
     return f"https://secure.gravatar.com/avatar/{digest}?s={size}&d=wavatar&r=g"
 
 
-def _slugify(value: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
-    return slug or "user"
-
-
 def build_author_public(user: User | None) -> AuthorPublic | None:
     if user is None:
         return None
     display_name = user.full_name or user.email.split("@")[0]
     return AuthorPublic(
         display_name=display_name,
-        slug=user.username or _slugify(display_name),
+        slug=user.username or slugify(display_name, fallback="user"),
         avatar_url=gravatar_url(user.email),
     )
 
