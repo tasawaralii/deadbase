@@ -169,12 +169,14 @@ class NewPassword(SQLModel):
 class AnimesBackdropSource(enum.StrEnum):
     TMDB = 'tmdb'
     LOCAL = 'local'
+    BUCKET = 'bucket'
 
 
 class AnimesPosterSource(enum.StrEnum):
     TMDB = 'tmdb'
     LOCAL = 'local'
     URL = 'url'
+    BUCKET = 'bucket'
 
 
 class ContentContentType(enum.StrEnum):
@@ -186,6 +188,7 @@ class ContentContentType(enum.StrEnum):
 class SeasonsPosterSource(enum.StrEnum):
     TMDB = 'tmdb'
     LOCAL = 'local'
+    BUCKET = 'bucket'
 
 
 class AgeRatings(SQLModel, table=True):

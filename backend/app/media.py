@@ -12,7 +12,7 @@ from app.schemas.common import AuthorPublic, DownloadLink, ImageUrls, LinkPublic
 
 TMDB_IMAGE_DOMAIN = "https://image.tmdb.org/t/p/"
 
-_TMDB_SIZES: dict[str, dict[str, str]] = {
+TMDB_SIZES: dict[str, dict[str, str]] = {
     "poster": {"low": "w154", "mid": "w342", "high": "w780"},
     "backdrop": {"low": "w300", "mid": "w780", "high": "w1280"},
 }
@@ -34,14 +34,21 @@ def resolve_image_urls(
 ) -> ImageUrls:
     """
     tmdb: build low/mid/high variants from the tmdb path.
-    local ("own"): single resolution, prefixed with MEDIA_BASE_URL.
+    local: legacy self-hosted single file (migrated from the old PHP site) -
+    one resolution, prefixed with MEDIA_BASE_URL. Do not repoint this at a
+    tiered shape; existing rows store a full ready-to-use path, not a resize
+    key (e.g. "/2024/07/some-slug.jpg").
+    bucket: new author-uploaded images (see app.storage.upload_image), which
+    actually stores a separate resized file per tier - same low/mid/high
+    shape as tmdb (domain + size segment + key), just our own MEDIA_BASE_URL
+    instead of TMDB's domain.
     url: legacy full external URL, passed through until migrated to "own".
     """
     if not image:
         return ImageUrls(low="", mid="", high="")
 
     if source == "tmdb":
-        sizes = _TMDB_SIZES[kind]
+        sizes = TMDB_SIZES[kind]
         return ImageUrls(
             low=f"{TMDB_IMAGE_DOMAIN}{sizes['low']}{image}",
             mid=f"{TMDB_IMAGE_DOMAIN}{sizes['mid']}{image}",
@@ -51,6 +58,14 @@ def resolve_image_urls(
     if source == "local":
         url = f"{settings.MEDIA_BASE_URL}{image}"
         return ImageUrls(low=url, mid=url, high=url)
+
+    if source == "bucket":
+        sizes = TMDB_SIZES[kind]
+        return ImageUrls(
+            low=f"{settings.MEDIA_BASE_URL}/{sizes['low']}/{image}",
+            mid=f"{settings.MEDIA_BASE_URL}/{sizes['mid']}/{image}",
+            high=f"{settings.MEDIA_BASE_URL}/{sizes['high']}/{image}",
+        )
 
     return ImageUrls(low=image, mid=image, high=image)
 

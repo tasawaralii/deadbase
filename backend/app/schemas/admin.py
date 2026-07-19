@@ -3,6 +3,12 @@ import datetime as dt
 from sqlmodel import SQLModel
 
 from app.models import CommentStatus
+from app.schemas.common import ImageUrls
+
+
+class AdminImageUploadPublic(SQLModel):
+    image: str
+    urls: ImageUrls
 
 
 class AdminCommentPublic(SQLModel):

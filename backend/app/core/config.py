@@ -40,6 +40,17 @@ class Settings(BaseSettings):
     # Prepended directly to the stored image path.
     MEDIA_BASE_URL: str = ""
 
+    # S3-compatible object storage for author-uploaded images. Local dev
+    # points S3_ENDPOINT_URL at the MinIO container; a real provider (R2,
+    # Spaces, S3 itself) is just an endpoint/credential swap, no code change.
+    S3_ENDPOINT_URL: str | None = None
+    S3_ACCESS_KEY: str = ""
+    S3_SECRET_KEY: str = ""
+    S3_BUCKET: str = "media"
+    S3_REGION: str = "us-east-1"
+
+    TMDB_API_KEY: str = ""
+
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
