@@ -28,6 +28,18 @@ class EpisodeBatchCreate(SQLModel):
     episodes: list[EpisodeCreateItem]
 
 
+class EpisodeUpdate(SQLModel):
+    episode_number: int | None = None
+    episode_name: str | None = None
+    overview: str | None = None
+    img: str | None = None
+    air_date: dt.date | None = None
+    episode_runtime: int | None = None
+    episode_rating: decimal.Decimal | None = None
+    episode_tmdb_id: str | None = None
+    note: str | None = None
+
+
 class EpisodeAdminPublic(SQLModel):
     episode_id: int
     season_id: int

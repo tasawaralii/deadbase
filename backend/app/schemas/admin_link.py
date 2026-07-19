@@ -55,3 +55,14 @@ class GdriveFolderListing(SQLModel):
 
 class LinkBulkDeleteResult(SQLModel):
     deleted_count: int
+
+
+class LinkUpdate(SQLModel):
+    # Deliberately excludes filename/gdriveid/type/mimetype/duration/size/
+    # gdrive_email - those are all fetched from Google Drive at creation
+    # time (see app.gdrive), never hand-typed. Only the fields an author
+    # would realistically hand-tweak after the fact are editable here.
+    is_live: bool | None = None
+    note: str | None = None
+    only_hindi: bool | None = None
+    quality_id: int | None = None

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, select
 
 from app.api.deps import CurrentAuthor, SessionDep, get_current_author
-from app.content import resolve_anime_id_for_content
+from app.content import resolve_anime_id_for_content, resolve_season_for_content
 from app.filename_parsing import find_episode_number, find_quality
 from app.gdrive import (
     extract_file_id,
@@ -13,7 +13,7 @@ from app.gdrive import (
     fetch_file_metadata,
     list_folder_files,
 )
-from app.models import Content, Episodes, Links, Seasons, User
+from app.models import Content, Episodes, Links, Qualities, Seasons, User
 from app.permissions import require_anime_write_access
 from app.schemas.admin_link import (
     GdriveFolderFile,
@@ -24,6 +24,7 @@ from app.schemas.admin_link import (
     LinkBatchResult,
     LinkBatchResultItem,
     LinkBulkDeleteResult,
+    LinkUpdate,
 )
 
 router = APIRouter(
@@ -56,7 +57,8 @@ def _get_content_with_access(session: SessionDep, author: User, content_id: int)
     anime_id = resolve_anime_id_for_content(session, content)
     if anime_id is None:
         raise HTTPException(status_code=404, detail="Content has no resolvable owner")
-    require_anime_write_access(session, author, anime_id)
+    season = resolve_season_for_content(session, content)
+    require_anime_write_access(session, author, anime_id, season=season)
     return content
 
 
@@ -187,7 +189,7 @@ def create_season_links_batch(
     season = session.get(Seasons, season_id)
     if season is None:
         raise HTTPException(status_code=404, detail="Season not found")
-    require_anime_write_access(session, author, season.anime_id)
+    require_anime_write_access(session, author, season.anime_id, season=season)
 
     results: list[LinkBatchResultItem] = []
     for url in body.gdrive_urls:
@@ -244,7 +246,7 @@ def delete_all_season_episode_links(
     season = session.get(Seasons, season_id)
     if season is None:
         raise HTTPException(status_code=404, detail="Season not found")
-    require_anime_write_access(session, author, season.anime_id)
+    require_anime_write_access(session, author, season.anime_id, season=season)
 
     episode_content_ids = session.exec(
         select(Episodes.content_id).where(Episodes.season_id == season_id)
@@ -278,8 +280,7 @@ def list_gdrive_folder(url: str) -> GdriveFolderListing:
     )
 
 
-@single_link_router.delete("/{link_id}", status_code=204)
-def delete_link(session: SessionDep, author: CurrentAuthor, link_id: int) -> None:
+def _get_link_with_access(session: SessionDep, author: User, link_id: int) -> Links:
     link = session.get(Links, link_id)
     if link is None:
         raise HTTPException(status_code=404, detail="Link not found")
@@ -288,7 +289,38 @@ def delete_link(session: SessionDep, author: CurrentAuthor, link_id: int) -> Non
     anime_id = resolve_anime_id_for_content(session, content) if content else None
     if anime_id is None:
         raise HTTPException(status_code=404, detail="Link has no resolvable owner")
-    require_anime_write_access(session, author, anime_id)
+    season = resolve_season_for_content(session, content) if content else None
+    require_anime_write_access(session, author, anime_id, season=season)
 
+    return link
+
+
+@single_link_router.patch("/{link_id}")
+def update_link(
+    session: SessionDep, author: CurrentAuthor, link_id: int, body: LinkUpdate
+) -> LinkAdminPublic:
+    link = _get_link_with_access(session, author, link_id)
+
+    updates = body.model_dump(exclude_unset=True)
+
+    if "quality_id" in updates and updates["quality_id"] is not None:
+        if session.get(Qualities, updates["quality_id"]) is None:
+            raise HTTPException(
+                status_code=400, detail=f"No quality with id {updates['quality_id']}"
+            )
+
+    for field, value in updates.items():
+        setattr(link, field, value)
+    link.updated_date = datetime.now(UTC)
+
+    session.add(link)
+    session.commit()
+    session.refresh(link)
+    return _to_public(link)
+
+
+@single_link_router.delete("/{link_id}", status_code=204)
+def delete_link(session: SessionDep, author: CurrentAuthor, link_id: int) -> None:
+    link = _get_link_with_access(session, author, link_id)
     session.delete(link)
     session.commit()

@@ -27,6 +27,7 @@ from app.schemas.admin_anime import (
     AnimeAdminPublic,
     AnimeAdminSummary,
     AnimeCreate,
+    AnimeUpdate,
 )
 from app.schemas.admin_season import SeasonAdminSummary
 from app.slugs import ensure_unique_slug, slugify
@@ -34,6 +35,31 @@ from app.slugs import ensure_unique_slug, slugify
 router = APIRouter(
     prefix="/animes", tags=["admin"], dependencies=[Depends(get_current_author)]
 )
+
+
+def _to_public(session: SessionDep, anime: Animes) -> AnimeAdminPublic:
+    post_slug = None
+    if anime.type == "movie":
+        post = session.exec(select(Posts).where(Posts.anime_id == anime.anime_id)).first()
+        post_slug = post.slug if post else None
+
+    return AnimeAdminPublic(
+        anime_id=anime.anime_id,
+        slug=anime.slug,
+        anime_name=anime.anime_name,
+        type=anime.type,
+        content_id=anime.content_id,
+        poster=resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
+        backdrop=resolve_image_urls(anime.backdrop_source, anime.backdrop_img, "backdrop"),
+        overview=anime.overview,
+        duration=anime.duration,
+        rating=anime.rating,
+        age_id=anime.age_id,
+        anime_tmdb_id=anime.anime_tmdb_id,
+        anime_rel_date=anime.anime_rel_date,
+        genres=[g.genre_name for g in anime.genre],
+        post_slug=post_slug,
+    )
 
 
 @router.get("/")
@@ -125,31 +151,13 @@ def get_anime(session: SessionDep, author: CurrentAuthor, anime_id: int) -> Anim
                 poster=resolve_image_urls(season.poster_source, season.poster_img, "poster"),
                 episode_count=episode_count,
                 total_episodes=season.total_episodes,
+                status=season.status,
                 post_slug=post.slug if post else None,
             )
         )
 
-    post_slug = None
-    if anime.type == "movie":
-        post = session.exec(select(Posts).where(Posts.anime_id == anime_id)).first()
-        post_slug = post.slug if post else None
-
     return AnimeAdminDetail(
-        anime_id=anime.anime_id,
-        slug=anime.slug,
-        anime_name=anime.anime_name,
-        type=anime.type,
-        content_id=anime.content_id,
-        poster=resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
-        backdrop=resolve_image_urls(anime.backdrop_source, anime.backdrop_img, "backdrop"),
-        overview=anime.overview,
-        duration=anime.duration,
-        rating=anime.rating,
-        age_id=anime.age_id,
-        anime_tmdb_id=anime.anime_tmdb_id,
-        anime_rel_date=anime.anime_rel_date,
-        genres=[g.genre_name for g in anime.genre],
-        post_slug=post_slug,
+        **_to_public(session, anime).model_dump(),
         seasons=season_summaries,
     )
 
@@ -210,28 +218,61 @@ def create_anime(
 
     anime.genre = genres
 
-    post_slug = None
     if body.type == "movie":
-        post = create_post_for_anime(session, anime, author)
-        post_slug = post.slug
+        create_post_for_anime(session, anime, author)
 
     session.commit()
     session.refresh(anime)
 
-    return AnimeAdminPublic(
-        anime_id=anime.anime_id,
-        slug=anime.slug,
-        anime_name=anime.anime_name,
-        type=anime.type,
-        content_id=anime.content_id,
-        poster=resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
-        backdrop=resolve_image_urls(anime.backdrop_source, anime.backdrop_img, "backdrop"),
-        overview=anime.overview,
-        duration=anime.duration,
-        rating=anime.rating,
-        age_id=anime.age_id,
-        anime_tmdb_id=anime.anime_tmdb_id,
-        anime_rel_date=anime.anime_rel_date,
-        genres=[g.genre_name for g in anime.genre],
-        post_slug=post_slug,
-    )
+    return _to_public(session, anime)
+
+
+@router.patch("/{anime_id}")
+def update_anime(
+    session: SessionDep, author: CurrentAuthor, anime_id: int, body: AnimeUpdate
+) -> AnimeAdminPublic:
+    anime = session.get(Animes, anime_id)
+    if anime is None:
+        raise HTTPException(status_code=404, detail="Anime not found")
+
+    require_anime_write_access(session, author, anime_id)
+
+    updates = body.model_dump(exclude_unset=True)
+
+    if "age_id" in updates and session.get(AgeRatings, updates["age_id"]) is None:
+        raise HTTPException(
+            status_code=400, detail=f"No age rating with id {updates['age_id']}"
+        )
+
+    if "genre_ids" in updates:
+        genre_ids = updates.pop("genre_ids")
+        genres: list[Genres] = []
+        if genre_ids:
+            genres = list(
+                session.exec(select(Genres).where(col(Genres.genre_id).in_(genre_ids)))
+            )
+            found_ids = {g.genre_id for g in genres}
+            missing_ids = set(genre_ids) - found_ids
+            if missing_ids:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "No genre with id(s): "
+                        f"{', '.join(str(i) for i in sorted(missing_ids))}"
+                    ),
+                )
+        anime.genre = genres
+
+    if "anime_name" in updates and updates["anime_name"] != anime.anime_name:
+        anime.slug = ensure_unique_slug(
+            session, slugify(updates["anime_name"]), Animes, col(Animes.slug)
+        )
+
+    for field, value in updates.items():
+        setattr(anime, field, value)
+
+    session.add(anime)
+    session.commit()
+    session.refresh(anime)
+
+    return _to_public(session, anime)

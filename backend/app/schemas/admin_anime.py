@@ -24,6 +24,24 @@ class AnimeCreate(SQLModel):
     genre_ids: list[int] = []
 
 
+class AnimeUpdate(SQLModel):
+    # `type` is deliberately not editable here - switching movie/tv would
+    # mean restructuring Content.content_type and adding/removing the
+    # Post-vs-seasons split, not a plain field edit.
+    anime_name: str | None = None
+    overview: str | None = None
+    duration: int | None = None
+    rating: decimal.Decimal | None = None
+    age_id: int | None = None
+    poster_source: NewImageSource | None = None
+    poster_img: str | None = None
+    backdrop_source: NewImageSource | None = None
+    backdrop_img: str | None = None
+    anime_tmdb_id: int | None = None
+    anime_rel_date: dt.date | None = None
+    genre_ids: list[int] | None = None
+
+
 class AnimeAdminPublic(SQLModel):
     anime_id: int
     slug: str

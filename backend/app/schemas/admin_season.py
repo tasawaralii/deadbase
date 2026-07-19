@@ -3,6 +3,7 @@ import decimal
 
 from sqlmodel import SQLModel
 
+from app.models import SeasonStatus
 from app.schemas.common import ImageUrls, NewImageSource
 
 
@@ -18,6 +19,19 @@ class SeasonCreate(SQLModel):
     season_rel_date: dt.date | None = None
 
 
+class SeasonUpdate(SQLModel):
+    season_number: int | None = None
+    season_name: str | None = None
+    total_episodes: int | None = None
+    season_overview: str | None = None
+    poster_source: NewImageSource | None = None
+    poster_img: str | None = None
+    rating: decimal.Decimal | None = None
+    season_tmdb_id: str | None = None
+    season_rel_date: dt.date | None = None
+    status: SeasonStatus | None = None
+
+
 class SeasonAdminPublic(SQLModel):
     season_id: int
     anime_id: int
@@ -29,6 +43,7 @@ class SeasonAdminPublic(SQLModel):
     rating: decimal.Decimal
     season_tmdb_id: str | None
     season_rel_date: dt.date | None
+    status: SeasonStatus
     post_slug: str
 
 
@@ -41,4 +56,5 @@ class SeasonAdminSummary(SQLModel):
     # the season is expected to have (from TMDB or the author's own count).
     episode_count: int
     total_episodes: int
+    status: SeasonStatus
     post_slug: str | None

@@ -191,6 +191,11 @@ class SeasonsPosterSource(enum.StrEnum):
     BUCKET = 'bucket'
 
 
+class SeasonStatus(enum.StrEnum):
+    ONGOING = 'ongoing'
+    COMPLETED = 'completed'
+
+
 class AgeRatings(SQLModel, table=True):
     __tablename__ = 'age_ratings'
     __table_args__ = (
@@ -431,6 +436,7 @@ class Seasons(SQLModel, table=True):
     season_tmdb_id: str | None = Field(default=None, sa_column=Column('season_tmdb_id', String(20), server_default=text('NULL::character varying')))
     season_rel_date: dt.date | None = Field(default=None, sa_column=Column('season_rel_date', Date))
     poster_img: str | None = Field(default=None, sa_column=Column('poster_img', String(255), server_default=text('NULL::character varying')))
+    status: SeasonStatus = Field(sa_column=Column('status', Enum(SeasonStatus, values_callable=lambda cls: [member.value for member in cls], name='season_status'), nullable=False, server_default=text("'ongoing'")))
 
     anime: Animes = Relationship(back_populates='seasons')
     episodes: list["Episodes"] = Relationship(back_populates='season', cascade_delete=True)

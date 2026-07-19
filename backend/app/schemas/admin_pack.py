@@ -7,6 +7,12 @@ class PackCreate(SQLModel):
     end_ep: int
 
 
+class PackUpdate(SQLModel):
+    pack_name: str | None = None
+    start_ep: int | None = None
+    end_ep: int | None = None
+
+
 class PackAdminPublic(SQLModel):
     pack_id: int
     season_id: int

@@ -9,6 +9,7 @@ from app.schemas.admin_episode import (
     EpisodeAdminPublic,
     EpisodeBatchCreate,
     EpisodeBatchPublic,
+    EpisodeUpdate,
 )
 
 router = APIRouter(
@@ -43,7 +44,7 @@ def list_episodes(
     if season is None:
         raise HTTPException(status_code=404, detail="Season not found")
 
-    require_anime_write_access(session, author, season.anime_id)
+    require_anime_write_access(session, author, season.anime_id, season=season)
 
     episodes = session.exec(
         select(Episodes)
@@ -63,7 +64,7 @@ def create_episodes(
 
     # anime_id lives on the season row - no need for the caller to carry it
     # separately alongside season_id.
-    require_anime_write_access(session, author, season.anime_id)
+    require_anime_write_access(session, author, season.anime_id, season=season)
 
     if not body.episodes:
         raise HTTPException(status_code=400, detail="At least one episode is required")
@@ -122,3 +123,46 @@ def create_episodes(
         session.refresh(episode)
 
     return EpisodeBatchPublic(data=[_to_public(e) for e in created])
+
+
+@router.patch("/{episode_id}")
+def update_episode(
+    session: SessionDep,
+    author: CurrentAuthor,
+    season_id: int,
+    episode_id: int,
+    body: EpisodeUpdate,
+) -> EpisodeAdminPublic:
+    season = session.get(Seasons, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail="Season not found")
+
+    require_anime_write_access(session, author, season.anime_id, season=season)
+
+    episode = session.get(Episodes, episode_id)
+    if episode is None or episode.season_id != season_id:
+        raise HTTPException(status_code=404, detail="Episode not found in this season")
+
+    updates = body.model_dump(exclude_unset=True)
+
+    if "episode_number" in updates and updates["episode_number"] != episode.episode_number:
+        existing = session.exec(
+            select(Episodes).where(
+                Episodes.season_id == season_id,
+                Episodes.episode_number == updates["episode_number"],
+            )
+        ).first()
+        if existing is not None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Episode {updates['episode_number']} already exists for this season",
+            )
+
+    for field, value in updates.items():
+        setattr(episode, field, value)
+
+    session.add(episode)
+    session.commit()
+    session.refresh(episode)
+
+    return _to_public(episode)
