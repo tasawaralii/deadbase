@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.routes.admin import (
     animes,
     comments,
+    episodes,
     images,
     seasons,
     stream_comments,
@@ -16,3 +17,4 @@ router.include_router(images.router)
 router.include_router(tmdb.router)
 router.include_router(animes.router)
 router.include_router(seasons.router)
+router.include_router(episodes.router)
