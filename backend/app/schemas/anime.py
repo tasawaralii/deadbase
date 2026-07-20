@@ -19,7 +19,10 @@ class AnimeSummary(SQLModel):
 
 
 class AnimeDetail(SQLModel):
-    content_id: int
+    # None for type="tv" - a tv anime's own content_id is never a valid
+    # target for links/comments/view-tracking (those live on its episodes/
+    # packs instead), so it's not exposed here for that type.
+    content_id: int | None
     slug: str
     anime_name: str
     type: str

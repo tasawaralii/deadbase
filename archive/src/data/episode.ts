@@ -110,7 +110,7 @@ export function buildMovieViewModel(anime: AnimeDetail): Episode {
   return {
     animeSlug: anime.slug,
     animeTitle: anime.anime_name,
-    contentId: anime.content_id,
+    contentId: anime.content_id ?? undefined,
     title: anime.anime_name,
     description: anime.overview,
     poster: bestImage(anime.poster),

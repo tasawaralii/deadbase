@@ -22,7 +22,9 @@ export type LinkPublic = {
 };
 
 export type AnimeDetail = {
-  content_id: number;
+  // null for type="tv" - a tv anime's own content_id is never a valid
+  // download/watch target, only movies get a real value here.
+  content_id: number | null;
   slug: string;
   anime_name: string;
   type: string;

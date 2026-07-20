@@ -47,11 +47,14 @@ class AnimeAdminPublic(SQLModel):
     slug: str
     anime_name: str
     type: str
-    # For type="movie" this is what POST /admin/content/{content_id}/links
-    # expects. TV shows have one too (every anime gets a Content row) but
-    # downloads for a TV show live on its episodes/packs instead - this
-    # isn't the one authors attach links to for type="tv".
-    content_id: int
+    # What POST /admin/content/{content_id}/links expects - only present
+    # for type="movie". None for type="tv": that anime still has its own
+    # Content row internally (content_id is NOT NULL), but downloads for a
+    # tv show live on its episodes'/packs' own content_id instead, and that
+    # row is never a valid link/comment/view-tracking target (see
+    # ContentContentType.TV) - not exposing it here avoids the field being
+    # mistaken for something attachable.
+    content_id: int | None
     poster: ImageUrls
     backdrop: ImageUrls
     overview: str

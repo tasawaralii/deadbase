@@ -48,7 +48,7 @@ def _to_public(session: SessionDep, anime: Animes) -> AnimeAdminPublic:
         slug=anime.slug,
         anime_name=anime.anime_name,
         type=anime.type,
-        content_id=anime.content_id,
+        content_id=anime.content_id if anime.type == "movie" else None,
         poster=resolve_image_urls(anime.poster_source, anime.poster_img, "poster"),
         backdrop=resolve_image_urls(anime.backdrop_source, anime.backdrop_img, "backdrop"),
         overview=anime.overview,
