@@ -10,6 +10,7 @@ from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.config import settings
 from app.models import (
     Animes,
+    AuthorAccessScope,
     AuthorAnimeAccess,
     Item,
     Message,
@@ -174,6 +175,16 @@ def grant_anime_access(
     session: SessionDep, user_id: uuid.UUID, anime_id: int
 ) -> AnimeAccessGrantPublic:
     user = _get_user(session, user_id)
+    if user.access_scope != AuthorAccessScope.ACCESS_LIST:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "This user is scoped as "
+                f"'{user.access_scope or 'none'}', not 'access_list' - "
+                "per-anime grants only apply to access_list-tier authors "
+                "and are ignored by every other tier."
+            ),
+        )
 
     anime = session.get(Animes, anime_id)
     if anime is None:
