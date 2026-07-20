@@ -3,12 +3,10 @@ from sqlmodel import col, func, select
 
 from app.api.deps import SessionDep, VisitorId
 from app.media import resolve_image_urls
-from app.models import Episodes, Links, Message, Packs, Seasons
-from app.schemas.anime import AnimeSummary
+from app.models import Episodes, Links, Message, Packs
 from app.schemas.episode import EpisodeSummary
 from app.schemas.season import SeasonSummary
 from app.schemas.trending import (
-    TrendingAnimeItem,
     TrendingAnimeList,
     TrendingEpisodeItem,
     TrendingEpisodeList,
@@ -17,7 +15,7 @@ from app.schemas.trending import (
 )
 from app.trending import (
     TrendingWindow,
-    get_trending_anime,
+    build_trending_anime_list,
     get_trending_episodes,
     get_trending_seasons,
     record_view,
@@ -41,35 +39,7 @@ def trending_anime(
     window: TrendingWindow = Query("today"),
     limit: int = Query(20, ge=1, le=50),
 ) -> TrendingAnimeList:
-    rows = get_trending_anime(session, window, limit)
-
-    data = []
-    for anime, views in rows:
-        season_count = None
-        if anime.type != "movie":
-            season_count = session.exec(
-                select(func.count(col(Seasons.season_id))).where(
-                    Seasons.anime_id == anime.anime_id
-                )
-            ).one()
-        data.append(
-            TrendingAnimeItem(
-                anime=AnimeSummary(
-                    slug=anime.slug,
-                    anime_name=anime.anime_name,
-                    type=anime.type,
-                    poster=resolve_image_urls(
-                        anime.poster_source, anime.poster_img, "poster"
-                    ),
-                    rating=anime.rating,
-                    age_rating=anime.age.age_name,
-                    genres=[g.genre_name for g in anime.genre],
-                    season_count=season_count,
-                ),
-                views=views,
-            )
-        )
-    return TrendingAnimeList(data=data)
+    return build_trending_anime_list(session, window, limit)
 
 
 @router.get("/trending/seasons")

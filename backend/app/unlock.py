@@ -6,7 +6,14 @@ from urllib.parse import quote
 import httpx
 from sqlmodel import Session, col, func, select
 
-from app.models import DownloadEvents, LinkShorteners, ShortenerAttempts, UnlockConfig
+from app.download_stats import bump_server_download_daily
+from app.models import (
+    DownloadEvents,
+    LinkServers,
+    LinkShorteners,
+    ShortenerAttempts,
+    UnlockConfig,
+)
 
 REPORT_WINDOW = timedelta(hours=24)
 
@@ -101,11 +108,17 @@ def record_download_event(
     link_server_id: int,
     via_shortener_id: int | None,
 ) -> None:
+    link_server = session.get(LinkServers, link_server_id)
+    if link_server is None:
+        return
+
     session.add(
         DownloadEvents(
             link_server_id=link_server_id,
+            content_id=link_server.link.content_id,
             visitor_id=visitor_id,
             via_shortener_id=via_shortener_id,
         )
     )
+    bump_server_download_daily(session, link_server.server_id, datetime.now(UTC).date())
     session.commit()

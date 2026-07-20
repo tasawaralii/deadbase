@@ -2,28 +2,42 @@ import uuid
 from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 
+from sqlalchemy import union_all
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, col, func, select
 
 from app.content import get_playable_content
+from app.media import resolve_image_urls
 from app.models import (
     Animes,
     AnimeViewDaily,
+    AnimeViewMonthly,
     Content,
     ContentContentType,
     ContentViewDaily,
+    ContentViewMonthly,
     ContentViews,
     Episodes,
     Seasons,
     SeasonViewDaily,
+    SeasonViewMonthly,
 )
+from app.schemas.anime import AnimeSummary
+from app.schemas.trending import TrendingAnimeItem, TrendingAnimeList
 
 TrendingWindow = Literal["today", "week", "month", "all"]
 
 WINDOW_DAYS: dict[str, int | None] = {"today": 0, "week": 7, "month": 30, "all": None}
 
 VIEW_ROW_RETENTION = timedelta(days=2)
+
+# How long a *ViewDaily row survives before being folded into the matching
+# *ViewMonthly row and deleted - full daily granularity for a rolling recent
+# window, coarser monthly totals for the long tail of history. Same constant
+# name/value as app.download_stats.DAILY_RETENTION_DAYS, deliberately - both
+# pipelines follow the identical tiering strategy.
+DAILY_RETENTION_DAYS = 30
 
 
 def record_view(session: Session, visitor_id: uuid.UUID, content_id: int) -> None:
@@ -181,7 +195,122 @@ def prune_old_views(session: Session) -> int:
     return len(old_rows)
 
 
-def _window_cutoff(window: TrendingWindow) -> date | None:
+def _daily_retention_cutoff() -> date:
+    return datetime.now(UTC).date() - timedelta(days=DAILY_RETENTION_DAYS)
+
+
+def compact_old_content_view_daily(session: Session) -> int:
+    """Folds ContentViewDaily rows older than DAILY_RETENTION_DAYS into ContentViewMonthly."""
+    cutoff = _daily_retention_cutoff()
+    old_rows = session.exec(
+        select(ContentViewDaily).where(ContentViewDaily.view_date < cutoff)
+    ).all()
+    if not old_rows:
+        return 0
+
+    totals: dict[tuple[int, int, int], int] = {}
+    for row in old_rows:
+        key = (row.content_id, row.view_date.year, row.view_date.month)
+        totals[key] = totals.get(key, 0) + row.view_count
+
+    for (content_id, year, month), count in totals.items():
+        monthly = session.exec(
+            select(ContentViewMonthly).where(
+                ContentViewMonthly.content_id == content_id,
+                ContentViewMonthly.year == year,
+                ContentViewMonthly.month == month,
+            )
+        ).first()
+        if monthly:
+            monthly.view_count += count
+        else:
+            monthly = ContentViewMonthly(
+                content_id=content_id, year=year, month=month, view_count=count
+            )
+        session.add(monthly)
+
+    for row in old_rows:
+        session.delete(row)
+
+    session.commit()
+    return len(old_rows)
+
+
+def compact_old_season_view_daily(session: Session) -> int:
+    """Folds SeasonViewDaily rows older than DAILY_RETENTION_DAYS into SeasonViewMonthly."""
+    cutoff = _daily_retention_cutoff()
+    old_rows = session.exec(
+        select(SeasonViewDaily).where(SeasonViewDaily.view_date < cutoff)
+    ).all()
+    if not old_rows:
+        return 0
+
+    totals: dict[tuple[int, int, int], int] = {}
+    for row in old_rows:
+        key = (row.season_id, row.view_date.year, row.view_date.month)
+        totals[key] = totals.get(key, 0) + row.view_count
+
+    for (season_id, year, month), count in totals.items():
+        monthly = session.exec(
+            select(SeasonViewMonthly).where(
+                SeasonViewMonthly.season_id == season_id,
+                SeasonViewMonthly.year == year,
+                SeasonViewMonthly.month == month,
+            )
+        ).first()
+        if monthly:
+            monthly.view_count += count
+        else:
+            monthly = SeasonViewMonthly(
+                season_id=season_id, year=year, month=month, view_count=count
+            )
+        session.add(monthly)
+
+    for row in old_rows:
+        session.delete(row)
+
+    session.commit()
+    return len(old_rows)
+
+
+def compact_old_anime_view_daily(session: Session) -> int:
+    """Folds AnimeViewDaily rows older than DAILY_RETENTION_DAYS into AnimeViewMonthly."""
+    cutoff = _daily_retention_cutoff()
+    old_rows = session.exec(
+        select(AnimeViewDaily).where(AnimeViewDaily.view_date < cutoff)
+    ).all()
+    if not old_rows:
+        return 0
+
+    totals: dict[tuple[int, int, int], int] = {}
+    for row in old_rows:
+        key = (row.anime_id, row.view_date.year, row.view_date.month)
+        totals[key] = totals.get(key, 0) + row.view_count
+
+    for (anime_id, year, month), count in totals.items():
+        monthly = session.exec(
+            select(AnimeViewMonthly).where(
+                AnimeViewMonthly.anime_id == anime_id,
+                AnimeViewMonthly.year == year,
+                AnimeViewMonthly.month == month,
+            )
+        ).first()
+        if monthly:
+            monthly.view_count += count
+        else:
+            monthly = AnimeViewMonthly(
+                anime_id=anime_id, year=year, month=month, view_count=count
+            )
+        session.add(monthly)
+
+    for row in old_rows:
+        session.delete(row)
+
+    session.commit()
+    return len(old_rows)
+
+
+def window_cutoff(window: TrendingWindow) -> date | None:
     days = WINDOW_DAYS[window]
     if days is None:
         return None
@@ -191,13 +320,33 @@ def _window_cutoff(window: TrendingWindow) -> date | None:
 def get_trending_anime(
     session: Session, window: TrendingWindow, limit: int
 ) -> list[tuple[Animes, int]]:
-    cutoff = _window_cutoff(window)
-    views_query = select(
-        AnimeViewDaily.anime_id, func.sum(AnimeViewDaily.view_count).label("views")
-    )
-    if cutoff is not None:
-        views_query = views_query.where(AnimeViewDaily.view_date >= cutoff)
-    views_subq = views_query.group_by(col(AnimeViewDaily.anime_id)).subquery()
+    if window == "all":
+        combined = union_all(
+            select(
+                col(AnimeViewDaily.anime_id).label("anime_id"),
+                col(AnimeViewDaily.view_count).label("view_count"),
+            ),
+            select(
+                col(AnimeViewMonthly.anime_id).label("anime_id"),
+                col(AnimeViewMonthly.view_count).label("view_count"),
+            ),
+        ).subquery()
+        views_subq = (
+            select(combined.c.anime_id, func.sum(combined.c.view_count).label("views"))
+            .group_by(combined.c.anime_id)
+            .subquery()
+        )
+    else:
+        cutoff = window_cutoff(window)
+        assert cutoff is not None  # only "all" (handled above) yields None
+        views_subq = (
+            select(
+                AnimeViewDaily.anime_id, func.sum(AnimeViewDaily.view_count).label("views")
+            )
+            .where(AnimeViewDaily.view_date >= cutoff)
+            .group_by(col(AnimeViewDaily.anime_id))
+            .subquery()
+        )
 
     rows = session.exec(
         select(Animes, views_subq.c.views)
@@ -212,16 +361,76 @@ def get_trending_anime(
     return list(rows)
 
 
+def build_trending_anime_list(
+    session: Session, window: TrendingWindow, limit: int
+) -> TrendingAnimeList:
+    """
+    Shared response-builder for `get_trending_anime` - used by both the
+    public trending endpoint and the admin stats views endpoint so the two
+    don't drift out of sync with two copies of the same mapping.
+    """
+    rows = get_trending_anime(session, window, limit)
+
+    data = []
+    for anime, views in rows:
+        season_count = None
+        if anime.type != "movie":
+            season_count = session.exec(
+                select(func.count(col(Seasons.season_id))).where(
+                    Seasons.anime_id == anime.anime_id
+                )
+            ).one()
+        data.append(
+            TrendingAnimeItem(
+                anime=AnimeSummary(
+                    slug=anime.slug,
+                    anime_name=anime.anime_name,
+                    type=anime.type,
+                    poster=resolve_image_urls(
+                        anime.poster_source, anime.poster_img, "poster"
+                    ),
+                    rating=anime.rating,
+                    age_rating=anime.age.age_name,
+                    genres=[g.genre_name for g in anime.genre],
+                    season_count=season_count,
+                ),
+                views=views,
+            )
+        )
+    return TrendingAnimeList(data=data)
+
+
 def get_trending_seasons(
     session: Session, window: TrendingWindow, limit: int
 ) -> list[tuple[Seasons, int]]:
-    cutoff = _window_cutoff(window)
-    views_query = select(
-        SeasonViewDaily.season_id, func.sum(SeasonViewDaily.view_count).label("views")
-    )
-    if cutoff is not None:
-        views_query = views_query.where(SeasonViewDaily.view_date >= cutoff)
-    views_subq = views_query.group_by(col(SeasonViewDaily.season_id)).subquery()
+    if window == "all":
+        combined = union_all(
+            select(
+                col(SeasonViewDaily.season_id).label("season_id"),
+                col(SeasonViewDaily.view_count).label("view_count"),
+            ),
+            select(
+                col(SeasonViewMonthly.season_id).label("season_id"),
+                col(SeasonViewMonthly.view_count).label("view_count"),
+            ),
+        ).subquery()
+        views_subq = (
+            select(combined.c.season_id, func.sum(combined.c.view_count).label("views"))
+            .group_by(combined.c.season_id)
+            .subquery()
+        )
+    else:
+        cutoff = window_cutoff(window)
+        assert cutoff is not None  # only "all" (handled above) yields None
+        views_subq = (
+            select(
+                SeasonViewDaily.season_id,
+                func.sum(SeasonViewDaily.view_count).label("views"),
+            )
+            .where(SeasonViewDaily.view_date >= cutoff)
+            .group_by(col(SeasonViewDaily.season_id))
+            .subquery()
+        )
 
     rows = session.exec(
         select(Seasons, views_subq.c.views)
@@ -236,14 +445,34 @@ def get_trending_seasons(
 def get_trending_episodes(
     session: Session, window: TrendingWindow, limit: int
 ) -> list[tuple[Episodes, int]]:
-    cutoff = _window_cutoff(window)
-    views_query = select(
-        ContentViewDaily.content_id,
-        func.sum(ContentViewDaily.view_count).label("views"),
-    )
-    if cutoff is not None:
-        views_query = views_query.where(ContentViewDaily.view_date >= cutoff)
-    views_subq = views_query.group_by(col(ContentViewDaily.content_id)).subquery()
+    if window == "all":
+        combined = union_all(
+            select(
+                col(ContentViewDaily.content_id).label("content_id"),
+                col(ContentViewDaily.view_count).label("view_count"),
+            ),
+            select(
+                col(ContentViewMonthly.content_id).label("content_id"),
+                col(ContentViewMonthly.view_count).label("view_count"),
+            ),
+        ).subquery()
+        views_subq = (
+            select(combined.c.content_id, func.sum(combined.c.view_count).label("views"))
+            .group_by(combined.c.content_id)
+            .subquery()
+        )
+    else:
+        cutoff = window_cutoff(window)
+        assert cutoff is not None  # only "all" (handled above) yields None
+        views_subq = (
+            select(
+                ContentViewDaily.content_id,
+                func.sum(ContentViewDaily.view_count).label("views"),
+            )
+            .where(ContentViewDaily.view_date >= cutoff)
+            .group_by(col(ContentViewDaily.content_id))
+            .subquery()
+        )
 
     rows = session.exec(
         select(Episodes, views_subq.c.views)

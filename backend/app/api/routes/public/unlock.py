@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from sqlmodel import col, select
 
 from app.api.deps import SessionDep, VisitorId
+from app.download_stats import bump_shortener_funnel_daily
 from app.media import resolve_server_link
 from app.models import LinkServers, LinkShorteners, Message, ShortenerAttempts
 from app.schemas.unlock import (
@@ -60,6 +61,7 @@ def unlock_callback(session: SessionDep, token: str) -> RedirectResponse:
 
     attempt.solved_at = datetime.now(UTC)
     session.add(attempt)
+    bump_shortener_funnel_daily(session, attempt.shortener_id, attempt.solved_at.date(), solved=1)
     session.commit()
 
     # Every solve immediately unlocks the file it was solved for - that's the
@@ -139,6 +141,7 @@ def start_unlock(
         link_server_id=link_server_id,
     )
     session.add(attempt)
+    bump_shortener_funnel_daily(session, body.shortener_id, datetime.now(UTC).date(), attempts=1)
     session.commit()
     session.refresh(attempt)
 
@@ -177,6 +180,9 @@ def report_shortener(
     attempt.reported_at = datetime.now(UTC)
     attempt.report_reason = body.reason
     session.add(attempt)
+    bump_shortener_funnel_daily(
+        session, body.shortener_id, attempt.reported_at.date(), reported=1
+    )
     session.commit()
     maybe_auto_disable(session, body.shortener_id)
     return Message(message="Reported")

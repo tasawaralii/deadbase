@@ -705,6 +705,11 @@ class DownloadEvents(SQLModel, table=True):
     link_server_id: int = Field(
         foreign_key='link_servers.ser_link_id', ondelete='CASCADE', index=True
     )
+    # Denormalized from link_servers -> links at write time (see
+    # app.unlock.record_download_event) so the daily rollup never needs to
+    # join back through links to know what was actually downloaded - same
+    # reasoning as ContentViews storing content_id directly.
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
     visitor_id: uuid.UUID = Field(index=True)
     via_shortener_id: int | None = Field(
         default=None,
@@ -717,6 +722,9 @@ class DownloadEvents(SQLModel, table=True):
         sa_type=DateTime(timezone=True),  # type: ignore
         index=True,
     )
+    # Rolled into ContentDownloadDaily by the download-stats cron job, then
+    # pruned - same raw-log-then-rollup pattern as ContentViews/rolled_up.
+    rolled_up: bool = Field(default=False, index=True)
 
     link_server: LinkServers = Relationship(back_populates='download_events')
     via_shortener: LinkShorteners | None = Relationship()
@@ -793,3 +801,124 @@ class AnimeViewDaily(SQLModel, table=True):
     anime_id: int = Field(foreign_key='animes.anime_id', ondelete='CASCADE', index=True)
     view_date: dt.date = Field(index=True)
     view_count: int = Field(default=0)
+
+
+# Monthly tier for the same daily tables above - a *ViewDaily row older than
+# app.trending.DAILY_RETENTION_DAYS gets folded into the matching *ViewMonthly
+# row and deleted, same "day 1..30, then month 3/month 2/month 1" tiering as
+# the download-stats tables below.
+
+
+class ContentViewMonthly(SQLModel, table=True):
+    __tablename__ = 'content_view_monthly'
+    __table_args__ = (
+        UniqueConstraint(
+            'content_id', 'year', 'month', name='content_view_monthly_content_ym_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
+    year: int = Field(index=True)
+    month: int
+    view_count: int = Field(default=0)
+
+
+class SeasonViewMonthly(SQLModel, table=True):
+    __tablename__ = 'season_view_monthly'
+    __table_args__ = (
+        UniqueConstraint(
+            'season_id', 'year', 'month', name='season_view_monthly_season_ym_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    season_id: int = Field(foreign_key='seasons.season_id', ondelete='CASCADE', index=True)
+    year: int = Field(index=True)
+    month: int
+    view_count: int = Field(default=0)
+
+
+class AnimeViewMonthly(SQLModel, table=True):
+    __tablename__ = 'anime_view_monthly'
+    __table_args__ = (
+        UniqueConstraint(
+            'anime_id', 'year', 'month', name='anime_view_monthly_anime_ym_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    anime_id: int = Field(foreign_key='animes.anime_id', ondelete='CASCADE', index=True)
+    year: int = Field(index=True)
+    month: int
+    view_count: int = Field(default=0)
+
+
+# --- DOWNLOAD STATS MODELS ---
+# Content is high-cardinality (tens of thousands of movies/episodes/packs) so
+# it gets the same two-tier treatment as views: a daily table kept for a
+# rolling ~30 days, compacted into a monthly table (and deleted) once older
+# than that. Servers and shorteners are tiny in number (4-10 each) so they
+# skip the monthly tier entirely and are just incremented inline at write
+# time - no batching, no dedup, the row count is negligible forever.
+
+
+class ContentDownloadDaily(SQLModel, table=True):
+    __tablename__ = 'content_download_daily'
+    __table_args__ = (
+        UniqueConstraint(
+            'content_id', 'download_date', name='content_download_daily_content_date_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
+    download_date: dt.date = Field(index=True)
+    download_count: int = Field(default=0)
+
+
+class ContentDownloadMonthly(SQLModel, table=True):
+    __tablename__ = 'content_download_monthly'
+    __table_args__ = (
+        UniqueConstraint(
+            'content_id', 'year', 'month', name='content_download_monthly_content_ym_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    content_id: int = Field(foreign_key='content.id', ondelete='CASCADE', index=True)
+    year: int = Field(index=True)
+    month: int
+    download_count: int = Field(default=0)
+
+
+class ServerDownloadDaily(SQLModel, table=True):
+    __tablename__ = 'server_download_daily'
+    __table_args__ = (
+        UniqueConstraint(
+            'server_id', 'download_date', name='server_download_daily_server_date_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    server_id: int = Field(foreign_key='server_info.server_id', ondelete='CASCADE', index=True)
+    download_date: dt.date = Field(index=True)
+    download_count: int = Field(default=0)
+
+
+class ShortenerFunnelDaily(SQLModel, table=True):
+    __tablename__ = 'shortener_funnel_daily'
+    __table_args__ = (
+        UniqueConstraint(
+            'shortener_id', 'stat_date', name='shortener_funnel_daily_shortener_date_key'
+        ),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    shortener_id: int = Field(
+        foreign_key='link_shorteners.id', ondelete='CASCADE', index=True
+    )
+    stat_date: dt.date = Field(index=True)
+    attempts: int = Field(default=0)
+    solved: int = Field(default=0)
+    reported: int = Field(default=0)
