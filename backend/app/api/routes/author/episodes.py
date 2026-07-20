@@ -166,3 +166,23 @@ def update_episode(
     session.refresh(episode)
 
     return _to_public(episode)
+
+
+@router.delete("/{episode_id}", status_code=204)
+def delete_episode(
+    session: SessionDep, author: CurrentAuthor, season_id: int, episode_id: int
+) -> None:
+    """Deletes the episode, its Content row, and every link on it - via
+    cascade_delete on the model relationships (see app/models.py)."""
+    season = session.get(Seasons, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail="Season not found")
+
+    require_anime_write_access(session, author, season.anime_id, season=season)
+
+    episode = session.get(Episodes, episode_id)
+    if episode is None or episode.season_id != season_id:
+        raise HTTPException(status_code=404, detail="Episode not found in this season")
+
+    session.delete(episode)
+    session.commit()

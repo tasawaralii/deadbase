@@ -9,6 +9,8 @@ class ServerCreate(SQLModel):
     api: str
     color: str
     is_enabled: bool = True
+    api_domain: str | None = None
+    upload_enabled: bool = True
 
 
 class ServerUpdate(SQLModel):
@@ -19,6 +21,8 @@ class ServerUpdate(SQLModel):
     api: str | None = None
     color: str | None = None
     is_enabled: bool | None = None
+    api_domain: str | None = None
+    upload_enabled: bool | None = None
 
 
 class ServerAdminPublic(SQLModel):
@@ -30,6 +34,8 @@ class ServerAdminPublic(SQLModel):
     api: str
     color: str
     is_enabled: bool
+    api_domain: str | None
+    upload_enabled: bool
 
 
 class ServerAdminListPublic(SQLModel):

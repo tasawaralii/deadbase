@@ -286,6 +286,20 @@ class ServerInfo(SQLModel, table=True):
     api: str = Field(sa_column=Column('api', String(255), nullable=False))
     color: str = Field(sa_column=Column('color', String(10), nullable=False))
     is_enabled: bool = Field(sa_column=Column('is_enabled', Boolean, nullable=False, server_default=text('true')))
+    # Upload-API domain (see app/uploaders/) - kept separate from
+    # server_domain, which is the public download-resolution domain; these
+    # file-host services often use a different domain for their upload API
+    # than the one visitors download from, and both rotate independently.
+    api_domain: str | None = Field(default=None, sa_column=Column('api_domain', String(100)))
+    # Separate from is_enabled (which gates public visibility of already-
+    # uploaded links) - this is the admin's start/stop switch for the
+    # *background upload pipeline* specifically (app.link_upload), so
+    # uploads to a server can be paused without hiding links that already
+    # resolve fine there. Manual/instant admin-triggered uploads (see
+    # app.api.routes.admin.upload_queue) bypass this switch on purpose.
+    upload_enabled: bool = Field(
+        sa_column=Column('upload_enabled', Boolean, nullable=False, server_default=text('true'))
+    )
 
     link_servers: list["LinkServers"] = Relationship(back_populates='server', cascade_delete=True)
 
@@ -338,7 +352,16 @@ class Animes(SQLModel, table=True):
     anime_rel_date: dt.date | None = Field(default=None, sa_column=Column('anime_rel_date', Date))
 
     age: AgeRatings = Relationship(back_populates='animes')
-    content: Content = Relationship(back_populates='animes')
+    # Content is created 1:1 alongside its Animes row and has no life of its
+    # own - the FK just happens to live on this (the "child"/owning) side.
+    # single_parent=True is required by SQLAlchemy to allow delete-orphan
+    # cascade on this many-to-one/one-to-one direction (normally cascade
+    # only flows from the referenced/"one" side); it also means a Content
+    # row can never be repointed at a different Animes - correct, since
+    # each Content row belongs to exactly the one row that created it.
+    content: Content = Relationship(
+        back_populates='animes', cascade_delete=True, sa_relationship_kwargs={'single_parent': True}
+    )
     genre: list["Genres"] = Relationship(back_populates='anime', sa_relationship_kwargs={'secondary': 'anime_genres'})
     seasons: list["Seasons"] = Relationship(back_populates='anime', cascade_delete=True)
     post: Optional["Posts"] = Relationship(back_populates='anime', cascade_delete=True)  # noqa: UP045
@@ -397,6 +420,12 @@ t_anime_genres = Table(
 )
 
 
+class LinkServerStatus(enum.StrEnum):
+    PENDING = 'pending'
+    SUCCESS = 'success'
+    FAILED = 'failed'
+
+
 class LinkServers(SQLModel, table=True):
     __tablename__ = 'link_servers'
     __table_args__ = (
@@ -412,8 +441,26 @@ class LinkServers(SQLModel, table=True):
     ser_link_id: int = Field(sa_column=Column('ser_link_id', BigInteger, primary_key=True, autoincrement=True))
     link_id: int = Field(sa_column=Column('link_id', BigInteger, nullable=False))
     server_id: int = Field(sa_column=Column('server_id', BigInteger, nullable=False))
-    is_uploaded: int = Field(sa_column=Column('is_uploaded', BigInteger, nullable=False, server_default=text("'0'::bigint")))
-    slug: str = Field(sa_column=Column('slug', String(255), nullable=False))
+    slug: str | None = Field(default=None, sa_column=Column('slug', String(255)))
+    # Upload job state - a row is created (status=pending) as soon as a link
+    # is queued for a server, before any upload attempt, so retries/backoff
+    # have somewhere to live. See app.link_upload.
+    status: LinkServerStatus = Field(
+        sa_column=Column(
+            'status',
+            Enum(LinkServerStatus, values_callable=lambda cls: [m.value for m in cls], name='link_server_status'),
+            nullable=False,
+            server_default=text("'pending'"),
+        )
+    )
+    attempt_count: int = Field(sa_column=Column('attempt_count', BigInteger, nullable=False, server_default=text('0')))
+    last_error: str | None = Field(default=None, sa_column=Column('last_error', String(500)))
+    last_attempted_at: datetime | None = Field(
+        default=None, sa_column=Column('last_attempted_at', DateTime(True))
+    )
+    next_attempt_at: datetime | None = Field(
+        default=None, sa_column=Column('next_attempt_at', DateTime(True), index=True)
+    )
 
     link: Links = Relationship(back_populates='link_servers')
     server: ServerInfo = Relationship(back_populates='link_servers')
@@ -474,7 +521,11 @@ class Episodes(SQLModel, table=True):
     air_date: dt.date | None = Field(default=None, sa_column=Column('air_date', Date))
     overview: str | None = Field(default=None, sa_column=Column('overview', Text))
 
-    content: Content = Relationship(back_populates='episodes')
+    # See Animes.content for why this is cascade_delete + single_parent
+    # despite the FK living on this side.
+    content: Content = Relationship(
+        back_populates='episodes', cascade_delete=True, sa_relationship_kwargs={'single_parent': True}
+    )
     season: Seasons = Relationship(back_populates='episodes')
 
 
@@ -495,7 +546,11 @@ class Packs(SQLModel, table=True):
     end_ep: int = Field(sa_column=Column('end_ep', BigInteger, nullable=False))
     content_id: int = Field(sa_column=Column('content_id', BigInteger, nullable=False))
 
-    content: Content = Relationship(back_populates='packs')
+    # See Animes.content for why this is cascade_delete + single_parent
+    # despite the FK living on this side.
+    content: Content = Relationship(
+        back_populates='packs', cascade_delete=True, sa_relationship_kwargs={'single_parent': True}
+    )
     season: Seasons = Relationship(back_populates='packs')
 
 
@@ -511,7 +566,12 @@ class Content(SQLModel, table=True):
     animes: Animes | None = Relationship(back_populates='content')
     episodes: Episodes | None = Relationship(back_populates='content')
     packs: Packs | None = Relationship(back_populates='content')
-    links: list["Links"] = Relationship(back_populates="content")
+    # Normal-direction cascade (Content is genuinely the "one" side here,
+    # Links the "many") - once a Content row is cascade-deleted via its
+    # owning Animes/Episodes/Packs (see those models' `content` relationship),
+    # every Link pointing at it goes too, instead of RESTRICT blocking the
+    # Content delete.
+    links: list["Links"] = Relationship(back_populates="content", cascade_delete=True)
 
 
 class SeasonDubs(SQLModel, table=True):

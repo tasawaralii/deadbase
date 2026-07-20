@@ -126,3 +126,20 @@ def update_season(
 
     post = session.exec(select(Posts).where(Posts.season_id == season_id)).first()
     return _to_public(season, post.slug if post else None)
+
+
+@season_router.delete("/{season_id}", status_code=204)
+def delete_season(session: SessionDep, author: CurrentAuthor, season_id: int) -> None:
+    """
+    Deletes the season and everything under it - episodes, packs, their
+    Content rows, every link, the post - via cascade_delete on the model
+    relationships (see app/models.py). No manual cleanup needed.
+    """
+    season = session.get(Seasons, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail="Season not found")
+
+    require_anime_write_access(session, author, season.anime_id, season=season)
+
+    session.delete(season)
+    session.commit()

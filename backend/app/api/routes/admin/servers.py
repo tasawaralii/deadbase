@@ -30,6 +30,8 @@ def _to_public(server: ServerInfo) -> ServerAdminPublic:
         api=server.api,
         color=server.color,
         is_enabled=server.is_enabled,
+        api_domain=server.api_domain,
+        upload_enabled=server.upload_enabled,
     )
 
 
@@ -41,6 +43,22 @@ def _check_sid_free(session: SessionDep, server_sid: str, exclude_id: int | None
         raise HTTPException(
             status_code=400, detail=f"A server with server_sid '{server_sid}' already exists"
         )
+
+
+def _normalize_domain(value: str) -> str:
+    """
+    Both server_domain and api_domain are stored bare (no scheme, no
+    trailing slash) - code that needs a full URL adds the scheme back (see
+    app.media.resolve_server_link, app.uploaders.base.normalize_base_url).
+    Stripping here means it doesn't matter whether whoever's entering it
+    pastes "https://example.com" or "example.com" - it lands the same way.
+    """
+    domain = value.strip()
+    for prefix in ("https://", "http://"):
+        if domain.lower().startswith(prefix):
+            domain = domain[len(prefix) :]
+            break
+    return domain.rstrip("/")
 
 
 @router.get("/")
@@ -55,7 +73,12 @@ def list_servers(session: SessionDep) -> ServerAdminListPublic:
 def create_server(session: SessionDep, body: ServerCreate) -> ServerAdminPublic:
     _check_sid_free(session, body.server_sid)
 
-    server = ServerInfo(**body.model_dump())
+    data = body.model_dump()
+    data["server_domain"] = _normalize_domain(data["server_domain"])
+    if data.get("api_domain"):
+        data["api_domain"] = _normalize_domain(data["api_domain"])
+
+    server = ServerInfo(**data)
     session.add(server)
     session.commit()
     session.refresh(server)
@@ -73,6 +96,10 @@ def update_server(
     updates = body.model_dump(exclude_unset=True)
     if "server_sid" in updates:
         _check_sid_free(session, updates["server_sid"], exclude_id=server_id)
+    if updates.get("server_domain"):
+        updates["server_domain"] = _normalize_domain(updates["server_domain"])
+    if updates.get("api_domain"):
+        updates["api_domain"] = _normalize_domain(updates["api_domain"])
 
     for field, value in updates.items():
         setattr(server, field, value)

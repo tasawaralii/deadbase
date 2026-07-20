@@ -280,3 +280,22 @@ def update_anime(
     session.refresh(anime)
 
     return _to_public(session, anime)
+
+
+@router.delete("/{anime_id}", status_code=204)
+def delete_anime(session: SessionDep, author: CurrentAuthor, anime_id: int) -> None:
+    """
+    Deletes the anime and everything under it - seasons, episodes, packs,
+    their Content rows, every link, the post(s) - all handled by cascade_
+    delete on the model relationships (see Animes.content, Episodes.content,
+    Packs.content, Content.links in app/models.py). No manual cleanup code
+    needed here; a plain session.delete does the whole tree correctly.
+    """
+    anime = session.get(Animes, anime_id)
+    if anime is None:
+        raise HTTPException(status_code=404, detail="Anime not found")
+
+    require_anime_write_access(session, author, anime_id)
+
+    session.delete(anime)
+    session.commit()

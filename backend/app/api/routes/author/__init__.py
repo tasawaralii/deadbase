@@ -7,6 +7,7 @@ from app.api.routes.author import (
     images,
     links,
     packs,
+    posts,
     seasons,
     stream_comments,
     tmdb,
@@ -28,3 +29,4 @@ router.include_router(links.router)
 router.include_router(links.single_link_router)
 router.include_router(links.season_links_router)
 router.include_router(links.gdrive_router)
+router.include_router(posts.router)

@@ -70,7 +70,9 @@ def resolve_image_urls(
     return ImageUrls(low=image, mid=image, high=image)
 
 
-def resolve_server_link(server_sid: str, domain: str, slug: str) -> str | None:
+def resolve_server_link(server_sid: str, domain: str, slug: str | None) -> str | None:
+    if not slug:
+        return None
     pattern = _SERVER_LINK_PATTERNS.get(server_sid)
     if not pattern:
         return None
