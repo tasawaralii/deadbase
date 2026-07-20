@@ -189,7 +189,11 @@ def create_anime(
     # Content needs to exist before Animes (content_id is NOT NULL), but its
     # own respective_id can't be set until the Animes row has an id - insert
     # with a placeholder, flush to get an id, then backfill both directions.
-    content = Content(content_type=ContentContentType.MOVIE, respective_id=None)
+    # tv gets its own content_type so nothing ever treats a tv anime's own
+    # content_id as a valid link/comment/view-tracking target - only a real
+    # movie's Content row is stamped MOVIE (see ContentContentType.TV).
+    content_type = ContentContentType.MOVIE if body.type == "movie" else ContentContentType.TV
+    content = Content(content_type=content_type, respective_id=None)
     session.add(content)
     session.flush()
 

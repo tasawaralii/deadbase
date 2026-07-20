@@ -183,6 +183,13 @@ class ContentContentType(enum.StrEnum):
     MOVIE = 'movie'
     PACK = 'pack'
     EPISODE = 'episode'
+    # The Content row every tv-type Animes row is required to have
+    # (content_id is NOT NULL) but that never itself gets links/comments/
+    # view-tracking - downloads for a tv show live on its Episodes/Packs
+    # content_id instead. Deliberately distinct from MOVIE so every check
+    # that means "is this attachable" (PLAYABLE_TYPES, resolve_anime_id_for_
+    # content, etc) excludes it automatically, without an extra lookup.
+    TV = 'tv'
 
 
 class SeasonsPosterSource(enum.StrEnum):
