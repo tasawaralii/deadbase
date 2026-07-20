@@ -12,14 +12,14 @@ from app.schemas.admin_season import SeasonAdminPublic, SeasonCreate, SeasonUpda
 
 router = APIRouter(
     prefix="/animes/{anime_id}/seasons",
-    tags=["admin"],
+    tags=["author"],
     dependencies=[Depends(get_current_author)],
 )
 
 # Reads/writes keyed on an existing season only need season_id - anime_id is
 # recoverable from the season itself, same flattening as episodes/packs/links.
 season_router = APIRouter(
-    prefix="/seasons", tags=["admin"], dependencies=[Depends(get_current_author)]
+    prefix="/seasons", tags=["author"], dependencies=[Depends(get_current_author)]
 )
 
 

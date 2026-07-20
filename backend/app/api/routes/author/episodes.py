@@ -14,7 +14,7 @@ from app.schemas.admin_episode import (
 
 router = APIRouter(
     prefix="/seasons/{season_id}/episodes",
-    tags=["admin"],
+    tags=["author"],
     dependencies=[Depends(get_current_author)],
 )
 

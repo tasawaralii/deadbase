@@ -33,7 +33,7 @@ from app.schemas.admin_season import SeasonAdminSummary
 from app.slugs import ensure_unique_slug, slugify
 
 router = APIRouter(
-    prefix="/animes", tags=["admin"], dependencies=[Depends(get_current_author)]
+    prefix="/animes", tags=["author"], dependencies=[Depends(get_current_author)]
 )
 
 

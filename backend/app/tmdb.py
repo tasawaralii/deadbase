@@ -176,7 +176,7 @@ def get_episode_groups(tmdb_id: int) -> TmdbEpisodeGroupList:
     a single TMDB "season" - episode groups are TMDB's own workaround, an
     alternate season split some (not all) shows also have populated. Authors
     fall back to browsing these manually when the default season data looks
-    wrong (see app.api.routes.admin.tmdb.get_episode_group).
+    wrong (see app.api.routes.author.tmdb.get_episode_group).
     """
     data = _get(f"/tv/{tmdb_id}/episode_groups")
     groups = [

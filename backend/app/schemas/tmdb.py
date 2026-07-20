@@ -107,7 +107,7 @@ class TmdbEpisodeGroupItem(SQLModel):
     order: int
     # Numbered as TMDB stores them in this group - often globally sequential
     # across a mixed season rather than reset per-season, see
-    # app.api.routes.admin.tmdb for how authors are expected to handle this.
+    # app.api.routes.author.tmdb for how authors are expected to handle this.
     episodes: list[TmdbEpisodeSummary]
 
 

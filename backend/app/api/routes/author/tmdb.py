@@ -15,7 +15,7 @@ from app.schemas.tmdb import (
 )
 
 router = APIRouter(
-    prefix="/tmdb", tags=["admin"], dependencies=[Depends(get_current_author)]
+    prefix="/tmdb", tags=["author"], dependencies=[Depends(get_current_author)]
 )
 
 

@@ -13,7 +13,7 @@ from app.schemas.admin_pack import (
 
 router = APIRouter(
     prefix="/seasons/{season_id}/packs",
-    tags=["admin"],
+    tags=["author"],
     dependencies=[Depends(get_current_author)],
 )
 

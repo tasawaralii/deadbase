@@ -29,24 +29,24 @@ from app.schemas.admin_link import (
 
 router = APIRouter(
     prefix="/content/{content_id}/links",
-    tags=["admin"],
+    tags=["author"],
     dependencies=[Depends(get_current_author)],
 )
 
 # Deletion is keyed purely on link_id - content_id is already recoverable
 # from the link itself (link.content_id), no need to carry it separately.
 single_link_router = APIRouter(
-    prefix="/links", tags=["admin"], dependencies=[Depends(get_current_author)]
+    prefix="/links", tags=["author"], dependencies=[Depends(get_current_author)]
 )
 
 season_links_router = APIRouter(
     prefix="/seasons/{season_id}/links",
-    tags=["admin"],
+    tags=["author"],
     dependencies=[Depends(get_current_author)],
 )
 
 gdrive_router = APIRouter(
-    prefix="/gdrive", tags=["admin"], dependencies=[Depends(get_current_author)]
+    prefix="/gdrive", tags=["author"], dependencies=[Depends(get_current_author)]
 )
 
 

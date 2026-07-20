@@ -8,7 +8,7 @@ from app.schemas.admin import AdminImageUploadPublic
 from app.storage import upload_image
 
 router = APIRouter(
-    prefix="/images", tags=["admin"], dependencies=[Depends(get_current_author)]
+    prefix="/images", tags=["author"], dependencies=[Depends(get_current_author)]
 )
 
 _ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}

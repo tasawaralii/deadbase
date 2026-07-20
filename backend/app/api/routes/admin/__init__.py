@@ -1,28 +1,10 @@
 from fastapi import APIRouter
 
-from app.api.routes.admin import (
-    animes,
-    comments,
-    episodes,
-    images,
-    links,
-    packs,
-    seasons,
-    stream_comments,
-    tmdb,
-)
+from app.api.routes.admin import users
 
+# Superuser-only config: user/author account administration today, and the
+# future home for shortener/server/stats config. Content CRUD lives under
+# /author instead (see app.api.routes.author) - accessible to authors, not
+# superuser-only, despite historically having lived here too.
 router = APIRouter(prefix="/admin", tags=["admin"])
-router.include_router(comments.router)
-router.include_router(stream_comments.router)
-router.include_router(images.router)
-router.include_router(tmdb.router)
-router.include_router(animes.router)
-router.include_router(seasons.router)
-router.include_router(seasons.season_router)
-router.include_router(episodes.router)
-router.include_router(packs.router)
-router.include_router(links.router)
-router.include_router(links.single_link_router)
-router.include_router(links.season_links_router)
-router.include_router(links.gdrive_router)
+router.include_router(users.router)

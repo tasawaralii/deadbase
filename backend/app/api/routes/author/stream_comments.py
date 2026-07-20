@@ -25,7 +25,7 @@ from app.schemas.admin import (
 
 router = APIRouter(
     prefix="/stream-comments",
-    tags=["admin"],
+    tags=["author"],
     dependencies=[Depends(get_current_author)],
 )
 
