@@ -23,6 +23,11 @@ export type AdminCommentStatusUpdate = {
     status: CommentStatus;
 };
 
+export type AdminImageUploadPublic = {
+    image: string;
+    urls: ImageUrls;
+};
+
 export type AdminStreamCommentListPublic = {
     data: Array<AdminStreamCommentPublic>;
     count: number;
@@ -40,8 +45,113 @@ export type AdminStreamCommentPublic = {
     status: CommentStatus;
 };
 
+export type AgeRatingAdminListPublic = {
+    data: Array<AgeRatingAdminPublic>;
+};
+
+export type AgeRatingAdminPublic = {
+    age_id: number;
+    age_name: string;
+    age_des: string;
+};
+
+export type AgeRatingCreate = {
+    age_name: string;
+    age_des: string;
+};
+
+export type AgeRatingUpdate = {
+    age_name?: (string | null);
+    age_des?: (string | null);
+};
+
+export type AnimeAccessGrantPublic = {
+    anime_id: number;
+    slug: string;
+    anime_name: string;
+    type: string;
+};
+
+export type AnimeAccessListPublic = {
+    data: Array<AnimeAccessGrantPublic>;
+};
+
+export type AnimeAdminDetail = {
+    anime_id: number;
+    slug: string;
+    anime_name: string;
+    type: string;
+    content_id: (number | null);
+    poster: ImageUrls;
+    backdrop: ImageUrls;
+    overview: string;
+    duration: number;
+    rating: string;
+    age_id: number;
+    anime_tmdb_id: (number | null);
+    anime_rel_date: (string | null);
+    genres: Array<(string)>;
+    post_slug: (string | null);
+    seasons: Array<SeasonAdminSummary>;
+};
+
+export type AnimeAdminListPublic = {
+    data: Array<AnimeAdminSummary>;
+    count: number;
+};
+
+export type AnimeAdminPublic = {
+    anime_id: number;
+    slug: string;
+    anime_name: string;
+    type: string;
+    content_id: (number | null);
+    poster: ImageUrls;
+    backdrop: ImageUrls;
+    overview: string;
+    duration: number;
+    rating: string;
+    age_id: number;
+    anime_tmdb_id: (number | null);
+    anime_rel_date: (string | null);
+    genres: Array<(string)>;
+    post_slug: (string | null);
+};
+
+export type AnimeAdminSummary = {
+    anime_id: number;
+    slug: string;
+    anime_name: string;
+    type: string;
+    poster: ImageUrls;
+    rating: string;
+    season_count: number;
+};
+
+export type AnimeCreate = {
+    anime_name: string;
+    type: 'movie' | 'tv';
+    overview: string;
+    duration: number;
+    rating: (number | string);
+    age_id: number;
+    poster_source: 'tmdb' | 'bucket';
+    poster_img: string;
+    backdrop_source: 'tmdb' | 'bucket';
+    backdrop_img: string;
+    anime_tmdb_id?: (number | null);
+    anime_rel_date?: (string | null);
+    genre_ids?: Array<(number)>;
+};
+
+export type type = 'movie' | 'tv';
+
+export type poster_source = 'tmdb' | 'bucket';
+
+export type backdrop_source = 'tmdb' | 'bucket';
+
 export type AnimeDetail = {
-    content_id: number;
+    content_id: (number | null);
     slug: string;
     anime_name: string;
     type: string;
@@ -76,6 +186,21 @@ export type AnimeSummary = {
     season_count: (number | null);
 };
 
+export type AnimeUpdate = {
+    anime_name?: (string | null);
+    overview?: (string | null);
+    duration?: (number | null);
+    rating?: (number | string | null);
+    age_id?: (number | null);
+    poster_source?: ('tmdb' | 'bucket' | null);
+    poster_img?: (string | null);
+    backdrop_source?: ('tmdb' | 'bucket' | null);
+    backdrop_img?: (string | null);
+    anime_tmdb_id?: (number | null);
+    anime_rel_date?: (string | null);
+    genre_ids?: (Array<(number)> | null);
+};
+
 export type AuthorAccessScope = 'all' | 'ongoing' | 'access_list';
 
 export type AuthorPublic = {
@@ -83,6 +208,13 @@ export type AuthorPublic = {
     slug: string;
     avatar_url: string;
 };
+
+export type Body_author_create_image = {
+    file: string;
+    kind: 'poster' | 'backdrop';
+};
+
+export type kind = 'poster' | 'backdrop';
 
 export type Body_login_login_access_token = {
     grant_type?: (string | null);
@@ -121,10 +253,57 @@ export type CommentPublic = {
 
 export type CommentStatus = 'pending' | 'approved' | 'spam';
 
+export type ContentDownloadItem = {
+    content_id: number;
+    content_type: string;
+    title: string;
+    downloads: number;
+};
+
+export type ContentDownloadList = {
+    data: Array<ContentDownloadItem>;
+};
+
 export type DownloadLink = {
     name: string;
     link_server_id: number;
     color: string;
+};
+
+export type EpisodeAdminPublic = {
+    episode_id: number;
+    season_id: number;
+    content_id: number;
+    episode_number: number;
+    episode_name: (string | null);
+    overview: (string | null);
+    img: ImageUrls;
+    air_date: (string | null);
+    episode_runtime: (number | null);
+    episode_rating: (string | null);
+    episode_tmdb_id: (string | null);
+    note: (string | null);
+    link_count: number;
+};
+
+export type EpisodeBatchCreate = {
+    episodes: Array<EpisodeCreateItem>;
+};
+
+export type EpisodeBatchPublic = {
+    data: Array<EpisodeAdminPublic>;
+};
+
+export type EpisodeCreateItem = {
+    episode_number: number;
+    episode_name?: (string | null);
+    overview?: (string | null);
+    img?: (string | null);
+    air_date?: (string | null);
+    episode_runtime?: (number | null);
+    episode_rating?: (number | string | null);
+    episode_tmdb_id?: (string | null);
+    note?: (string | null);
 };
 
 export type EpisodeDetail = {
@@ -150,9 +329,51 @@ export type EpisodeSummary = {
     link_count: number;
 };
 
+export type EpisodeUpdate = {
+    episode_number?: (number | null);
+    episode_name?: (string | null);
+    overview?: (string | null);
+    img?: (string | null);
+    air_date?: (string | null);
+    episode_runtime?: (number | null);
+    episode_rating?: (number | string | null);
+    episode_tmdb_id?: (string | null);
+    note?: (string | null);
+};
+
+export type GdriveFolderFile = {
+    file_id: string;
+    name: string;
+    url: string;
+};
+
+export type GdriveFolderListing = {
+    files: Array<GdriveFolderFile>;
+};
+
+export type GenreAdminListPublic = {
+    data: Array<GenreAdminPublic>;
+};
+
+export type GenreAdminPublic = {
+    genre_id: number;
+    genre_name: string;
+    genre_sid: string;
+};
+
+export type GenreCreate = {
+    genre_name: string;
+    genre_sid: string;
+};
+
 export type GenrePublic = {
     name: string;
     slug: string;
+};
+
+export type GenreUpdate = {
+    genre_name?: (string | null);
+    genre_sid?: (string | null);
 };
 
 export type HTTPValidationError = {
@@ -165,12 +386,92 @@ export type ImageUrls = {
     high: string;
 };
 
+export type LanguageAdminListPublic = {
+    data: Array<LanguageAdminPublic>;
+};
+
+export type LanguageAdminPublic = {
+    language_id: number;
+    language_sid: string;
+    language_name: string;
+};
+
+export type LanguageCreate = {
+    language_sid: string;
+    language_name: string;
+};
+
+export type LanguageUpdate = {
+    language_sid?: (string | null);
+    language_name?: (string | null);
+};
+
+export type LinkAdminListPublic = {
+    data: Array<LinkAdminPublic>;
+};
+
+export type LinkAdminPublic = {
+    link_id: number;
+    content_id: number;
+    filename: string;
+    is_live: boolean;
+    gdrive_email: string;
+    gdriveid: string;
+    type: string;
+    mimetype: string;
+    duration: number;
+    note: string;
+    only_hindi: boolean;
+    size: (string | null);
+    quality_id: (number | null);
+    added_date: string;
+    updated_date: string;
+};
+
+export type LinkBatchCreate = {
+    gdrive_urls: Array<(string)>;
+    note?: string;
+    only_hindi?: boolean;
+};
+
+export type LinkBatchResult = {
+    results: Array<LinkBatchResultItem>;
+};
+
+export type LinkBatchResultItem = {
+    gdrive_url: string;
+    success: boolean;
+    link?: (LinkAdminPublic | null);
+    error?: (string | null);
+};
+
+export type LinkBulkDeleteResult = {
+    deleted_count: number;
+};
+
 export type LinkPublic = {
     quality: string;
     size: string;
     servers: Array<DownloadLink>;
     only_hindi: boolean;
     note: string;
+};
+
+export type LinkServerJobPublic = {
+    ser_link_id: number;
+    link_id: number;
+    server_id: number;
+    status: string;
+    slug: (string | null);
+    attempt_count: number;
+    last_error: (string | null);
+};
+
+export type LinkUpdate = {
+    is_live?: (boolean | null);
+    note?: (string | null);
+    only_hindi?: (boolean | null);
+    quality_id?: (number | null);
 };
 
 export type Message = {
@@ -182,6 +483,42 @@ export type NewPassword = {
     new_password: string;
 };
 
+export type OttPlatformAdminListPublic = {
+    data: Array<OttPlatformAdminPublic>;
+};
+
+export type OttPlatformAdminPublic = {
+    ott_id: number;
+    ott_sid: string;
+    ott_name: string;
+};
+
+export type OttPlatformCreate = {
+    ott_sid: string;
+    ott_name: string;
+};
+
+export type OttPlatformUpdate = {
+    ott_sid?: (string | null);
+    ott_name?: (string | null);
+};
+
+export type PackAdminPublic = {
+    pack_id: number;
+    season_id: number;
+    content_id: number;
+    pack_name: string;
+    start_ep: number;
+    end_ep: number;
+    link_count: number;
+};
+
+export type PackCreate = {
+    pack_name: string;
+    start_ep: number;
+    end_ep: number;
+};
+
 export type PackDetail = {
     pack_name: string;
     start_ep: number;
@@ -190,11 +527,35 @@ export type PackDetail = {
     watch_servers: Array<DownloadLink>;
 };
 
+export type PackListPublic = {
+    data: Array<PackAdminPublic>;
+};
+
 export type PackSummary = {
     pack_name: string;
     start_ep: number;
     end_ep: number;
     link_count: number;
+};
+
+export type PackUpdate = {
+    pack_name?: (string | null);
+    start_ep?: (number | null);
+    end_ep?: (number | null);
+};
+
+export type PostAdminPublic = {
+    id: number;
+    anime_id: (number | null);
+    season_id: (number | null);
+    title: string;
+    slug: string;
+    backdrop_img: (string | null);
+    status: PostStatus;
+    sticky: boolean;
+    views: number;
+    last_updated: string;
+    tags: Array<TagPublic>;
 };
 
 export type PostDetail = {
@@ -240,6 +601,14 @@ export type PostSummary = {
     type: string;
 };
 
+export type PostUpdate = {
+    title?: (string | null);
+    backdrop_img?: (string | null);
+    status?: (PostStatus | null);
+    sticky?: (boolean | null);
+    tag_ids?: (Array<(number)> | null);
+};
+
 export type PrivateUserCreate = {
     email: string;
     password: string;
@@ -247,9 +616,86 @@ export type PrivateUserCreate = {
     is_verified?: boolean;
 };
 
+export type ProcessBatchRequest = {
+    limit?: number;
+};
+
+export type ProcessBatchResult = {
+    processed: number;
+    succeeded: number;
+    failed: number;
+};
+
+export type QualityAdminListPublic = {
+    data: Array<QualityAdminPublic>;
+};
+
+export type QualityAdminPublic = {
+    quality_id: number;
+    quality_resolution: number;
+    is_hevc: boolean;
+    is_hq: boolean;
+    quality_order: number;
+    quality_name: string;
+};
+
+export type QualityCreate = {
+    quality_resolution: number;
+    is_hevc?: boolean;
+    is_hq?: boolean;
+    quality_order: number;
+    quality_name: string;
+};
+
+export type QualityUpdate = {
+    quality_resolution?: (number | null);
+    is_hevc?: (boolean | null);
+    is_hq?: (boolean | null);
+    quality_order?: (number | null);
+    quality_name?: (string | null);
+};
+
 export type ReportRequest = {
     shortener_id: number;
     reason?: (string | null);
+};
+
+export type SeasonAdminPublic = {
+    season_id: number;
+    anime_id: number;
+    season_number: number;
+    season_name: string;
+    total_episodes: number;
+    season_overview: string;
+    poster: ImageUrls;
+    rating: string;
+    season_tmdb_id: (string | null);
+    season_rel_date: (string | null);
+    status: SeasonStatus;
+    post_slug: string;
+};
+
+export type SeasonAdminSummary = {
+    season_id: number;
+    season_number: number;
+    season_name: string;
+    poster: ImageUrls;
+    episode_count: number;
+    total_episodes: number;
+    status: SeasonStatus;
+    post_slug: (string | null);
+};
+
+export type SeasonCreate = {
+    season_number: number;
+    season_name: string;
+    total_episodes: number;
+    season_overview: string;
+    poster_source: 'tmdb' | 'bucket';
+    poster_img: string;
+    rating?: (number | string | null);
+    season_tmdb_id?: (string | null);
+    season_rel_date?: (string | null);
 };
 
 export type SeasonDetail = {
@@ -270,6 +716,25 @@ export type SeasonDub = {
     language: string;
 };
 
+export type SeasonDubAdminPublic = {
+    season_id: number;
+    ott_id: number;
+    ott_name: string;
+    language_id: number;
+    language_name: string;
+};
+
+export type SeasonDubCreate = {
+    ott_id: number;
+    language_id: number;
+};
+
+export type SeasonDubListPublic = {
+    data: Array<SeasonDubAdminPublic>;
+};
+
+export type SeasonStatus = 'ongoing' | 'completed';
+
 export type SeasonSummary = {
     season_number: number;
     season_name: string;
@@ -277,6 +742,105 @@ export type SeasonSummary = {
     rating: string;
     episode_count: number;
     pack_count: number;
+};
+
+export type SeasonUpdate = {
+    season_number?: (number | null);
+    season_name?: (string | null);
+    total_episodes?: (number | null);
+    season_overview?: (string | null);
+    poster_source?: ('tmdb' | 'bucket' | null);
+    poster_img?: (string | null);
+    rating?: (number | string | null);
+    season_tmdb_id?: (string | null);
+    season_rel_date?: (string | null);
+    status?: (SeasonStatus | null);
+};
+
+export type ServerAdminListPublic = {
+    data: Array<ServerAdminPublic>;
+};
+
+export type ServerAdminPublic = {
+    server_id: number;
+    server_sid: string;
+    server_name: string;
+    server_order: number;
+    server_domain: string;
+    api: string;
+    color: string;
+    is_enabled: boolean;
+    api_domain: (string | null);
+    upload_enabled: boolean;
+};
+
+export type ServerCreate = {
+    server_sid: string;
+    server_name: string;
+    server_order?: number;
+    server_domain: string;
+    api: string;
+    color: string;
+    is_enabled?: boolean;
+    api_domain?: (string | null);
+    upload_enabled?: boolean;
+};
+
+export type ServerPerformanceStats = {
+    server_id: number;
+    server_name: string;
+    is_enabled: boolean;
+    downloads: number;
+};
+
+export type ServerUpdate = {
+    server_sid?: (string | null);
+    server_name?: (string | null);
+    server_order?: (number | null);
+    server_domain?: (string | null);
+    api?: (string | null);
+    color?: (string | null);
+    is_enabled?: (boolean | null);
+    api_domain?: (string | null);
+    upload_enabled?: (boolean | null);
+};
+
+export type ShortenerAdminListPublic = {
+    data: Array<ShortenerAdminPublic>;
+};
+
+export type ShortenerAdminPublic = {
+    id: number;
+    name: string;
+    slug: string;
+    api_url_template: string;
+    quick_url_template: string;
+    how_to_video_url: (string | null);
+    message: (string | null);
+    logo_url: (string | null);
+    is_enabled: boolean;
+    sort_order: number;
+};
+
+export type ShortenerCreate = {
+    name: string;
+    slug: string;
+    api_url_template: string;
+    quick_url_template: string;
+    how_to_video_url?: (string | null);
+    message?: (string | null);
+    logo_url?: (string | null);
+    is_enabled?: boolean;
+    sort_order?: number;
+};
+
+export type ShortenerFunnelStats = {
+    shortener_id: number;
+    name: string;
+    is_enabled: boolean;
+    attempts: number;
+    solved: number;
+    reported: number;
 };
 
 export type ShortenerOption = {
@@ -289,6 +853,18 @@ export type ShortenerOption = {
     reported: boolean;
 };
 
+export type ShortenerUpdate = {
+    name?: (string | null);
+    slug?: (string | null);
+    api_url_template?: (string | null);
+    quick_url_template?: (string | null);
+    how_to_video_url?: (string | null);
+    message?: (string | null);
+    logo_url?: (string | null);
+    is_enabled?: (boolean | null);
+    sort_order?: (number | null);
+};
+
 export type StartUnlockRequest = {
     shortener_id: number;
 };
@@ -297,9 +873,141 @@ export type StartUnlockResponse = {
     redirect_url: string;
 };
 
+export type StatsOverview = {
+    anime_count: number;
+    season_count: number;
+    episode_count: number;
+    pack_count: number;
+    link_count: number;
+    author_count: number;
+    pending_comments: number;
+    pending_stream_comments: number;
+};
+
+export type TagAdminListPublic = {
+    data: Array<TagAdminPublic>;
+};
+
+export type TagAdminPublic = {
+    id: number;
+    slug: string;
+    name: string;
+};
+
+export type TagCreate = {
+    slug: string;
+    name: string;
+};
+
 export type TagPublic = {
     name: string;
     slug: string;
+};
+
+export type TagUpdate = {
+    slug?: (string | null);
+    name?: (string | null);
+};
+
+export type TmdbEpisodeGroupDetail = {
+    id: string;
+    name: string;
+    groups: Array<TmdbEpisodeGroupItem>;
+};
+
+export type TmdbEpisodeGroupItem = {
+    id: string;
+    name: string;
+    order: number;
+    episodes: Array<TmdbEpisodeSummary>;
+};
+
+export type TmdbEpisodeGroupList = {
+    groups: Array<TmdbEpisodeGroupSummary>;
+};
+
+export type TmdbEpisodeGroupSummary = {
+    id: string;
+    name: string;
+    group_count: number;
+    episode_count: number;
+};
+
+export type TmdbEpisodeSummary = {
+    id: string;
+    episode_number: number;
+    name: string;
+    overview: string;
+    air_date: (string | null);
+    runtime: (number | null);
+    rating: number;
+    still: ImageUrls;
+    still_path: (string | null);
+};
+
+export type TmdbMovieDetail = {
+    tmdb_id: number;
+    title: string;
+    overview: string;
+    poster: ImageUrls;
+    backdrop: ImageUrls;
+    poster_path: (string | null);
+    backdrop_path: (string | null);
+    release_date: (string | null);
+    rating: number;
+    runtime: (number | null);
+    genres: Array<(string)>;
+};
+
+export type TmdbSearchResult = {
+    tmdb_id: number;
+    title: string;
+    overview: string;
+    poster: ImageUrls;
+    backdrop: ImageUrls;
+    poster_path: (string | null);
+    backdrop_path: (string | null);
+    release_date: (string | null);
+    rating: number;
+};
+
+export type TmdbSearchResults = {
+    results: Array<TmdbSearchResult>;
+};
+
+export type TmdbSeasonDetail = {
+    id: string;
+    season_number: number;
+    name: string;
+    overview: string;
+    poster: ImageUrls;
+    poster_path: (string | null);
+    air_date: (string | null);
+    episodes: Array<TmdbEpisodeSummary>;
+};
+
+export type TmdbSeasonSummary = {
+    id: string;
+    season_number: number;
+    name: string;
+    episode_count: number;
+    air_date: (string | null);
+    poster: ImageUrls;
+    poster_path: (string | null);
+};
+
+export type TmdbShowDetail = {
+    tmdb_id: number;
+    title: string;
+    overview: string;
+    poster: ImageUrls;
+    backdrop: ImageUrls;
+    poster_path: (string | null);
+    backdrop_path: (string | null);
+    first_air_date: (string | null);
+    rating: number;
+    genres: Array<(string)>;
+    seasons: Array<TmdbSeasonSummary>;
 };
 
 export type Token = {
@@ -339,6 +1047,21 @@ export type TrendingSeasonList = {
     data: Array<TrendingSeasonItem>;
 };
 
+export type UnlockConfigPublic = {
+    required_solves: number;
+    report_threshold: number;
+};
+
+export type UnlockConfigUpdate = {
+    required_solves?: (number | null);
+    report_threshold?: (number | null);
+};
+
+export type UnlockFunnelStats = {
+    shorteners: Array<ShortenerFunnelStats>;
+    servers: Array<ServerPerformanceStats>;
+};
+
 export type UnlockStatus = {
     unlocked: boolean;
     url?: (string | null);
@@ -350,6 +1073,20 @@ export type UnlockStatus = {
 export type UpdatePassword = {
     current_password: string;
     new_password: string;
+};
+
+export type UploadQueueFailedSample = {
+    link_id: number;
+    attempt_count: number;
+    last_error: (string | null);
+};
+
+export type UploadQueueStats = {
+    upload_enabled: boolean;
+    pending: number;
+    success: number;
+    failed: number;
+    failed_sample: Array<UploadQueueFailedSample>;
 };
 
 export type UserCreate = {
@@ -402,47 +1139,567 @@ export type ValidationError = {
     };
 };
 
-export type AdminListCommentsData = {
+export type AdminReadUsersData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type AdminReadUsersResponse = (UsersPublic);
+
+export type AdminCreateUserData = {
+    requestBody: UserCreate;
+};
+
+export type AdminCreateUserResponse = (UserPublic);
+
+export type AdminReadUserByIdData = {
+    userId: string;
+};
+
+export type AdminReadUserByIdResponse = (UserPublic);
+
+export type AdminUpdateUserData = {
+    requestBody: UserUpdate;
+    userId: string;
+};
+
+export type AdminUpdateUserResponse = (UserPublic);
+
+export type AdminDeleteUserData = {
+    userId: string;
+};
+
+export type AdminDeleteUserResponse = (Message);
+
+export type AdminListAnimeAccessData = {
+    userId: string;
+};
+
+export type AdminListAnimeAccessResponse = (AnimeAccessListPublic);
+
+export type AdminGrantAnimeAccessData = {
+    animeId: number;
+    userId: string;
+};
+
+export type AdminGrantAnimeAccessResponse = (AnimeAccessGrantPublic);
+
+export type AdminRevokeAnimeAccessData = {
+    animeId: number;
+    userId: string;
+};
+
+export type AdminRevokeAnimeAccessResponse = (void);
+
+export type AdminListShortenersResponse = (ShortenerAdminListPublic);
+
+export type AdminCreateShortenerData = {
+    requestBody: ShortenerCreate;
+};
+
+export type AdminCreateShortenerResponse = (ShortenerAdminPublic);
+
+export type AdminUpdateShortenerData = {
+    requestBody: ShortenerUpdate;
+    shortenerId: number;
+};
+
+export type AdminUpdateShortenerResponse = (ShortenerAdminPublic);
+
+export type AdminDeleteShortenerData = {
+    shortenerId: number;
+};
+
+export type AdminDeleteShortenerResponse = (void);
+
+export type AdminListServersResponse = (ServerAdminListPublic);
+
+export type AdminCreateServerData = {
+    requestBody: ServerCreate;
+};
+
+export type AdminCreateServerResponse = (ServerAdminPublic);
+
+export type AdminUpdateServerData = {
+    requestBody: ServerUpdate;
+    serverId: number;
+};
+
+export type AdminUpdateServerResponse = (ServerAdminPublic);
+
+export type AdminDeleteServerData = {
+    serverId: number;
+};
+
+export type AdminDeleteServerResponse = (void);
+
+export type AdminReadUnlockConfigResponse = (UnlockConfigPublic);
+
+export type AdminUpdateUnlockConfigData = {
+    requestBody: UnlockConfigUpdate;
+};
+
+export type AdminUpdateUnlockConfigResponse = (UnlockConfigPublic);
+
+export type AdminStatsOverviewResponse = (StatsOverview);
+
+export type AdminStatsUnlockFunnelData = {
+    window?: 'today' | 'week' | 'month' | 'all';
+};
+
+export type AdminStatsUnlockFunnelResponse = (UnlockFunnelStats);
+
+export type AdminStatsContentDownloadsData = {
+    limit?: number;
+    window?: 'today' | 'week' | 'month' | 'all';
+};
+
+export type AdminStatsContentDownloadsResponse = (ContentDownloadList);
+
+export type AdminStatsViewsData = {
+    limit?: number;
+    window?: 'today' | 'week' | 'month' | 'all';
+};
+
+export type AdminStatsViewsResponse = (TrendingAnimeList);
+
+export type AdminReadQueueStatsData = {
+    serverSid: string;
+};
+
+export type AdminReadQueueStatsResponse = (UploadQueueStats);
+
+export type AdminProcessBatchData = {
+    requestBody: ProcessBatchRequest;
+    serverSid: string;
+};
+
+export type AdminProcessBatchResponse = (ProcessBatchResult);
+
+export type AdminUploadLinkNowData = {
+    linkId: number;
+    serverSid: string;
+};
+
+export type AdminUploadLinkNowResponse = (LinkServerJobPublic);
+
+export type AdminListAgeRatingsResponse = (AgeRatingAdminListPublic);
+
+export type AdminCreateAgeRatingData = {
+    requestBody: AgeRatingCreate;
+};
+
+export type AdminCreateAgeRatingResponse = (AgeRatingAdminPublic);
+
+export type AdminUpdateAgeRatingData = {
+    ageId: number;
+    requestBody: AgeRatingUpdate;
+};
+
+export type AdminUpdateAgeRatingResponse = (AgeRatingAdminPublic);
+
+export type AdminDeleteAgeRatingData = {
+    ageId: number;
+};
+
+export type AdminDeleteAgeRatingResponse = (void);
+
+export type AdminListGenresResponse = (GenreAdminListPublic);
+
+export type AdminCreateGenreData = {
+    requestBody: GenreCreate;
+};
+
+export type AdminCreateGenreResponse = (GenreAdminPublic);
+
+export type AdminUpdateGenreData = {
+    genreId: number;
+    requestBody: GenreUpdate;
+};
+
+export type AdminUpdateGenreResponse = (GenreAdminPublic);
+
+export type AdminDeleteGenreData = {
+    genreId: number;
+};
+
+export type AdminDeleteGenreResponse = (void);
+
+export type AdminListQualitiesResponse = (QualityAdminListPublic);
+
+export type AdminCreateQualityData = {
+    requestBody: QualityCreate;
+};
+
+export type AdminCreateQualityResponse = (QualityAdminPublic);
+
+export type AdminUpdateQualityData = {
+    qualityId: number;
+    requestBody: QualityUpdate;
+};
+
+export type AdminUpdateQualityResponse = (QualityAdminPublic);
+
+export type AdminDeleteQualityData = {
+    qualityId: number;
+};
+
+export type AdminDeleteQualityResponse = (void);
+
+export type AdminListLanguagesResponse = (LanguageAdminListPublic);
+
+export type AdminCreateLanguageData = {
+    requestBody: LanguageCreate;
+};
+
+export type AdminCreateLanguageResponse = (LanguageAdminPublic);
+
+export type AdminUpdateLanguageData = {
+    languageId: number;
+    requestBody: LanguageUpdate;
+};
+
+export type AdminUpdateLanguageResponse = (LanguageAdminPublic);
+
+export type AdminDeleteLanguageData = {
+    languageId: number;
+};
+
+export type AdminDeleteLanguageResponse = (void);
+
+export type AdminListOttPlatformsResponse = (OttPlatformAdminListPublic);
+
+export type AdminCreateOttPlatformData = {
+    requestBody: OttPlatformCreate;
+};
+
+export type AdminCreateOttPlatformResponse = (OttPlatformAdminPublic);
+
+export type AdminUpdateOttPlatformData = {
+    ottId: number;
+    requestBody: OttPlatformUpdate;
+};
+
+export type AdminUpdateOttPlatformResponse = (OttPlatformAdminPublic);
+
+export type AdminDeleteOttPlatformData = {
+    ottId: number;
+};
+
+export type AdminDeleteOttPlatformResponse = (void);
+
+export type AdminListTagsResponse = (TagAdminListPublic);
+
+export type AdminCreateTagData = {
+    requestBody: TagCreate;
+};
+
+export type AdminCreateTagResponse = (TagAdminPublic);
+
+export type AdminUpdateTagData = {
+    requestBody: TagUpdate;
+    tagId: number;
+};
+
+export type AdminUpdateTagResponse = (TagAdminPublic);
+
+export type AdminDeleteTagData = {
+    tagId: number;
+};
+
+export type AdminDeleteTagResponse = (void);
+
+export type AuthorListCommentsData = {
     limit?: number;
     skip?: number;
     status?: (CommentStatus | null);
 };
 
-export type AdminListCommentsResponse = (AdminCommentListPublic);
+export type AuthorListCommentsResponse = (AdminCommentListPublic);
 
-export type AdminUpdateCommentStatusData = {
+export type AuthorUpdateCommentStatusData = {
     commentId: number;
     requestBody: AdminCommentStatusUpdate;
 };
 
-export type AdminUpdateCommentStatusResponse = (AdminCommentPublic);
+export type AuthorUpdateCommentStatusResponse = (AdminCommentPublic);
 
-export type AdminDeleteCommentData = {
+export type AuthorDeleteCommentData = {
     commentId: number;
 };
 
-export type AdminDeleteCommentResponse = (void);
+export type AuthorDeleteCommentResponse = (void);
 
-export type AdminListStreamCommentsData = {
+export type AuthorListStreamCommentsData = {
     limit?: number;
     skip?: number;
     status?: (CommentStatus | null);
 };
 
-export type AdminListStreamCommentsResponse = (AdminStreamCommentListPublic);
+export type AuthorListStreamCommentsResponse = (AdminStreamCommentListPublic);
 
-export type AdminUpdateStreamCommentStatusData = {
+export type AuthorUpdateStreamCommentStatusData = {
     commentId: number;
     requestBody: AdminCommentStatusUpdate;
 };
 
-export type AdminUpdateStreamCommentStatusResponse = (AdminStreamCommentPublic);
+export type AuthorUpdateStreamCommentStatusResponse = (AdminStreamCommentPublic);
 
-export type AdminDeleteStreamCommentData = {
+export type AuthorDeleteStreamCommentData = {
     commentId: number;
 };
 
-export type AdminDeleteStreamCommentResponse = (void);
+export type AuthorDeleteStreamCommentResponse = (void);
+
+export type AuthorCreateImageData = {
+    formData: Body_author_create_image;
+};
+
+export type AuthorCreateImageResponse = (AdminImageUploadPublic);
+
+export type AuthorSearchTmdbData = {
+    query: string;
+    type?: 'tv' | 'movie';
+};
+
+export type AuthorSearchTmdbResponse = (TmdbSearchResults);
+
+export type AuthorGetTvShowData = {
+    tmdbId: number;
+};
+
+export type AuthorGetTvShowResponse = (TmdbShowDetail);
+
+export type AuthorGetMovieData = {
+    tmdbId: number;
+};
+
+export type AuthorGetMovieResponse = (TmdbMovieDetail);
+
+export type AuthorGetTvSeasonData = {
+    seasonTmdbId: string;
+};
+
+export type AuthorGetTvSeasonResponse = (TmdbSeasonDetail);
+
+export type AuthorGetTvEpisodeData = {
+    episodeTmdbId: string;
+};
+
+export type AuthorGetTvEpisodeResponse = (TmdbEpisodeSummary);
+
+export type AuthorGetTvEpisodeGroupsData = {
+    tmdbId: number;
+};
+
+export type AuthorGetTvEpisodeGroupsResponse = (TmdbEpisodeGroupList);
+
+export type AuthorGetEpisodeGroupData = {
+    groupId: string;
+};
+
+export type AuthorGetEpisodeGroupResponse = (TmdbEpisodeGroupDetail);
+
+export type AuthorListAnimesData = {
+    limit?: number;
+    q?: (string | null);
+    skip?: number;
+    type?: ('movie' | 'tv' | null);
+};
+
+export type AuthorListAnimesResponse = (AnimeAdminListPublic);
+
+export type AuthorCreateAnimeData = {
+    requestBody: AnimeCreate;
+};
+
+export type AuthorCreateAnimeResponse = (AnimeAdminPublic);
+
+export type AuthorGetAnimeData = {
+    animeId: number;
+};
+
+export type AuthorGetAnimeResponse = (AnimeAdminDetail);
+
+export type AuthorUpdateAnimeData = {
+    animeId: number;
+    requestBody: AnimeUpdate;
+};
+
+export type AuthorUpdateAnimeResponse = (AnimeAdminPublic);
+
+export type AuthorDeleteAnimeData = {
+    animeId: number;
+};
+
+export type AuthorDeleteAnimeResponse = (void);
+
+export type AuthorCreateSeasonData = {
+    animeId: number;
+    requestBody: SeasonCreate;
+};
+
+export type AuthorCreateSeasonResponse = (SeasonAdminPublic);
+
+export type AuthorGetSeasonData = {
+    seasonId: number;
+};
+
+export type AuthorGetSeasonResponse = (SeasonAdminPublic);
+
+export type AuthorUpdateSeasonData = {
+    requestBody: SeasonUpdate;
+    seasonId: number;
+};
+
+export type AuthorUpdateSeasonResponse = (SeasonAdminPublic);
+
+export type AuthorDeleteSeasonData = {
+    seasonId: number;
+};
+
+export type AuthorDeleteSeasonResponse = (void);
+
+export type AuthorListEpisodesData = {
+    seasonId: number;
+};
+
+export type AuthorListEpisodesResponse = (EpisodeBatchPublic);
+
+export type AuthorCreateEpisodesData = {
+    requestBody: EpisodeBatchCreate;
+    seasonId: number;
+};
+
+export type AuthorCreateEpisodesResponse = (EpisodeBatchPublic);
+
+export type AuthorUpdateEpisodeData = {
+    episodeId: number;
+    requestBody: EpisodeUpdate;
+    seasonId: number;
+};
+
+export type AuthorUpdateEpisodeResponse = (EpisodeAdminPublic);
+
+export type AuthorDeleteEpisodeData = {
+    episodeId: number;
+    seasonId: number;
+};
+
+export type AuthorDeleteEpisodeResponse = (void);
+
+export type AuthorListPacksData = {
+    seasonId: number;
+};
+
+export type AuthorListPacksResponse = (PackListPublic);
+
+export type AuthorCreatePackData = {
+    requestBody: PackCreate;
+    seasonId: number;
+};
+
+export type AuthorCreatePackResponse = (PackAdminPublic);
+
+export type AuthorUpdatePackData = {
+    packId: number;
+    requestBody: PackUpdate;
+    seasonId: number;
+};
+
+export type AuthorUpdatePackResponse = (PackAdminPublic);
+
+export type AuthorDeletePackData = {
+    packId: number;
+    seasonId: number;
+};
+
+export type AuthorDeletePackResponse = (void);
+
+export type AuthorListLinksData = {
+    contentId: number;
+};
+
+export type AuthorListLinksResponse = (LinkAdminListPublic);
+
+export type AuthorCreateLinksData = {
+    contentId: number;
+    requestBody: LinkBatchCreate;
+};
+
+export type AuthorCreateLinksResponse = (LinkBatchResult);
+
+export type AuthorDeleteAllLinksData = {
+    contentId: number;
+};
+
+export type AuthorDeleteAllLinksResponse = (LinkBulkDeleteResult);
+
+export type AuthorUpdateLinkData = {
+    linkId: number;
+    requestBody: LinkUpdate;
+};
+
+export type AuthorUpdateLinkResponse = (LinkAdminPublic);
+
+export type AuthorDeleteLinkData = {
+    linkId: number;
+};
+
+export type AuthorDeleteLinkResponse = (void);
+
+export type AuthorCreateSeasonLinksBatchData = {
+    requestBody: LinkBatchCreate;
+    seasonId: number;
+};
+
+export type AuthorCreateSeasonLinksBatchResponse = (LinkBatchResult);
+
+export type AuthorDeleteAllSeasonEpisodeLinksData = {
+    seasonId: number;
+};
+
+export type AuthorDeleteAllSeasonEpisodeLinksResponse = (LinkBulkDeleteResult);
+
+export type AuthorListGdriveFolderData = {
+    url: string;
+};
+
+export type AuthorListGdriveFolderResponse = (GdriveFolderListing);
+
+export type AuthorGetPostData = {
+    postId: number;
+};
+
+export type AuthorGetPostResponse = (PostAdminPublic);
+
+export type AuthorUpdatePostData = {
+    postId: number;
+    requestBody: PostUpdate;
+};
+
+export type AuthorUpdatePostResponse = (PostAdminPublic);
+
+export type AuthorListSeasonDubsData = {
+    seasonId: number;
+};
+
+export type AuthorListSeasonDubsResponse = (SeasonDubListPublic);
+
+export type AuthorAddSeasonDubData = {
+    requestBody: SeasonDubCreate;
+    seasonId: number;
+};
+
+export type AuthorAddSeasonDubResponse = (SeasonDubAdminPublic);
+
+export type AuthorRemoveSeasonDubData = {
+    languageId: number;
+    ottId: number;
+    seasonId: number;
+};
+
+export type AuthorRemoveSeasonDubResponse = (void);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
@@ -463,6 +1720,22 @@ export type LoginResetPasswordData = {
 };
 
 export type LoginResetPasswordResponse = (Message);
+
+export type MeReadUserMeResponse = (UserPublic);
+
+export type MeDeleteUserMeResponse = (Message);
+
+export type MeUpdateUserMeData = {
+    requestBody: UserUpdateMe;
+};
+
+export type MeUpdateUserMeResponse = (UserPublic);
+
+export type MeUpdatePasswordMeData = {
+    requestBody: UpdatePassword;
+};
+
+export type MeUpdatePasswordMeResponse = (Message);
 
 export type PrivateCreateUserData = {
     requestBody: PrivateUserCreate;
@@ -614,54 +1887,6 @@ export type PublicCreateContentCommentResponse = (CommentPublic);
 export type PublicListTagsResponse = (Array<TagPublic>);
 
 export type PublicListGenresResponse = (Array<GenrePublic>);
-
-export type UsersReadUsersData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type UsersReadUsersResponse = (UsersPublic);
-
-export type UsersCreateUserData = {
-    requestBody: UserCreate;
-};
-
-export type UsersCreateUserResponse = (UserPublic);
-
-export type UsersReadUserMeResponse = (UserPublic);
-
-export type UsersDeleteUserMeResponse = (Message);
-
-export type UsersUpdateUserMeData = {
-    requestBody: UserUpdateMe;
-};
-
-export type UsersUpdateUserMeResponse = (UserPublic);
-
-export type UsersUpdatePasswordMeData = {
-    requestBody: UpdatePassword;
-};
-
-export type UsersUpdatePasswordMeResponse = (Message);
-
-export type UsersReadUserByIdData = {
-    userId: string;
-};
-
-export type UsersReadUserByIdResponse = (UserPublic);
-
-export type UsersUpdateUserData = {
-    requestBody: UserUpdate;
-    userId: string;
-};
-
-export type UsersUpdateUserResponse = (UserPublic);
-
-export type UsersDeleteUserData = {
-    userId: string;
-};
-
-export type UsersDeleteUserResponse = (Message);
 
 export type UtilsTestEmailData = {
     emailTo: string;

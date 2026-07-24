@@ -21,6 +21,7 @@ class PackAdminPublic(SQLModel):
     pack_name: str
     start_ep: int
     end_ep: int
+    link_count: int
 
 
 class PackListPublic(SQLModel):

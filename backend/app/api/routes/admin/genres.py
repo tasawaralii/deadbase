@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 
-from app.api.deps import SessionDep, get_current_active_superuser
+from app.api.deps import SessionDep, get_current_active_superuser, get_current_author
 from app.models import Genres
 from app.schemas.admin_genre import (
     GenreAdminListPublic,
@@ -11,10 +11,10 @@ from app.schemas.admin_genre import (
 )
 
 # Deleting a genre is safe even if in use - anime_genres cascades (removes
-# it from any anime's genre list), no RESTRICT to work around.
-router = APIRouter(
-    prefix="/genres", tags=["admin"], dependencies=[Depends(get_current_active_superuser)]
-)
+# it from any anime's genre list), no RESTRICT to work around. Read is
+# author-accessible (needed for the genre picker on anime create/edit) -
+# writes are superuser-only.
+router = APIRouter(prefix="/genres", tags=["admin"], dependencies=[Depends(get_current_author)])
 
 
 def _to_public(row: Genres) -> GenreAdminPublic:
@@ -37,7 +37,7 @@ def list_genres(session: SessionDep) -> GenreAdminListPublic:
     return GenreAdminListPublic(data=[_to_public(r) for r in rows])
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, dependencies=[Depends(get_current_active_superuser)])
 def create_genre(session: SessionDep, body: GenreCreate) -> GenreAdminPublic:
     _check_sid_free(session, body.genre_sid)
 
@@ -48,7 +48,7 @@ def create_genre(session: SessionDep, body: GenreCreate) -> GenreAdminPublic:
     return _to_public(row)
 
 
-@router.patch("/{genre_id}")
+@router.patch("/{genre_id}", dependencies=[Depends(get_current_active_superuser)])
 def update_genre(session: SessionDep, genre_id: int, body: GenreUpdate) -> GenreAdminPublic:
     row = session.get(Genres, genre_id)
     if row is None:
@@ -67,7 +67,9 @@ def update_genre(session: SessionDep, genre_id: int, body: GenreUpdate) -> Genre
     return _to_public(row)
 
 
-@router.delete("/{genre_id}", status_code=204)
+@router.delete(
+    "/{genre_id}", status_code=204, dependencies=[Depends(get_current_active_superuser)]
+)
 def delete_genre(session: SessionDep, genre_id: int) -> None:
     row = session.get(Genres, genre_id)
     if row is None:

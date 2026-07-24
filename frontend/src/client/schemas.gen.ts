@@ -96,6 +96,21 @@ export const AdminCommentStatusUpdateSchema = {
     title: 'AdminCommentStatusUpdate'
 } as const;
 
+export const AdminImageUploadPublicSchema = {
+    properties: {
+        image: {
+            type: 'string',
+            title: 'Image'
+        },
+        urls: {
+            '$ref': '#/components/schemas/ImageUrls'
+        }
+    },
+    type: 'object',
+    required: ['image', 'urls'],
+    title: 'AdminImageUploadPublic'
+} as const;
+
 export const AdminStreamCommentListPublicSchema = {
     properties: {
         data: {
@@ -173,10 +188,486 @@ export const AdminStreamCommentPublicSchema = {
     title: 'AdminStreamCommentPublic'
 } as const;
 
+export const AgeRatingAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/AgeRatingAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'AgeRatingAdminListPublic'
+} as const;
+
+export const AgeRatingAdminPublicSchema = {
+    properties: {
+        age_id: {
+            type: 'integer',
+            title: 'Age Id'
+        },
+        age_name: {
+            type: 'string',
+            title: 'Age Name'
+        },
+        age_des: {
+            type: 'string',
+            title: 'Age Des'
+        }
+    },
+    type: 'object',
+    required: ['age_id', 'age_name', 'age_des'],
+    title: 'AgeRatingAdminPublic'
+} as const;
+
+export const AgeRatingCreateSchema = {
+    properties: {
+        age_name: {
+            type: 'string',
+            title: 'Age Name'
+        },
+        age_des: {
+            type: 'string',
+            title: 'Age Des'
+        }
+    },
+    type: 'object',
+    required: ['age_name', 'age_des'],
+    title: 'AgeRatingCreate'
+} as const;
+
+export const AgeRatingUpdateSchema = {
+    properties: {
+        age_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Age Name'
+        },
+        age_des: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Age Des'
+        }
+    },
+    type: 'object',
+    title: 'AgeRatingUpdate'
+} as const;
+
+export const AnimeAccessGrantPublicSchema = {
+    properties: {
+        anime_id: {
+            type: 'integer',
+            title: 'Anime Id'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        anime_name: {
+            type: 'string',
+            title: 'Anime Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        }
+    },
+    type: 'object',
+    required: ['anime_id', 'slug', 'anime_name', 'type'],
+    title: 'AnimeAccessGrantPublic'
+} as const;
+
+export const AnimeAccessListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/AnimeAccessGrantPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'AnimeAccessListPublic'
+} as const;
+
+export const AnimeAdminDetailSchema = {
+    properties: {
+        anime_id: {
+            type: 'integer',
+            title: 'Anime Id'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        anime_name: {
+            type: 'string',
+            title: 'Anime Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        },
+        content_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Content Id'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        backdrop: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        duration: {
+            type: 'integer',
+            title: 'Duration'
+        },
+        rating: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Rating'
+        },
+        age_id: {
+            type: 'integer',
+            title: 'Age Id'
+        },
+        anime_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Tmdb Id'
+        },
+        anime_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Rel Date'
+        },
+        genres: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Genres'
+        },
+        post_slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Post Slug'
+        },
+        seasons: {
+            items: {
+                '$ref': '#/components/schemas/SeasonAdminSummary'
+            },
+            type: 'array',
+            title: 'Seasons'
+        }
+    },
+    type: 'object',
+    required: ['anime_id', 'slug', 'anime_name', 'type', 'content_id', 'poster', 'backdrop', 'overview', 'duration', 'rating', 'age_id', 'anime_tmdb_id', 'anime_rel_date', 'genres', 'post_slug', 'seasons'],
+    title: 'AnimeAdminDetail'
+} as const;
+
+export const AnimeAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/AnimeAdminSummary'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'AnimeAdminListPublic'
+} as const;
+
+export const AnimeAdminPublicSchema = {
+    properties: {
+        anime_id: {
+            type: 'integer',
+            title: 'Anime Id'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        anime_name: {
+            type: 'string',
+            title: 'Anime Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        },
+        content_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Content Id'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        backdrop: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        duration: {
+            type: 'integer',
+            title: 'Duration'
+        },
+        rating: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Rating'
+        },
+        age_id: {
+            type: 'integer',
+            title: 'Age Id'
+        },
+        anime_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Tmdb Id'
+        },
+        anime_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Rel Date'
+        },
+        genres: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Genres'
+        },
+        post_slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Post Slug'
+        }
+    },
+    type: 'object',
+    required: ['anime_id', 'slug', 'anime_name', 'type', 'content_id', 'poster', 'backdrop', 'overview', 'duration', 'rating', 'age_id', 'anime_tmdb_id', 'anime_rel_date', 'genres', 'post_slug'],
+    title: 'AnimeAdminPublic'
+} as const;
+
+export const AnimeAdminSummarySchema = {
+    properties: {
+        anime_id: {
+            type: 'integer',
+            title: 'Anime Id'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        anime_name: {
+            type: 'string',
+            title: 'Anime Name'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        rating: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Rating'
+        },
+        season_count: {
+            type: 'integer',
+            title: 'Season Count'
+        }
+    },
+    type: 'object',
+    required: ['anime_id', 'slug', 'anime_name', 'type', 'poster', 'rating', 'season_count'],
+    title: 'AnimeAdminSummary'
+} as const;
+
+export const AnimeCreateSchema = {
+    properties: {
+        anime_name: {
+            type: 'string',
+            title: 'Anime Name'
+        },
+        type: {
+            type: 'string',
+            enum: ['movie', 'tv'],
+            title: 'Type'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        duration: {
+            type: 'integer',
+            title: 'Duration'
+        },
+        rating: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                }
+            ],
+            title: 'Rating'
+        },
+        age_id: {
+            type: 'integer',
+            title: 'Age Id'
+        },
+        poster_source: {
+            type: 'string',
+            enum: ['tmdb', 'bucket'],
+            title: 'Poster Source'
+        },
+        poster_img: {
+            type: 'string',
+            title: 'Poster Img'
+        },
+        backdrop_source: {
+            type: 'string',
+            enum: ['tmdb', 'bucket'],
+            title: 'Backdrop Source'
+        },
+        backdrop_img: {
+            type: 'string',
+            title: 'Backdrop Img'
+        },
+        anime_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Tmdb Id'
+        },
+        anime_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Rel Date'
+        },
+        genre_ids: {
+            items: {
+                type: 'integer'
+            },
+            type: 'array',
+            title: 'Genre Ids',
+            default: []
+        }
+    },
+    type: 'object',
+    required: ['anime_name', 'type', 'overview', 'duration', 'rating', 'age_id', 'poster_source', 'poster_img', 'backdrop_source', 'backdrop_img'],
+    title: 'AnimeCreate'
+} as const;
+
 export const AnimeDetailSchema = {
     properties: {
         content_id: {
-            type: 'integer',
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Content Id'
         },
         slug: {
@@ -358,6 +849,155 @@ export const AnimeSummarySchema = {
     title: 'AnimeSummary'
 } as const;
 
+export const AnimeUpdateSchema = {
+    properties: {
+        anime_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Name'
+        },
+        overview: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Overview'
+        },
+        duration: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Duration'
+        },
+        rating: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rating'
+        },
+        age_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Age Id'
+        },
+        poster_source: {
+            anyOf: [
+                {
+                    type: 'string',
+                    enum: ['tmdb', 'bucket']
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Source'
+        },
+        poster_img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Img'
+        },
+        backdrop_source: {
+            anyOf: [
+                {
+                    type: 'string',
+                    enum: ['tmdb', 'bucket']
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Source'
+        },
+        backdrop_img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Img'
+        },
+        anime_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Tmdb Id'
+        },
+        anime_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Rel Date'
+        },
+        genre_ids: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'integer'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Genre Ids'
+        }
+    },
+    type: 'object',
+    title: 'AnimeUpdate'
+} as const;
+
 export const AuthorAccessScopeSchema = {
     type: 'string',
     enum: ['all', 'ongoing', 'access_list'],
@@ -382,6 +1022,24 @@ export const AuthorPublicSchema = {
     type: 'object',
     required: ['display_name', 'slug', 'avatar_url'],
     title: 'AuthorPublic'
+} as const;
+
+export const Body_author_create_imageSchema = {
+    properties: {
+        file: {
+            type: 'string',
+            contentMediaType: 'application/octet-stream',
+            title: 'File'
+        },
+        kind: {
+            type: 'string',
+            enum: ['poster', 'backdrop'],
+            title: 'Kind'
+        }
+    },
+    type: 'object',
+    required: ['file', 'kind'],
+    title: 'Body_author-create_image'
 } as const;
 
 export const Body_login_login_access_tokenSchema = {
@@ -577,6 +1235,45 @@ export const CommentStatusSchema = {
     title: 'CommentStatus'
 } as const;
 
+export const ContentDownloadItemSchema = {
+    properties: {
+        content_id: {
+            type: 'integer',
+            title: 'Content Id'
+        },
+        content_type: {
+            type: 'string',
+            title: 'Content Type'
+        },
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        downloads: {
+            type: 'integer',
+            title: 'Downloads'
+        }
+    },
+    type: 'object',
+    required: ['content_id', 'content_type', 'title', 'downloads'],
+    title: 'ContentDownloadItem'
+} as const;
+
+export const ContentDownloadListSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ContentDownloadItem'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'ContentDownloadList'
+} as const;
+
 export const DownloadLinkSchema = {
     properties: {
         name: {
@@ -595,6 +1292,251 @@ export const DownloadLinkSchema = {
     type: 'object',
     required: ['name', 'link_server_id', 'color'],
     title: 'DownloadLink'
+} as const;
+
+export const EpisodeAdminPublicSchema = {
+    properties: {
+        episode_id: {
+            type: 'integer',
+            title: 'Episode Id'
+        },
+        season_id: {
+            type: 'integer',
+            title: 'Season Id'
+        },
+        content_id: {
+            type: 'integer',
+            title: 'Content Id'
+        },
+        episode_number: {
+            type: 'integer',
+            title: 'Episode Number'
+        },
+        episode_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Name'
+        },
+        overview: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Overview'
+        },
+        img: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        air_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Air Date'
+        },
+        episode_runtime: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Runtime'
+        },
+        episode_rating: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Rating'
+        },
+        episode_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Tmdb Id'
+        },
+        note: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Note'
+        },
+        link_count: {
+            type: 'integer',
+            title: 'Link Count'
+        }
+    },
+    type: 'object',
+    required: ['episode_id', 'season_id', 'content_id', 'episode_number', 'episode_name', 'overview', 'img', 'air_date', 'episode_runtime', 'episode_rating', 'episode_tmdb_id', 'note', 'link_count'],
+    title: 'EpisodeAdminPublic'
+} as const;
+
+export const EpisodeBatchCreateSchema = {
+    properties: {
+        episodes: {
+            items: {
+                '$ref': '#/components/schemas/EpisodeCreateItem'
+            },
+            type: 'array',
+            title: 'Episodes'
+        }
+    },
+    type: 'object',
+    required: ['episodes'],
+    title: 'EpisodeBatchCreate'
+} as const;
+
+export const EpisodeBatchPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/EpisodeAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'EpisodeBatchPublic'
+} as const;
+
+export const EpisodeCreateItemSchema = {
+    properties: {
+        episode_number: {
+            type: 'integer',
+            title: 'Episode Number'
+        },
+        episode_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Name'
+        },
+        overview: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Overview'
+        },
+        img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Img'
+        },
+        air_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Air Date'
+        },
+        episode_runtime: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Runtime'
+        },
+        episode_rating: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Rating'
+        },
+        episode_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Tmdb Id'
+        },
+        note: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Note'
+        }
+    },
+    type: 'object',
+    required: ['episode_number'],
+    title: 'EpisodeCreateItem'
 } as const;
 
 export const EpisodeDetailSchema = {
@@ -752,6 +1694,203 @@ export const EpisodeSummarySchema = {
     title: 'EpisodeSummary'
 } as const;
 
+export const EpisodeUpdateSchema = {
+    properties: {
+        episode_number: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Number'
+        },
+        episode_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Name'
+        },
+        overview: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Overview'
+        },
+        img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Img'
+        },
+        air_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Air Date'
+        },
+        episode_runtime: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Runtime'
+        },
+        episode_rating: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Rating'
+        },
+        episode_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Episode Tmdb Id'
+        },
+        note: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Note'
+        }
+    },
+    type: 'object',
+    title: 'EpisodeUpdate'
+} as const;
+
+export const GdriveFolderFileSchema = {
+    properties: {
+        file_id: {
+            type: 'string',
+            title: 'File Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        url: {
+            type: 'string',
+            title: 'Url'
+        }
+    },
+    type: 'object',
+    required: ['file_id', 'name', 'url'],
+    title: 'GdriveFolderFile'
+} as const;
+
+export const GdriveFolderListingSchema = {
+    properties: {
+        files: {
+            items: {
+                '$ref': '#/components/schemas/GdriveFolderFile'
+            },
+            type: 'array',
+            title: 'Files'
+        }
+    },
+    type: 'object',
+    required: ['files'],
+    title: 'GdriveFolderListing'
+} as const;
+
+export const GenreAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/GenreAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'GenreAdminListPublic'
+} as const;
+
+export const GenreAdminPublicSchema = {
+    properties: {
+        genre_id: {
+            type: 'integer',
+            title: 'Genre Id'
+        },
+        genre_name: {
+            type: 'string',
+            title: 'Genre Name'
+        },
+        genre_sid: {
+            type: 'string',
+            title: 'Genre Sid'
+        }
+    },
+    type: 'object',
+    required: ['genre_id', 'genre_name', 'genre_sid'],
+    title: 'GenreAdminPublic'
+} as const;
+
+export const GenreCreateSchema = {
+    properties: {
+        genre_name: {
+            type: 'string',
+            title: 'Genre Name'
+        },
+        genre_sid: {
+            type: 'string',
+            title: 'Genre Sid'
+        }
+    },
+    type: 'object',
+    required: ['genre_name', 'genre_sid'],
+    title: 'GenreCreate'
+} as const;
+
 export const GenrePublicSchema = {
     properties: {
         name: {
@@ -766,6 +1905,35 @@ export const GenrePublicSchema = {
     type: 'object',
     required: ['name', 'slug'],
     title: 'GenrePublic'
+} as const;
+
+export const GenreUpdateSchema = {
+    properties: {
+        genre_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Genre Name'
+        },
+        genre_sid: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Genre Sid'
+        }
+    },
+    type: 'object',
+    title: 'GenreUpdate'
 } as const;
 
 export const HTTPValidationErrorSchema = {
@@ -802,6 +1970,275 @@ export const ImageUrlsSchema = {
     title: 'ImageUrls'
 } as const;
 
+export const LanguageAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/LanguageAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'LanguageAdminListPublic'
+} as const;
+
+export const LanguageAdminPublicSchema = {
+    properties: {
+        language_id: {
+            type: 'integer',
+            title: 'Language Id'
+        },
+        language_sid: {
+            type: 'string',
+            title: 'Language Sid'
+        },
+        language_name: {
+            type: 'string',
+            title: 'Language Name'
+        }
+    },
+    type: 'object',
+    required: ['language_id', 'language_sid', 'language_name'],
+    title: 'LanguageAdminPublic'
+} as const;
+
+export const LanguageCreateSchema = {
+    properties: {
+        language_sid: {
+            type: 'string',
+            title: 'Language Sid'
+        },
+        language_name: {
+            type: 'string',
+            title: 'Language Name'
+        }
+    },
+    type: 'object',
+    required: ['language_sid', 'language_name'],
+    title: 'LanguageCreate'
+} as const;
+
+export const LanguageUpdateSchema = {
+    properties: {
+        language_sid: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Language Sid'
+        },
+        language_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Language Name'
+        }
+    },
+    type: 'object',
+    title: 'LanguageUpdate'
+} as const;
+
+export const LinkAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/LinkAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'LinkAdminListPublic'
+} as const;
+
+export const LinkAdminPublicSchema = {
+    properties: {
+        link_id: {
+            type: 'integer',
+            title: 'Link Id'
+        },
+        content_id: {
+            type: 'integer',
+            title: 'Content Id'
+        },
+        filename: {
+            type: 'string',
+            title: 'Filename'
+        },
+        is_live: {
+            type: 'boolean',
+            title: 'Is Live'
+        },
+        gdrive_email: {
+            type: 'string',
+            title: 'Gdrive Email'
+        },
+        gdriveid: {
+            type: 'string',
+            title: 'Gdriveid'
+        },
+        type: {
+            type: 'string',
+            title: 'Type'
+        },
+        mimetype: {
+            type: 'string',
+            title: 'Mimetype'
+        },
+        duration: {
+            type: 'integer',
+            title: 'Duration'
+        },
+        note: {
+            type: 'string',
+            title: 'Note'
+        },
+        only_hindi: {
+            type: 'boolean',
+            title: 'Only Hindi'
+        },
+        size: {
+            anyOf: [
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Size'
+        },
+        quality_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Quality Id'
+        },
+        added_date: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Added Date'
+        },
+        updated_date: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated Date'
+        }
+    },
+    type: 'object',
+    required: ['link_id', 'content_id', 'filename', 'is_live', 'gdrive_email', 'gdriveid', 'type', 'mimetype', 'duration', 'note', 'only_hindi', 'size', 'quality_id', 'added_date', 'updated_date'],
+    title: 'LinkAdminPublic'
+} as const;
+
+export const LinkBatchCreateSchema = {
+    properties: {
+        gdrive_urls: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Gdrive Urls'
+        },
+        note: {
+            type: 'string',
+            title: 'Note',
+            default: ''
+        },
+        only_hindi: {
+            type: 'boolean',
+            title: 'Only Hindi',
+            default: false
+        }
+    },
+    type: 'object',
+    required: ['gdrive_urls'],
+    title: 'LinkBatchCreate'
+} as const;
+
+export const LinkBatchResultSchema = {
+    properties: {
+        results: {
+            items: {
+                '$ref': '#/components/schemas/LinkBatchResultItem'
+            },
+            type: 'array',
+            title: 'Results'
+        }
+    },
+    type: 'object',
+    required: ['results'],
+    title: 'LinkBatchResult'
+} as const;
+
+export const LinkBatchResultItemSchema = {
+    properties: {
+        gdrive_url: {
+            type: 'string',
+            title: 'Gdrive Url'
+        },
+        success: {
+            type: 'boolean',
+            title: 'Success'
+        },
+        link: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/LinkAdminPublic'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Error'
+        }
+    },
+    type: 'object',
+    required: ['gdrive_url', 'success'],
+    title: 'LinkBatchResultItem'
+} as const;
+
+export const LinkBulkDeleteResultSchema = {
+    properties: {
+        deleted_count: {
+            type: 'integer',
+            title: 'Deleted Count'
+        }
+    },
+    type: 'object',
+    required: ['deleted_count'],
+    title: 'LinkBulkDeleteResult'
+} as const;
+
 export const LinkPublicSchema = {
     properties: {
         quality: {
@@ -833,6 +2270,107 @@ export const LinkPublicSchema = {
     title: 'LinkPublic'
 } as const;
 
+export const LinkServerJobPublicSchema = {
+    properties: {
+        ser_link_id: {
+            type: 'integer',
+            title: 'Ser Link Id'
+        },
+        link_id: {
+            type: 'integer',
+            title: 'Link Id'
+        },
+        server_id: {
+            type: 'integer',
+            title: 'Server Id'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        },
+        attempt_count: {
+            type: 'integer',
+            title: 'Attempt Count'
+        },
+        last_error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Last Error'
+        }
+    },
+    type: 'object',
+    required: ['ser_link_id', 'link_id', 'server_id', 'status', 'slug', 'attempt_count', 'last_error'],
+    title: 'LinkServerJobPublic'
+} as const;
+
+export const LinkUpdateSchema = {
+    properties: {
+        is_live: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Live'
+        },
+        note: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Note'
+        },
+        only_hindi: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Only Hindi'
+        },
+        quality_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Quality Id'
+        }
+    },
+    type: 'object',
+    title: 'LinkUpdate'
+} as const;
+
 export const MessageSchema = {
     properties: {
         message: {
@@ -861,6 +2399,142 @@ export const NewPasswordSchema = {
     type: 'object',
     required: ['token', 'new_password'],
     title: 'NewPassword'
+} as const;
+
+export const OttPlatformAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/OttPlatformAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'OttPlatformAdminListPublic'
+} as const;
+
+export const OttPlatformAdminPublicSchema = {
+    properties: {
+        ott_id: {
+            type: 'integer',
+            title: 'Ott Id'
+        },
+        ott_sid: {
+            type: 'string',
+            title: 'Ott Sid'
+        },
+        ott_name: {
+            type: 'string',
+            title: 'Ott Name'
+        }
+    },
+    type: 'object',
+    required: ['ott_id', 'ott_sid', 'ott_name'],
+    title: 'OttPlatformAdminPublic'
+} as const;
+
+export const OttPlatformCreateSchema = {
+    properties: {
+        ott_sid: {
+            type: 'string',
+            title: 'Ott Sid'
+        },
+        ott_name: {
+            type: 'string',
+            title: 'Ott Name'
+        }
+    },
+    type: 'object',
+    required: ['ott_sid', 'ott_name'],
+    title: 'OttPlatformCreate'
+} as const;
+
+export const OttPlatformUpdateSchema = {
+    properties: {
+        ott_sid: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ott Sid'
+        },
+        ott_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Ott Name'
+        }
+    },
+    type: 'object',
+    title: 'OttPlatformUpdate'
+} as const;
+
+export const PackAdminPublicSchema = {
+    properties: {
+        pack_id: {
+            type: 'integer',
+            title: 'Pack Id'
+        },
+        season_id: {
+            type: 'integer',
+            title: 'Season Id'
+        },
+        content_id: {
+            type: 'integer',
+            title: 'Content Id'
+        },
+        pack_name: {
+            type: 'string',
+            title: 'Pack Name'
+        },
+        start_ep: {
+            type: 'integer',
+            title: 'Start Ep'
+        },
+        end_ep: {
+            type: 'integer',
+            title: 'End Ep'
+        },
+        link_count: {
+            type: 'integer',
+            title: 'Link Count'
+        }
+    },
+    type: 'object',
+    required: ['pack_id', 'season_id', 'content_id', 'pack_name', 'start_ep', 'end_ep', 'link_count'],
+    title: 'PackAdminPublic'
+} as const;
+
+export const PackCreateSchema = {
+    properties: {
+        pack_name: {
+            type: 'string',
+            title: 'Pack Name'
+        },
+        start_ep: {
+            type: 'integer',
+            title: 'Start Ep'
+        },
+        end_ep: {
+            type: 'integer',
+            title: 'End Ep'
+        }
+    },
+    type: 'object',
+    required: ['pack_name', 'start_ep', 'end_ep'],
+    title: 'PackCreate'
 } as const;
 
 export const PackDetailSchema = {
@@ -897,6 +2571,21 @@ export const PackDetailSchema = {
     title: 'PackDetail'
 } as const;
 
+export const PackListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/PackAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'PackListPublic'
+} as const;
+
 export const PackSummarySchema = {
     properties: {
         pack_name: {
@@ -919,6 +2608,122 @@ export const PackSummarySchema = {
     type: 'object',
     required: ['pack_name', 'start_ep', 'end_ep', 'link_count'],
     title: 'PackSummary'
+} as const;
+
+export const PackUpdateSchema = {
+    properties: {
+        pack_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Pack Name'
+        },
+        start_ep: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Ep'
+        },
+        end_ep: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'End Ep'
+        }
+    },
+    type: 'object',
+    title: 'PackUpdate'
+} as const;
+
+export const PostAdminPublicSchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        anime_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Anime Id'
+        },
+        season_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Id'
+        },
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        backdrop_img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Img'
+        },
+        status: {
+            '$ref': '#/components/schemas/PostStatus'
+        },
+        sticky: {
+            type: 'boolean',
+            title: 'Sticky'
+        },
+        views: {
+            type: 'integer',
+            title: 'Views'
+        },
+        last_updated: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Updated'
+        },
+        tags: {
+            items: {
+                '$ref': '#/components/schemas/TagPublic'
+            },
+            type: 'array',
+            title: 'Tags'
+        }
+    },
+    type: 'object',
+    required: ['id', 'anime_id', 'season_id', 'title', 'slug', 'backdrop_img', 'status', 'sticky', 'views', 'last_updated', 'tags'],
+    title: 'PostAdminPublic'
 } as const;
 
 export const PostDetailSchema = {
@@ -1120,6 +2925,70 @@ export const PostSummarySchema = {
     title: 'PostSummary'
 } as const;
 
+export const PostUpdateSchema = {
+    properties: {
+        title: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Title'
+        },
+        backdrop_img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Img'
+        },
+        status: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PostStatus'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        sticky: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sticky'
+        },
+        tag_ids: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'integer'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Tag Ids'
+        }
+    },
+    type: 'object',
+    title: 'PostUpdate'
+} as const;
+
 export const PrivateUserCreateSchema = {
     properties: {
         email: {
@@ -1145,6 +3014,177 @@ export const PrivateUserCreateSchema = {
     title: 'PrivateUserCreate'
 } as const;
 
+export const ProcessBatchRequestSchema = {
+    properties: {
+        limit: {
+            type: 'integer',
+            title: 'Limit',
+            default: 1
+        }
+    },
+    type: 'object',
+    title: 'ProcessBatchRequest'
+} as const;
+
+export const ProcessBatchResultSchema = {
+    properties: {
+        processed: {
+            type: 'integer',
+            title: 'Processed'
+        },
+        succeeded: {
+            type: 'integer',
+            title: 'Succeeded'
+        },
+        failed: {
+            type: 'integer',
+            title: 'Failed'
+        }
+    },
+    type: 'object',
+    required: ['processed', 'succeeded', 'failed'],
+    title: 'ProcessBatchResult'
+} as const;
+
+export const QualityAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/QualityAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'QualityAdminListPublic'
+} as const;
+
+export const QualityAdminPublicSchema = {
+    properties: {
+        quality_id: {
+            type: 'integer',
+            title: 'Quality Id'
+        },
+        quality_resolution: {
+            type: 'integer',
+            title: 'Quality Resolution'
+        },
+        is_hevc: {
+            type: 'boolean',
+            title: 'Is Hevc'
+        },
+        is_hq: {
+            type: 'boolean',
+            title: 'Is Hq'
+        },
+        quality_order: {
+            type: 'integer',
+            title: 'Quality Order'
+        },
+        quality_name: {
+            type: 'string',
+            title: 'Quality Name'
+        }
+    },
+    type: 'object',
+    required: ['quality_id', 'quality_resolution', 'is_hevc', 'is_hq', 'quality_order', 'quality_name'],
+    title: 'QualityAdminPublic'
+} as const;
+
+export const QualityCreateSchema = {
+    properties: {
+        quality_resolution: {
+            type: 'integer',
+            title: 'Quality Resolution'
+        },
+        is_hevc: {
+            type: 'boolean',
+            title: 'Is Hevc',
+            default: false
+        },
+        is_hq: {
+            type: 'boolean',
+            title: 'Is Hq',
+            default: false
+        },
+        quality_order: {
+            type: 'integer',
+            title: 'Quality Order'
+        },
+        quality_name: {
+            type: 'string',
+            title: 'Quality Name'
+        }
+    },
+    type: 'object',
+    required: ['quality_resolution', 'quality_order', 'quality_name'],
+    title: 'QualityCreate'
+} as const;
+
+export const QualityUpdateSchema = {
+    properties: {
+        quality_resolution: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Quality Resolution'
+        },
+        is_hevc: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Hevc'
+        },
+        is_hq: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Hq'
+        },
+        quality_order: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Quality Order'
+        },
+        quality_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Quality Name'
+        }
+    },
+    type: 'object',
+    title: 'QualityUpdate'
+} as const;
+
 export const ReportRequestSchema = {
     properties: {
         shortener_id: {
@@ -1166,6 +3206,192 @@ export const ReportRequestSchema = {
     type: 'object',
     required: ['shortener_id'],
     title: 'ReportRequest'
+} as const;
+
+export const SeasonAdminPublicSchema = {
+    properties: {
+        season_id: {
+            type: 'integer',
+            title: 'Season Id'
+        },
+        anime_id: {
+            type: 'integer',
+            title: 'Anime Id'
+        },
+        season_number: {
+            type: 'integer',
+            title: 'Season Number'
+        },
+        season_name: {
+            type: 'string',
+            title: 'Season Name'
+        },
+        total_episodes: {
+            type: 'integer',
+            title: 'Total Episodes'
+        },
+        season_overview: {
+            type: 'string',
+            title: 'Season Overview'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        rating: {
+            type: 'string',
+            pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
+            title: 'Rating'
+        },
+        season_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Tmdb Id'
+        },
+        season_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Rel Date'
+        },
+        status: {
+            '$ref': '#/components/schemas/SeasonStatus'
+        },
+        post_slug: {
+            type: 'string',
+            title: 'Post Slug'
+        }
+    },
+    type: 'object',
+    required: ['season_id', 'anime_id', 'season_number', 'season_name', 'total_episodes', 'season_overview', 'poster', 'rating', 'season_tmdb_id', 'season_rel_date', 'status', 'post_slug'],
+    title: 'SeasonAdminPublic'
+} as const;
+
+export const SeasonAdminSummarySchema = {
+    properties: {
+        season_id: {
+            type: 'integer',
+            title: 'Season Id'
+        },
+        season_number: {
+            type: 'integer',
+            title: 'Season Number'
+        },
+        season_name: {
+            type: 'string',
+            title: 'Season Name'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        episode_count: {
+            type: 'integer',
+            title: 'Episode Count'
+        },
+        total_episodes: {
+            type: 'integer',
+            title: 'Total Episodes'
+        },
+        status: {
+            '$ref': '#/components/schemas/SeasonStatus'
+        },
+        post_slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Post Slug'
+        }
+    },
+    type: 'object',
+    required: ['season_id', 'season_number', 'season_name', 'poster', 'episode_count', 'total_episodes', 'status', 'post_slug'],
+    title: 'SeasonAdminSummary'
+} as const;
+
+export const SeasonCreateSchema = {
+    properties: {
+        season_number: {
+            type: 'integer',
+            title: 'Season Number'
+        },
+        season_name: {
+            type: 'string',
+            title: 'Season Name'
+        },
+        total_episodes: {
+            type: 'integer',
+            title: 'Total Episodes'
+        },
+        season_overview: {
+            type: 'string',
+            title: 'Season Overview'
+        },
+        poster_source: {
+            type: 'string',
+            enum: ['tmdb', 'bucket'],
+            title: 'Poster Source'
+        },
+        poster_img: {
+            type: 'string',
+            title: 'Poster Img'
+        },
+        rating: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rating'
+        },
+        season_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Tmdb Id'
+        },
+        season_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Rel Date'
+        }
+    },
+    type: 'object',
+    required: ['season_number', 'season_name', 'total_episodes', 'season_overview', 'poster_source', 'poster_img'],
+    title: 'SeasonCreate'
 } as const;
 
 export const SeasonDetailSchema = {
@@ -1249,6 +3475,71 @@ export const SeasonDubSchema = {
     title: 'SeasonDub'
 } as const;
 
+export const SeasonDubAdminPublicSchema = {
+    properties: {
+        season_id: {
+            type: 'integer',
+            title: 'Season Id'
+        },
+        ott_id: {
+            type: 'integer',
+            title: 'Ott Id'
+        },
+        ott_name: {
+            type: 'string',
+            title: 'Ott Name'
+        },
+        language_id: {
+            type: 'integer',
+            title: 'Language Id'
+        },
+        language_name: {
+            type: 'string',
+            title: 'Language Name'
+        }
+    },
+    type: 'object',
+    required: ['season_id', 'ott_id', 'ott_name', 'language_id', 'language_name'],
+    title: 'SeasonDubAdminPublic'
+} as const;
+
+export const SeasonDubCreateSchema = {
+    properties: {
+        ott_id: {
+            type: 'integer',
+            title: 'Ott Id'
+        },
+        language_id: {
+            type: 'integer',
+            title: 'Language Id'
+        }
+    },
+    type: 'object',
+    required: ['ott_id', 'language_id'],
+    title: 'SeasonDubCreate'
+} as const;
+
+export const SeasonDubListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/SeasonDubAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'SeasonDubListPublic'
+} as const;
+
+export const SeasonStatusSchema = {
+    type: 'string',
+    enum: ['ongoing', 'completed'],
+    title: 'SeasonStatus'
+} as const;
+
 export const SeasonSummarySchema = {
     properties: {
         season_number: {
@@ -1279,6 +3570,565 @@ export const SeasonSummarySchema = {
     type: 'object',
     required: ['season_number', 'season_name', 'poster', 'rating', 'episode_count', 'pack_count'],
     title: 'SeasonSummary'
+} as const;
+
+export const SeasonUpdateSchema = {
+    properties: {
+        season_number: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Number'
+        },
+        season_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Name'
+        },
+        total_episodes: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Total Episodes'
+        },
+        season_overview: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Overview'
+        },
+        poster_source: {
+            anyOf: [
+                {
+                    type: 'string',
+                    enum: ['tmdb', 'bucket']
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Source'
+        },
+        poster_img: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Img'
+        },
+        rating: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Rating'
+        },
+        season_tmdb_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Tmdb Id'
+        },
+        season_rel_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Season Rel Date'
+        },
+        status: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/SeasonStatus'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        }
+    },
+    type: 'object',
+    title: 'SeasonUpdate'
+} as const;
+
+export const ServerAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ServerAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'ServerAdminListPublic'
+} as const;
+
+export const ServerAdminPublicSchema = {
+    properties: {
+        server_id: {
+            type: 'integer',
+            title: 'Server Id'
+        },
+        server_sid: {
+            type: 'string',
+            title: 'Server Sid'
+        },
+        server_name: {
+            type: 'string',
+            title: 'Server Name'
+        },
+        server_order: {
+            type: 'integer',
+            title: 'Server Order'
+        },
+        server_domain: {
+            type: 'string',
+            title: 'Server Domain'
+        },
+        api: {
+            type: 'string',
+            title: 'Api'
+        },
+        color: {
+            type: 'string',
+            title: 'Color'
+        },
+        is_enabled: {
+            type: 'boolean',
+            title: 'Is Enabled'
+        },
+        api_domain: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Api Domain'
+        },
+        upload_enabled: {
+            type: 'boolean',
+            title: 'Upload Enabled'
+        }
+    },
+    type: 'object',
+    required: ['server_id', 'server_sid', 'server_name', 'server_order', 'server_domain', 'api', 'color', 'is_enabled', 'api_domain', 'upload_enabled'],
+    title: 'ServerAdminPublic'
+} as const;
+
+export const ServerCreateSchema = {
+    properties: {
+        server_sid: {
+            type: 'string',
+            title: 'Server Sid'
+        },
+        server_name: {
+            type: 'string',
+            title: 'Server Name'
+        },
+        server_order: {
+            type: 'integer',
+            title: 'Server Order',
+            default: 0
+        },
+        server_domain: {
+            type: 'string',
+            title: 'Server Domain'
+        },
+        api: {
+            type: 'string',
+            title: 'Api'
+        },
+        color: {
+            type: 'string',
+            title: 'Color'
+        },
+        is_enabled: {
+            type: 'boolean',
+            title: 'Is Enabled',
+            default: true
+        },
+        api_domain: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Api Domain'
+        },
+        upload_enabled: {
+            type: 'boolean',
+            title: 'Upload Enabled',
+            default: true
+        }
+    },
+    type: 'object',
+    required: ['server_sid', 'server_name', 'server_domain', 'api', 'color'],
+    title: 'ServerCreate'
+} as const;
+
+export const ServerPerformanceStatsSchema = {
+    properties: {
+        server_id: {
+            type: 'integer',
+            title: 'Server Id'
+        },
+        server_name: {
+            type: 'string',
+            title: 'Server Name'
+        },
+        is_enabled: {
+            type: 'boolean',
+            title: 'Is Enabled'
+        },
+        downloads: {
+            type: 'integer',
+            title: 'Downloads'
+        }
+    },
+    type: 'object',
+    required: ['server_id', 'server_name', 'is_enabled', 'downloads'],
+    title: 'ServerPerformanceStats'
+} as const;
+
+export const ServerUpdateSchema = {
+    properties: {
+        server_sid: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Server Sid'
+        },
+        server_name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Server Name'
+        },
+        server_order: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Server Order'
+        },
+        server_domain: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Server Domain'
+        },
+        api: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Api'
+        },
+        color: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Color'
+        },
+        is_enabled: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Enabled'
+        },
+        api_domain: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Api Domain'
+        },
+        upload_enabled: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Upload Enabled'
+        }
+    },
+    type: 'object',
+    title: 'ServerUpdate'
+} as const;
+
+export const ShortenerAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/ShortenerAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'ShortenerAdminListPublic'
+} as const;
+
+export const ShortenerAdminPublicSchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        api_url_template: {
+            type: 'string',
+            title: 'Api Url Template'
+        },
+        quick_url_template: {
+            type: 'string',
+            title: 'Quick Url Template'
+        },
+        how_to_video_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'How To Video Url'
+        },
+        message: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Message'
+        },
+        logo_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Logo Url'
+        },
+        is_enabled: {
+            type: 'boolean',
+            title: 'Is Enabled'
+        },
+        sort_order: {
+            type: 'integer',
+            title: 'Sort Order'
+        }
+    },
+    type: 'object',
+    required: ['id', 'name', 'slug', 'api_url_template', 'quick_url_template', 'how_to_video_url', 'message', 'logo_url', 'is_enabled', 'sort_order'],
+    title: 'ShortenerAdminPublic'
+} as const;
+
+export const ShortenerCreateSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        api_url_template: {
+            type: 'string',
+            title: 'Api Url Template'
+        },
+        quick_url_template: {
+            type: 'string',
+            title: 'Quick Url Template'
+        },
+        how_to_video_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'How To Video Url'
+        },
+        message: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Message'
+        },
+        logo_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Logo Url'
+        },
+        is_enabled: {
+            type: 'boolean',
+            title: 'Is Enabled',
+            default: true
+        },
+        sort_order: {
+            type: 'integer',
+            title: 'Sort Order',
+            default: 0
+        }
+    },
+    type: 'object',
+    required: ['name', 'slug', 'api_url_template', 'quick_url_template'],
+    title: 'ShortenerCreate'
+} as const;
+
+export const ShortenerFunnelStatsSchema = {
+    properties: {
+        shortener_id: {
+            type: 'integer',
+            title: 'Shortener Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        is_enabled: {
+            type: 'boolean',
+            title: 'Is Enabled'
+        },
+        attempts: {
+            type: 'integer',
+            title: 'Attempts'
+        },
+        solved: {
+            type: 'integer',
+            title: 'Solved'
+        },
+        reported: {
+            type: 'integer',
+            title: 'Reported'
+        }
+    },
+    type: 'object',
+    required: ['shortener_id', 'name', 'is_enabled', 'attempts', 'solved', 'reported'],
+    title: 'ShortenerFunnelStats'
 } as const;
 
 export const ShortenerOptionSchema = {
@@ -1338,6 +4188,112 @@ export const ShortenerOptionSchema = {
     title: 'ShortenerOption'
 } as const;
 
+export const ShortenerUpdateSchema = {
+    properties: {
+        name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        },
+        api_url_template: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Api Url Template'
+        },
+        quick_url_template: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Quick Url Template'
+        },
+        how_to_video_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'How To Video Url'
+        },
+        message: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Message'
+        },
+        logo_url: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Logo Url'
+        },
+        is_enabled: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Enabled'
+        },
+        sort_order: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Sort Order'
+        }
+    },
+    type: 'object',
+    title: 'ShortenerUpdate'
+} as const;
+
 export const StartUnlockRequestSchema = {
     properties: {
         shortener_id: {
@@ -1362,6 +4318,97 @@ export const StartUnlockResponseSchema = {
     title: 'StartUnlockResponse'
 } as const;
 
+export const StatsOverviewSchema = {
+    properties: {
+        anime_count: {
+            type: 'integer',
+            title: 'Anime Count'
+        },
+        season_count: {
+            type: 'integer',
+            title: 'Season Count'
+        },
+        episode_count: {
+            type: 'integer',
+            title: 'Episode Count'
+        },
+        pack_count: {
+            type: 'integer',
+            title: 'Pack Count'
+        },
+        link_count: {
+            type: 'integer',
+            title: 'Link Count'
+        },
+        author_count: {
+            type: 'integer',
+            title: 'Author Count'
+        },
+        pending_comments: {
+            type: 'integer',
+            title: 'Pending Comments'
+        },
+        pending_stream_comments: {
+            type: 'integer',
+            title: 'Pending Stream Comments'
+        }
+    },
+    type: 'object',
+    required: ['anime_count', 'season_count', 'episode_count', 'pack_count', 'link_count', 'author_count', 'pending_comments', 'pending_stream_comments'],
+    title: 'StatsOverview'
+} as const;
+
+export const TagAdminListPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/TagAdminPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'TagAdminListPublic'
+} as const;
+
+export const TagAdminPublicSchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        }
+    },
+    type: 'object',
+    required: ['id', 'slug', 'name'],
+    title: 'TagAdminPublic'
+} as const;
+
+export const TagCreateSchema = {
+    properties: {
+        slug: {
+            type: 'string',
+            title: 'Slug'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        }
+    },
+    type: 'object',
+    required: ['slug', 'name'],
+    title: 'TagCreate'
+} as const;
+
 export const TagPublicSchema = {
     properties: {
         name: {
@@ -1376,6 +4423,529 @@ export const TagPublicSchema = {
     type: 'object',
     required: ['name', 'slug'],
     title: 'TagPublic'
+} as const;
+
+export const TagUpdateSchema = {
+    properties: {
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        },
+        name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        }
+    },
+    type: 'object',
+    title: 'TagUpdate'
+} as const;
+
+export const TmdbEpisodeGroupDetailSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        groups: {
+            items: {
+                '$ref': '#/components/schemas/TmdbEpisodeGroupItem'
+            },
+            type: 'array',
+            title: 'Groups'
+        }
+    },
+    type: 'object',
+    required: ['id', 'name', 'groups'],
+    title: 'TmdbEpisodeGroupDetail'
+} as const;
+
+export const TmdbEpisodeGroupItemSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        order: {
+            type: 'integer',
+            title: 'Order'
+        },
+        episodes: {
+            items: {
+                '$ref': '#/components/schemas/TmdbEpisodeSummary'
+            },
+            type: 'array',
+            title: 'Episodes'
+        }
+    },
+    type: 'object',
+    required: ['id', 'name', 'order', 'episodes'],
+    title: 'TmdbEpisodeGroupItem'
+} as const;
+
+export const TmdbEpisodeGroupListSchema = {
+    properties: {
+        groups: {
+            items: {
+                '$ref': '#/components/schemas/TmdbEpisodeGroupSummary'
+            },
+            type: 'array',
+            title: 'Groups'
+        }
+    },
+    type: 'object',
+    required: ['groups'],
+    title: 'TmdbEpisodeGroupList'
+} as const;
+
+export const TmdbEpisodeGroupSummarySchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        group_count: {
+            type: 'integer',
+            title: 'Group Count'
+        },
+        episode_count: {
+            type: 'integer',
+            title: 'Episode Count'
+        }
+    },
+    type: 'object',
+    required: ['id', 'name', 'group_count', 'episode_count'],
+    title: 'TmdbEpisodeGroupSummary'
+} as const;
+
+export const TmdbEpisodeSummarySchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        episode_number: {
+            type: 'integer',
+            title: 'Episode Number'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        air_date: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Air Date'
+        },
+        runtime: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Runtime'
+        },
+        rating: {
+            type: 'number',
+            title: 'Rating'
+        },
+        still: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        still_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Still Path'
+        }
+    },
+    type: 'object',
+    required: ['id', 'episode_number', 'name', 'overview', 'air_date', 'runtime', 'rating', 'still', 'still_path'],
+    title: 'TmdbEpisodeSummary'
+} as const;
+
+export const TmdbMovieDetailSchema = {
+    properties: {
+        tmdb_id: {
+            type: 'integer',
+            title: 'Tmdb Id'
+        },
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        backdrop: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        poster_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Path'
+        },
+        backdrop_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Path'
+        },
+        release_date: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Release Date'
+        },
+        rating: {
+            type: 'number',
+            title: 'Rating'
+        },
+        runtime: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Runtime'
+        },
+        genres: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Genres'
+        }
+    },
+    type: 'object',
+    required: ['tmdb_id', 'title', 'overview', 'poster', 'backdrop', 'poster_path', 'backdrop_path', 'release_date', 'rating', 'runtime', 'genres'],
+    title: 'TmdbMovieDetail'
+} as const;
+
+export const TmdbSearchResultSchema = {
+    properties: {
+        tmdb_id: {
+            type: 'integer',
+            title: 'Tmdb Id'
+        },
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        backdrop: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        poster_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Path'
+        },
+        backdrop_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Path'
+        },
+        release_date: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Release Date'
+        },
+        rating: {
+            type: 'number',
+            title: 'Rating'
+        }
+    },
+    type: 'object',
+    required: ['tmdb_id', 'title', 'overview', 'poster', 'backdrop', 'poster_path', 'backdrop_path', 'release_date', 'rating'],
+    title: 'TmdbSearchResult'
+} as const;
+
+export const TmdbSearchResultsSchema = {
+    properties: {
+        results: {
+            items: {
+                '$ref': '#/components/schemas/TmdbSearchResult'
+            },
+            type: 'array',
+            title: 'Results'
+        }
+    },
+    type: 'object',
+    required: ['results'],
+    title: 'TmdbSearchResults'
+} as const;
+
+export const TmdbSeasonDetailSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        season_number: {
+            type: 'integer',
+            title: 'Season Number'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        poster_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Path'
+        },
+        air_date: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Air Date'
+        },
+        episodes: {
+            items: {
+                '$ref': '#/components/schemas/TmdbEpisodeSummary'
+            },
+            type: 'array',
+            title: 'Episodes'
+        }
+    },
+    type: 'object',
+    required: ['id', 'season_number', 'name', 'overview', 'poster', 'poster_path', 'air_date', 'episodes'],
+    title: 'TmdbSeasonDetail'
+} as const;
+
+export const TmdbSeasonSummarySchema = {
+    properties: {
+        id: {
+            type: 'string',
+            title: 'Id'
+        },
+        season_number: {
+            type: 'integer',
+            title: 'Season Number'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        episode_count: {
+            type: 'integer',
+            title: 'Episode Count'
+        },
+        air_date: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Air Date'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        poster_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Path'
+        }
+    },
+    type: 'object',
+    required: ['id', 'season_number', 'name', 'episode_count', 'air_date', 'poster', 'poster_path'],
+    title: 'TmdbSeasonSummary'
+} as const;
+
+export const TmdbShowDetailSchema = {
+    properties: {
+        tmdb_id: {
+            type: 'integer',
+            title: 'Tmdb Id'
+        },
+        title: {
+            type: 'string',
+            title: 'Title'
+        },
+        overview: {
+            type: 'string',
+            title: 'Overview'
+        },
+        poster: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        backdrop: {
+            '$ref': '#/components/schemas/ImageUrls'
+        },
+        poster_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Poster Path'
+        },
+        backdrop_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Backdrop Path'
+        },
+        first_air_date: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'First Air Date'
+        },
+        rating: {
+            type: 'number',
+            title: 'Rating'
+        },
+        genres: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Genres'
+        },
+        seasons: {
+            items: {
+                '$ref': '#/components/schemas/TmdbSeasonSummary'
+            },
+            type: 'array',
+            title: 'Seasons'
+        }
+    },
+    type: 'object',
+    required: ['tmdb_id', 'title', 'overview', 'poster', 'backdrop', 'poster_path', 'backdrop_path', 'first_air_date', 'rating', 'genres', 'seasons'],
+    title: 'TmdbShowDetail'
 } as const;
 
 export const TokenSchema = {
@@ -1505,6 +5075,73 @@ export const TrendingSeasonListSchema = {
     title: 'TrendingSeasonList'
 } as const;
 
+export const UnlockConfigPublicSchema = {
+    properties: {
+        required_solves: {
+            type: 'integer',
+            title: 'Required Solves'
+        },
+        report_threshold: {
+            type: 'integer',
+            title: 'Report Threshold'
+        }
+    },
+    type: 'object',
+    required: ['required_solves', 'report_threshold'],
+    title: 'UnlockConfigPublic'
+} as const;
+
+export const UnlockConfigUpdateSchema = {
+    properties: {
+        required_solves: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Required Solves'
+        },
+        report_threshold: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Report Threshold'
+        }
+    },
+    type: 'object',
+    title: 'UnlockConfigUpdate'
+} as const;
+
+export const UnlockFunnelStatsSchema = {
+    properties: {
+        shorteners: {
+            items: {
+                '$ref': '#/components/schemas/ShortenerFunnelStats'
+            },
+            type: 'array',
+            title: 'Shorteners'
+        },
+        servers: {
+            items: {
+                '$ref': '#/components/schemas/ServerPerformanceStats'
+            },
+            type: 'array',
+            title: 'Servers'
+        }
+    },
+    type: 'object',
+    required: ['shorteners', 'servers'],
+    title: 'UnlockFunnelStats'
+} as const;
+
 export const UnlockStatusSchema = {
     properties: {
         unlocked: {
@@ -1582,6 +5219,64 @@ export const UpdatePasswordSchema = {
     type: 'object',
     required: ['current_password', 'new_password'],
     title: 'UpdatePassword'
+} as const;
+
+export const UploadQueueFailedSampleSchema = {
+    properties: {
+        link_id: {
+            type: 'integer',
+            title: 'Link Id'
+        },
+        attempt_count: {
+            type: 'integer',
+            title: 'Attempt Count'
+        },
+        last_error: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Last Error'
+        }
+    },
+    type: 'object',
+    required: ['link_id', 'attempt_count', 'last_error'],
+    title: 'UploadQueueFailedSample'
+} as const;
+
+export const UploadQueueStatsSchema = {
+    properties: {
+        upload_enabled: {
+            type: 'boolean',
+            title: 'Upload Enabled'
+        },
+        pending: {
+            type: 'integer',
+            title: 'Pending'
+        },
+        success: {
+            type: 'integer',
+            title: 'Success'
+        },
+        failed: {
+            type: 'integer',
+            title: 'Failed'
+        },
+        failed_sample: {
+            items: {
+                '$ref': '#/components/schemas/UploadQueueFailedSample'
+            },
+            type: 'array',
+            title: 'Failed Sample'
+        }
+    },
+    type: 'object',
+    required: ['upload_enabled', 'pending', 'success', 'failed', 'failed_sample'],
+    title: 'UploadQueueStats'
 } as const;
 
 export const UserCreateSchema = {

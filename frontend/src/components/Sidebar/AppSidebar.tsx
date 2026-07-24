@@ -1,4 +1,4 @@
-import { Home, MessageSquare, Users } from "lucide-react"
+import { Clapperboard, Home, MessageSquare, Users } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -12,17 +12,17 @@ import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const baseItems: Item[] = [{ icon: Home, title: "Dashboard", path: "/" }]
+const baseItems: Item[] = [
+  { icon: Home, title: "Dashboard", path: "/" },
+  { icon: Clapperboard, title: "Content", path: "/admin/content" },
+  { icon: MessageSquare, title: "Comments", path: "/admin/comments" },
+]
 
 export function AppSidebar() {
   const { user: currentUser } = useAuth()
 
   const items = currentUser?.is_superuser
-    ? [
-        ...baseItems,
-        { icon: MessageSquare, title: "Comments", path: "/admin/comments" },
-        { icon: Users, title: "Users", path: "/admin" },
-      ]
+    ? [...baseItems, { icon: Users, title: "People", path: "/admin/people" }]
     : baseItems
 
   return (

@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, Link, redirect } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { Check, ExternalLink, ShieldAlert, Trash2 } from "lucide-react"
 import { useState } from "react"
 
-import { type AdminCommentPublic, AdminService, UsersService } from "@/client"
+import { type AdminCommentPublic, AuthorService } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -14,14 +14,11 @@ const BLOG_URL = import.meta.env.VITE_BLOG_URL || "http://localhost:3000"
 
 type StatusFilter = "pending" | "approved" | "spam"
 
+// Comment moderation is author-scoped on the backend (any author tier, not
+// just superusers) - see app/api/routes/author/comments.py. No extra gate
+// needed here beyond _layout.tsx's own login check.
 export const Route = createFileRoute("/_layout/admin/comments")({
   component: AdminComments,
-  beforeLoad: async () => {
-    const user = await UsersService.readUserMe()
-    if (!user.is_superuser) {
-      throw redirect({ to: "/" })
-    }
-  },
   head: () => ({
     meta: [{ title: "Comments - Deadtoons Admin" }],
   }),
@@ -40,7 +37,7 @@ function AdminComments() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-comments", status],
-    queryFn: () => AdminService.listComments({ status, limit: 100 }),
+    queryFn: () => AuthorService.listComments({ status, limit: 100 }),
   })
 
   const updateStatus = useMutation({
@@ -51,7 +48,7 @@ function AdminComments() {
       commentId: number
       newStatus: "approved" | "spam"
     }) =>
-      AdminService.updateCommentStatus({
+      AuthorService.updateCommentStatus({
         commentId,
         requestBody: { status: newStatus },
       }),
@@ -64,7 +61,7 @@ function AdminComments() {
 
   const deleteComment = useMutation({
     mutationFn: (commentId: number) =>
-      AdminService.deleteComment({ commentId }),
+      AuthorService.deleteComment({ commentId }),
     onSuccess: () => {
       showSuccessToast("Comment deleted")
       queryClient.invalidateQueries({ queryKey: ["admin-comments"] })
@@ -180,13 +177,6 @@ function AdminComments() {
           ))}
         </div>
       )}
-
-      <Link
-        to="/admin"
-        className="text-muted-foreground hover:text-foreground text-sm"
-      >
-        Manage users instead →
-      </Link>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
 
-from app.api.deps import SessionDep, get_current_active_superuser
+from app.api.deps import SessionDep, get_current_active_superuser, get_current_author
 from app.models import OttPlatforms, SeasonDubs
 from app.schemas.admin_ott_platform import (
     OttPlatformAdminListPublic,
@@ -10,8 +10,10 @@ from app.schemas.admin_ott_platform import (
     OttPlatformUpdate,
 )
 
+# Read is author-accessible (needed for the season-dub platform picker) -
+# writes are superuser-only.
 router = APIRouter(
-    prefix="/ott-platforms", tags=["admin"], dependencies=[Depends(get_current_active_superuser)]
+    prefix="/ott-platforms", tags=["admin"], dependencies=[Depends(get_current_author)]
 )
 
 
@@ -33,7 +35,7 @@ def list_ott_platforms(session: SessionDep) -> OttPlatformAdminListPublic:
     return OttPlatformAdminListPublic(data=[_to_public(r) for r in rows])
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, dependencies=[Depends(get_current_active_superuser)])
 def create_ott_platform(session: SessionDep, body: OttPlatformCreate) -> OttPlatformAdminPublic:
     _check_sid_free(session, body.ott_sid)
 
@@ -44,7 +46,7 @@ def create_ott_platform(session: SessionDep, body: OttPlatformCreate) -> OttPlat
     return _to_public(row)
 
 
-@router.patch("/{ott_id}")
+@router.patch("/{ott_id}", dependencies=[Depends(get_current_active_superuser)])
 def update_ott_platform(
     session: SessionDep, ott_id: int, body: OttPlatformUpdate
 ) -> OttPlatformAdminPublic:
@@ -65,7 +67,9 @@ def update_ott_platform(
     return _to_public(row)
 
 
-@router.delete("/{ott_id}", status_code=204)
+@router.delete(
+    "/{ott_id}", status_code=204, dependencies=[Depends(get_current_active_superuser)]
+)
 def delete_ott_platform(session: SessionDep, ott_id: int) -> None:
     row = session.get(OttPlatforms, ott_id)
     if row is None:

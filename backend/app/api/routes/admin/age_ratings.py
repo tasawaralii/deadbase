@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
 
-from app.api.deps import SessionDep, get_current_active_superuser
+from app.api.deps import SessionDep, get_current_active_superuser, get_current_author
 from app.models import AgeRatings, Animes
 from app.schemas.admin_age_rating import (
     AgeRatingAdminListPublic,
@@ -10,10 +10,11 @@ from app.schemas.admin_age_rating import (
     AgeRatingUpdate,
 )
 
+# Read is author-accessible (needed to populate the age-rating picker when
+# creating/editing an anime) - writes are superuser-only, same split as
+# every other reference table here.
 router = APIRouter(
-    prefix="/age-ratings",
-    tags=["admin"],
-    dependencies=[Depends(get_current_active_superuser)],
+    prefix="/age-ratings", tags=["admin"], dependencies=[Depends(get_current_author)]
 )
 
 
@@ -27,7 +28,7 @@ def list_age_ratings(session: SessionDep) -> AgeRatingAdminListPublic:
     return AgeRatingAdminListPublic(data=[_to_public(r) for r in rows])
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, dependencies=[Depends(get_current_active_superuser)])
 def create_age_rating(session: SessionDep, body: AgeRatingCreate) -> AgeRatingAdminPublic:
     row = AgeRatings(**body.model_dump())
     session.add(row)
@@ -36,7 +37,7 @@ def create_age_rating(session: SessionDep, body: AgeRatingCreate) -> AgeRatingAd
     return _to_public(row)
 
 
-@router.patch("/{age_id}")
+@router.patch("/{age_id}", dependencies=[Depends(get_current_active_superuser)])
 def update_age_rating(
     session: SessionDep, age_id: int, body: AgeRatingUpdate
 ) -> AgeRatingAdminPublic:
@@ -53,7 +54,9 @@ def update_age_rating(
     return _to_public(row)
 
 
-@router.delete("/{age_id}", status_code=204)
+@router.delete(
+    "/{age_id}", status_code=204, dependencies=[Depends(get_current_active_superuser)]
+)
 def delete_age_rating(session: SessionDep, age_id: int) -> None:
     row = session.get(AgeRatings, age_id)
     if row is None:

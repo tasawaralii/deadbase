@@ -54,6 +54,7 @@ class EpisodeAdminPublic(SQLModel):
     episode_rating: decimal.Decimal | None
     episode_tmdb_id: str | None
     note: str | None
+    link_count: int
 
 
 class EpisodeBatchPublic(SQLModel):

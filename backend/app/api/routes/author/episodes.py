@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, select
+from sqlmodel import col, func, select
 
 from app.api.deps import CurrentAuthor, SessionDep, get_current_author
 from app.media import resolve_image_urls
-from app.models import Content, ContentContentType, Episodes, Seasons
+from app.models import Content, ContentContentType, Episodes, Links, Seasons
 from app.permissions import require_anime_write_access
 from app.schemas.admin_episode import (
     EpisodeAdminPublic,
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 
-def _to_public(episode: Episodes) -> EpisodeAdminPublic:
+def _to_public(episode: Episodes, link_count: int) -> EpisodeAdminPublic:
     return EpisodeAdminPublic(
         episode_id=episode.episode_id,
         season_id=episode.season_id,
@@ -33,7 +33,14 @@ def _to_public(episode: Episodes) -> EpisodeAdminPublic:
         episode_rating=episode.episode_rating,
         episode_tmdb_id=episode.episode_tmdb_id,
         note=episode.note,
+        link_count=link_count,
     )
+
+
+def _count_links(session: SessionDep, content_id: int) -> int:
+    return session.exec(
+        select(func.count()).select_from(Links).where(Links.content_id == content_id)
+    ).one()
 
 
 @router.get("/")
@@ -46,12 +53,17 @@ def list_episodes(
 
     require_anime_write_access(session, author, season.anime_id, season=season)
 
+    link_count_subq = (
+        select(func.count(col(Links.link_id)))
+        .where(Links.content_id == Episodes.content_id)
+        .scalar_subquery()
+    )
     episodes = session.exec(
-        select(Episodes)
+        select(Episodes, link_count_subq)
         .where(Episodes.season_id == season_id)
         .order_by(col(Episodes.episode_number).asc())
     ).all()
-    return EpisodeBatchPublic(data=[_to_public(e) for e in episodes])
+    return EpisodeBatchPublic(data=[_to_public(e, count) for e, count in episodes])
 
 
 @router.post("/")
@@ -122,7 +134,7 @@ def create_episodes(
     for episode in created:
         session.refresh(episode)
 
-    return EpisodeBatchPublic(data=[_to_public(e) for e in created])
+    return EpisodeBatchPublic(data=[_to_public(e, link_count=0) for e in created])
 
 
 @router.patch("/{episode_id}")
@@ -165,7 +177,7 @@ def update_episode(
     session.commit()
     session.refresh(episode)
 
-    return _to_public(episode)
+    return _to_public(episode, _count_links(session, episode.content_id))
 
 
 @router.delete("/{episode_id}", status_code=204)

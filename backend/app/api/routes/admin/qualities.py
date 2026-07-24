@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, select
 
-from app.api.deps import SessionDep, get_current_active_superuser
+from app.api.deps import SessionDep, get_current_active_superuser, get_current_author
 from app.models import Qualities
 from app.schemas.admin_quality import (
     QualityAdminListPublic,
@@ -12,8 +12,10 @@ from app.schemas.admin_quality import (
 
 # Deleting a quality is safe even if in use - Links.quality_id is SET NULL,
 # not RESTRICT - existing links just lose their quality tag, not blocked.
+# Read is author-accessible (needed to manually override a link's quality) -
+# writes are superuser-only.
 router = APIRouter(
-    prefix="/qualities", tags=["admin"], dependencies=[Depends(get_current_active_superuser)]
+    prefix="/qualities", tags=["admin"], dependencies=[Depends(get_current_author)]
 )
 
 
@@ -34,7 +36,7 @@ def list_qualities(session: SessionDep) -> QualityAdminListPublic:
     return QualityAdminListPublic(data=[_to_public(r) for r in rows])
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, dependencies=[Depends(get_current_active_superuser)])
 def create_quality(session: SessionDep, body: QualityCreate) -> QualityAdminPublic:
     row = Qualities(**body.model_dump())
     session.add(row)
@@ -43,7 +45,7 @@ def create_quality(session: SessionDep, body: QualityCreate) -> QualityAdminPubl
     return _to_public(row)
 
 
-@router.patch("/{quality_id}")
+@router.patch("/{quality_id}", dependencies=[Depends(get_current_active_superuser)])
 def update_quality(
     session: SessionDep, quality_id: int, body: QualityUpdate
 ) -> QualityAdminPublic:
@@ -60,7 +62,9 @@ def update_quality(
     return _to_public(row)
 
 
-@router.delete("/{quality_id}", status_code=204)
+@router.delete(
+    "/{quality_id}", status_code=204, dependencies=[Depends(get_current_active_superuser)]
+)
 def delete_quality(session: SessionDep, quality_id: int) -> None:
     row = session.get(Qualities, quality_id)
     if row is None:

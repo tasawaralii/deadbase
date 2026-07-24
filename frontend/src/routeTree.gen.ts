@@ -15,8 +15,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutAdminPeopleRouteImport } from './routes/_layout/admin.people'
 import { Route as LayoutAdminCommentsRouteImport } from './routes/_layout/admin.comments'
+import { Route as LayoutAdminContentIndexRouteImport } from './routes/_layout/admin/content/index'
+import { Route as LayoutAdminContentNewRouteImport } from './routes/_layout/admin/content/new'
+import { Route as LayoutAdminContentAnimeIdIndexRouteImport } from './routes/_layout/admin/content/$animeId/index'
+import { Route as LayoutAdminContentAnimeIdSeasonsNewRouteImport } from './routes/_layout/admin/content/$animeId/seasons/new'
+import { Route as LayoutAdminContentAnimeIdSeasonsSeasonIdRouteImport } from './routes/_layout/admin/content/$animeId/seasons/$seasonId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -47,34 +52,72 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutAdminRoute = LayoutAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const LayoutAdminPeopleRoute = LayoutAdminPeopleRouteImport.update({
+  id: '/admin/people',
+  path: '/admin/people',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutAdminCommentsRoute = LayoutAdminCommentsRouteImport.update({
-  id: '/comments',
-  path: '/comments',
-  getParentRoute: () => LayoutAdminRoute,
+  id: '/admin/comments',
+  path: '/admin/comments',
+  getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAdminContentIndexRoute = LayoutAdminContentIndexRouteImport.update({
+  id: '/admin/content/',
+  path: '/admin/content/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutAdminContentNewRoute = LayoutAdminContentNewRouteImport.update({
+  id: '/admin/content/new',
+  path: '/admin/content/new',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutAdminContentAnimeIdIndexRoute =
+  LayoutAdminContentAnimeIdIndexRouteImport.update({
+    id: '/admin/content/$animeId/',
+    path: '/admin/content/$animeId/',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+const LayoutAdminContentAnimeIdSeasonsNewRoute =
+  LayoutAdminContentAnimeIdSeasonsNewRouteImport.update({
+    id: '/admin/content/$animeId/seasons/new',
+    path: '/admin/content/$animeId/seasons/new',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+const LayoutAdminContentAnimeIdSeasonsSeasonIdRoute =
+  LayoutAdminContentAnimeIdSeasonsSeasonIdRouteImport.update({
+    id: '/admin/content/$animeId/seasons/$seasonId',
+    path: '/admin/content/$animeId/seasons/$seasonId',
+    getParentRoute: () => LayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof LayoutAdminRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
   '/admin/comments': typeof LayoutAdminCommentsRoute
+  '/admin/people': typeof LayoutAdminPeopleRoute
+  '/admin/content/new': typeof LayoutAdminContentNewRoute
+  '/admin/content/': typeof LayoutAdminContentIndexRoute
+  '/admin/content/$animeId/': typeof LayoutAdminContentAnimeIdIndexRoute
+  '/admin/content/$animeId/seasons/$seasonId': typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
+  '/admin/content/$animeId/seasons/new': typeof LayoutAdminContentAnimeIdSeasonsNewRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof LayoutAdminRouteWithChildren
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
   '/admin/comments': typeof LayoutAdminCommentsRoute
+  '/admin/people': typeof LayoutAdminPeopleRoute
+  '/admin/content/new': typeof LayoutAdminContentNewRoute
+  '/admin/content': typeof LayoutAdminContentIndexRoute
+  '/admin/content/$animeId': typeof LayoutAdminContentAnimeIdIndexRoute
+  '/admin/content/$animeId/seasons/$seasonId': typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
+  '/admin/content/$animeId/seasons/new': typeof LayoutAdminContentAnimeIdSeasonsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -82,10 +125,15 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_layout/admin': typeof LayoutAdminRouteWithChildren
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/admin/comments': typeof LayoutAdminCommentsRoute
+  '/_layout/admin/people': typeof LayoutAdminPeopleRoute
+  '/_layout/admin/content/new': typeof LayoutAdminContentNewRoute
+  '/_layout/admin/content/': typeof LayoutAdminContentIndexRoute
+  '/_layout/admin/content/$animeId/': typeof LayoutAdminContentAnimeIdIndexRoute
+  '/_layout/admin/content/$animeId/seasons/$seasonId': typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
+  '/_layout/admin/content/$animeId/seasons/new': typeof LayoutAdminContentAnimeIdSeasonsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -94,28 +142,43 @@ export interface FileRouteTypes {
     | '/login'
     | '/recover-password'
     | '/reset-password'
-    | '/admin'
     | '/settings'
     | '/admin/comments'
+    | '/admin/people'
+    | '/admin/content/new'
+    | '/admin/content/'
+    | '/admin/content/$animeId/'
+    | '/admin/content/$animeId/seasons/$seasonId'
+    | '/admin/content/$animeId/seasons/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/recover-password'
     | '/reset-password'
-    | '/admin'
     | '/settings'
     | '/'
     | '/admin/comments'
+    | '/admin/people'
+    | '/admin/content/new'
+    | '/admin/content'
+    | '/admin/content/$animeId'
+    | '/admin/content/$animeId/seasons/$seasonId'
+    | '/admin/content/$animeId/seasons/new'
   id:
     | '__root__'
     | '/_layout'
     | '/login'
     | '/recover-password'
     | '/reset-password'
-    | '/_layout/admin'
     | '/_layout/settings'
     | '/_layout/'
     | '/_layout/admin/comments'
+    | '/_layout/admin/people'
+    | '/_layout/admin/content/new'
+    | '/_layout/admin/content/'
+    | '/_layout/admin/content/$animeId/'
+    | '/_layout/admin/content/$animeId/seasons/$seasonId'
+    | '/_layout/admin/content/$animeId/seasons/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -169,45 +232,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/admin': {
-      id: '/_layout/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof LayoutAdminRouteImport
+    '/_layout/admin/people': {
+      id: '/_layout/admin/people'
+      path: '/admin/people'
+      fullPath: '/admin/people'
+      preLoaderRoute: typeof LayoutAdminPeopleRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/admin/comments': {
       id: '/_layout/admin/comments'
-      path: '/comments'
+      path: '/admin/comments'
       fullPath: '/admin/comments'
       preLoaderRoute: typeof LayoutAdminCommentsRouteImport
-      parentRoute: typeof LayoutAdminRoute
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/admin/content/': {
+      id: '/_layout/admin/content/'
+      path: '/admin/content'
+      fullPath: '/admin/content/'
+      preLoaderRoute: typeof LayoutAdminContentIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/admin/content/new': {
+      id: '/_layout/admin/content/new'
+      path: '/admin/content/new'
+      fullPath: '/admin/content/new'
+      preLoaderRoute: typeof LayoutAdminContentNewRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/admin/content/$animeId/': {
+      id: '/_layout/admin/content/$animeId/'
+      path: '/admin/content/$animeId'
+      fullPath: '/admin/content/$animeId/'
+      preLoaderRoute: typeof LayoutAdminContentAnimeIdIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/admin/content/$animeId/seasons/new': {
+      id: '/_layout/admin/content/$animeId/seasons/new'
+      path: '/admin/content/$animeId/seasons/new'
+      fullPath: '/admin/content/$animeId/seasons/new'
+      preLoaderRoute: typeof LayoutAdminContentAnimeIdSeasonsNewRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/admin/content/$animeId/seasons/$seasonId': {
+      id: '/_layout/admin/content/$animeId/seasons/$seasonId'
+      path: '/admin/content/$animeId/seasons/$seasonId'
+      fullPath: '/admin/content/$animeId/seasons/$seasonId'
+      preLoaderRoute: typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRouteImport
+      parentRoute: typeof LayoutRoute
     }
   }
 }
 
-interface LayoutAdminRouteChildren {
-  LayoutAdminCommentsRoute: typeof LayoutAdminCommentsRoute
-}
-
-const LayoutAdminRouteChildren: LayoutAdminRouteChildren = {
-  LayoutAdminCommentsRoute: LayoutAdminCommentsRoute,
-}
-
-const LayoutAdminRouteWithChildren = LayoutAdminRoute._addFileChildren(
-  LayoutAdminRouteChildren,
-)
-
 interface LayoutRouteChildren {
-  LayoutAdminRoute: typeof LayoutAdminRouteWithChildren
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutAdminCommentsRoute: typeof LayoutAdminCommentsRoute
+  LayoutAdminPeopleRoute: typeof LayoutAdminPeopleRoute
+  LayoutAdminContentNewRoute: typeof LayoutAdminContentNewRoute
+  LayoutAdminContentIndexRoute: typeof LayoutAdminContentIndexRoute
+  LayoutAdminContentAnimeIdIndexRoute: typeof LayoutAdminContentAnimeIdIndexRoute
+  LayoutAdminContentAnimeIdSeasonsSeasonIdRoute: typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
+  LayoutAdminContentAnimeIdSeasonsNewRoute: typeof LayoutAdminContentAnimeIdSeasonsNewRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutAdminRoute: LayoutAdminRouteWithChildren,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutAdminCommentsRoute: LayoutAdminCommentsRoute,
+  LayoutAdminPeopleRoute: LayoutAdminPeopleRoute,
+  LayoutAdminContentNewRoute: LayoutAdminContentNewRoute,
+  LayoutAdminContentIndexRoute: LayoutAdminContentIndexRoute,
+  LayoutAdminContentAnimeIdIndexRoute: LayoutAdminContentAnimeIdIndexRoute,
+  LayoutAdminContentAnimeIdSeasonsSeasonIdRoute:
+    LayoutAdminContentAnimeIdSeasonsSeasonIdRoute,
+  LayoutAdminContentAnimeIdSeasonsNewRoute:
+    LayoutAdminContentAnimeIdSeasonsNewRoute,
 }
 
 const LayoutRouteWithChildren =

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import select
+from sqlmodel import col, func, select
 
 from app.api.deps import CurrentAuthor, SessionDep, get_current_author
-from app.models import Content, ContentContentType, Packs, Seasons
+from app.models import Content, ContentContentType, Links, Packs, Seasons
 from app.permissions import require_anime_write_access
 from app.schemas.admin_pack import (
     PackAdminPublic,
@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 
-def _to_public(pack: Packs) -> PackAdminPublic:
+def _to_public(pack: Packs, link_count: int) -> PackAdminPublic:
     return PackAdminPublic(
         pack_id=pack.pack_id,
         season_id=pack.season_id,
@@ -26,7 +26,14 @@ def _to_public(pack: Packs) -> PackAdminPublic:
         pack_name=pack.pack_name,
         start_ep=pack.start_ep,
         end_ep=pack.end_ep,
+        link_count=link_count,
     )
+
+
+def _count_links(session: SessionDep, content_id: int) -> int:
+    return session.exec(
+        select(func.count()).select_from(Links).where(Links.content_id == content_id)
+    ).one()
 
 
 @router.get("/")
@@ -38,8 +45,15 @@ def list_packs(
         raise HTTPException(status_code=404, detail="Season not found")
     require_anime_write_access(session, author, season.anime_id, season=season)
 
-    packs = session.exec(select(Packs).where(Packs.season_id == season_id)).all()
-    return PackListPublic(data=[_to_public(p) for p in packs])
+    link_count_subq = (
+        select(func.count(col(Links.link_id)))
+        .where(Links.content_id == Packs.content_id)
+        .scalar_subquery()
+    )
+    packs = session.exec(
+        select(Packs, link_count_subq).where(Packs.season_id == season_id)
+    ).all()
+    return PackListPublic(data=[_to_public(p, count) for p, count in packs])
 
 
 @router.post("/")
@@ -87,7 +101,7 @@ def create_pack(
 
     session.commit()
     session.refresh(pack)
-    return _to_public(pack)
+    return _to_public(pack, link_count=0)
 
 
 @router.patch("/{pack_id}")
@@ -136,7 +150,7 @@ def update_pack(
     session.add(pack)
     session.commit()
     session.refresh(pack)
-    return _to_public(pack)
+    return _to_public(pack, _count_links(session, pack.content_id))
 
 
 @router.delete("/{pack_id}", status_code=204)

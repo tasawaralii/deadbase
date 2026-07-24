@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 
-from app.api.deps import SessionDep, get_current_active_superuser
+from app.api.deps import SessionDep, get_current_active_superuser, get_current_author
 from app.models import Tags
 from app.schemas.admin_tag import (
     TagAdminListPublic,
@@ -11,10 +11,10 @@ from app.schemas.admin_tag import (
 )
 
 # Deleting a tag is safe even if in use - PostTags cascades (removes it
-# from any post's tag list), no RESTRICT to work around.
-router = APIRouter(
-    prefix="/tags", tags=["admin"], dependencies=[Depends(get_current_active_superuser)]
-)
+# from any post's tag list), no RESTRICT to work around. Read is author-
+# accessible (needed for the tag picker on post edit) - writes are
+# superuser-only.
+router = APIRouter(prefix="/tags", tags=["admin"], dependencies=[Depends(get_current_author)])
 
 
 def _to_public(row: Tags) -> TagAdminPublic:
@@ -34,7 +34,7 @@ def list_tags(session: SessionDep) -> TagAdminListPublic:
     return TagAdminListPublic(data=[_to_public(r) for r in rows])
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, dependencies=[Depends(get_current_active_superuser)])
 def create_tag(session: SessionDep, body: TagCreate) -> TagAdminPublic:
     _check_slug_free(session, body.slug)
 
@@ -45,7 +45,7 @@ def create_tag(session: SessionDep, body: TagCreate) -> TagAdminPublic:
     return _to_public(row)
 
 
-@router.patch("/{tag_id}")
+@router.patch("/{tag_id}", dependencies=[Depends(get_current_active_superuser)])
 def update_tag(session: SessionDep, tag_id: int, body: TagUpdate) -> TagAdminPublic:
     row = session.get(Tags, tag_id)
     if row is None:
@@ -64,7 +64,9 @@ def update_tag(session: SessionDep, tag_id: int, body: TagUpdate) -> TagAdminPub
     return _to_public(row)
 
 
-@router.delete("/{tag_id}", status_code=204)
+@router.delete(
+    "/{tag_id}", status_code=204, dependencies=[Depends(get_current_active_superuser)]
+)
 def delete_tag(session: SessionDep, tag_id: int) -> None:
     row = session.get(Tags, tag_id)
     if row is None:

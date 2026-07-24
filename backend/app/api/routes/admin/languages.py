@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
 
-from app.api.deps import SessionDep, get_current_active_superuser
+from app.api.deps import SessionDep, get_current_active_superuser, get_current_author
 from app.models import Languages, SeasonDubs
 from app.schemas.admin_language import (
     LanguageAdminListPublic,
@@ -10,8 +10,10 @@ from app.schemas.admin_language import (
     LanguageUpdate,
 )
 
+# Read is author-accessible (needed for the season-dub language picker) -
+# writes are superuser-only.
 router = APIRouter(
-    prefix="/languages", tags=["admin"], dependencies=[Depends(get_current_active_superuser)]
+    prefix="/languages", tags=["admin"], dependencies=[Depends(get_current_author)]
 )
 
 
@@ -42,7 +44,7 @@ def list_languages(session: SessionDep) -> LanguageAdminListPublic:
     return LanguageAdminListPublic(data=[_to_public(r) for r in rows])
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, dependencies=[Depends(get_current_active_superuser)])
 def create_language(session: SessionDep, body: LanguageCreate) -> LanguageAdminPublic:
     _check_sid_free(session, body.language_sid)
 
@@ -53,7 +55,7 @@ def create_language(session: SessionDep, body: LanguageCreate) -> LanguageAdminP
     return _to_public(row)
 
 
-@router.patch("/{language_id}")
+@router.patch("/{language_id}", dependencies=[Depends(get_current_active_superuser)])
 def update_language(
     session: SessionDep, language_id: int, body: LanguageUpdate
 ) -> LanguageAdminPublic:
@@ -74,7 +76,9 @@ def update_language(
     return _to_public(row)
 
 
-@router.delete("/{language_id}", status_code=204)
+@router.delete(
+    "/{language_id}", status_code=204, dependencies=[Depends(get_current_active_superuser)]
+)
 def delete_language(session: SessionDep, language_id: int) -> None:
     row = session.get(Languages, language_id)
     if row is None:

@@ -5,8 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import type { UserCreate } from "@/client"
-import { UsersService } from "@/client"
+import { AdminService, type UserCreate } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -76,7 +75,7 @@ const AddUser = () => {
 
   const mutation = useMutation({
     mutationFn: (data: UserCreate) =>
-      UsersService.createUser({ requestBody: data }),
+      AdminService.createUser({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast(
         "User created - an activation email has been sent to set their password",
