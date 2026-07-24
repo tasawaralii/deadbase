@@ -64,9 +64,10 @@ class AnimeAdminPublic(SQLModel):
     anime_tmdb_id: int | None
     anime_rel_date: dt.date | None
     genres: list[str]
-    # Set only for type="movie" - a movie's Post is created in the same
+    # Both set only for type="movie" - a movie's Post is created in the same
     # request. TV shows get a Post per season instead, created when a season
     # is added, not here.
+    post_id: int | None
     post_slug: str | None
 
 

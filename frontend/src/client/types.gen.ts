@@ -91,6 +91,7 @@ export type AnimeAdminDetail = {
     anime_tmdb_id: (number | null);
     anime_rel_date: (string | null);
     genres: Array<(string)>;
+    post_id: (number | null);
     post_slug: (string | null);
     seasons: Array<SeasonAdminSummary>;
 };
@@ -115,6 +116,7 @@ export type AnimeAdminPublic = {
     anime_tmdb_id: (number | null);
     anime_rel_date: (string | null);
     genres: Array<(string)>;
+    post_id: (number | null);
     post_slug: (string | null);
 };
 
@@ -672,6 +674,7 @@ export type SeasonAdminPublic = {
     season_tmdb_id: (string | null);
     season_rel_date: (string | null);
     status: SeasonStatus;
+    post_id: number;
     post_slug: string;
 };
 
@@ -683,6 +686,7 @@ export type SeasonAdminSummary = {
     episode_count: number;
     total_episodes: number;
     status: SeasonStatus;
+    post_id: (number | null);
     post_slug: (string | null);
 };
 

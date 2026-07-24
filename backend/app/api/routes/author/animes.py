@@ -38,9 +38,11 @@ router = APIRouter(
 
 
 def _to_public(session: SessionDep, anime: Animes) -> AnimeAdminPublic:
+    post_id = None
     post_slug = None
     if anime.type == "movie":
         post = session.exec(select(Posts).where(Posts.anime_id == anime.anime_id)).first()
+        post_id = post.id if post else None
         post_slug = post.slug if post else None
 
     return AnimeAdminPublic(
@@ -58,6 +60,7 @@ def _to_public(session: SessionDep, anime: Animes) -> AnimeAdminPublic:
         anime_tmdb_id=anime.anime_tmdb_id,
         anime_rel_date=anime.anime_rel_date,
         genres=[g.genre_name for g in anime.genre],
+        post_id=post_id,
         post_slug=post_slug,
     )
 
@@ -152,6 +155,7 @@ def get_anime(session: SessionDep, author: CurrentAuthor, anime_id: int) -> Anim
                 episode_count=episode_count,
                 total_episodes=season.total_episodes,
                 status=season.status,
+                post_id=post.id if post else None,
                 post_slug=post.slug if post else None,
             )
         )

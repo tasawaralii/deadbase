@@ -23,7 +23,7 @@ season_router = APIRouter(
 )
 
 
-def _to_public(season: Seasons, post_slug: str | None) -> SeasonAdminPublic:
+def _to_public(season: Seasons, post: Posts) -> SeasonAdminPublic:
     return SeasonAdminPublic(
         season_id=season.season_id,
         anime_id=season.anime_id,
@@ -36,7 +36,8 @@ def _to_public(season: Seasons, post_slug: str | None) -> SeasonAdminPublic:
         season_tmdb_id=season.season_tmdb_id,
         season_rel_date=season.season_rel_date,
         status=season.status,
-        post_slug=post_slug,
+        post_id=post.id,
+        post_slug=post.slug,
     )
 
 
@@ -86,7 +87,14 @@ def create_season(
     session.commit()
     session.refresh(season)
 
-    return _to_public(season, post.slug)
+    return _to_public(season, post)
+
+
+def _get_season_post(session: SessionDep, season_id: int) -> Posts:
+    post = session.exec(select(Posts).where(Posts.season_id == season_id)).first()
+    if post is None:
+        raise HTTPException(status_code=500, detail="Season has no associated post")
+    return post
 
 
 @season_router.get("/{season_id}")
@@ -97,8 +105,7 @@ def get_season(session: SessionDep, author: CurrentAuthor, season_id: int) -> Se
 
     require_anime_write_access(session, author, season.anime_id, season=season)
 
-    post = session.exec(select(Posts).where(Posts.season_id == season_id)).first()
-    return _to_public(season, post.slug if post else None)
+    return _to_public(season, _get_season_post(session, season_id))
 
 
 @season_router.patch("/{season_id}")
@@ -136,8 +143,7 @@ def update_season(
     session.commit()
     session.refresh(season)
 
-    post = session.exec(select(Posts).where(Posts.season_id == season_id)).first()
-    return _to_public(season, post.slug if post else None)
+    return _to_public(season, _get_season_post(session, season_id))
 
 
 @season_router.delete("/{season_id}", status_code=204)

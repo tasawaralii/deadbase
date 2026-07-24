@@ -100,19 +100,21 @@ function AdminComments() {
           {comments.map((comment: AdminCommentPublic) => (
             <div
               key={comment.id}
-              className="border rounded-lg p-4 flex flex-col gap-2"
+              className="border rounded-lg p-4 flex flex-col gap-2 min-w-0"
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-medium truncate">
-                    {comment.author_name}
-                  </span>
-                  <span className="text-muted-foreground text-xs truncate">
+              <div className="flex items-start justify-between gap-2 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-medium truncate max-w-full">
+                      {comment.author_name}
+                    </span>
+                    <Badge variant={statusBadgeVariant(comment.status)}>
+                      {comment.status}
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground text-xs truncate">
                     {comment.author_email}
-                  </span>
-                  <Badge variant={statusBadgeVariant(comment.status)}>
-                    {comment.status}
-                  </Badge>
+                  </p>
                 </div>
                 <span className="text-muted-foreground text-xs shrink-0">
                   {new Date(comment.created_at).toLocaleString()}
@@ -121,18 +123,18 @@ function AdminComments() {
 
               <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
 
-              <div className="flex items-center justify-between gap-2 mt-1">
+              <div className="flex flex-col gap-2 mt-1 sm:flex-row sm:items-center sm:justify-between">
                 <a
                   href={`${BLOG_URL}/posts/${comment.post_slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  className="min-w-0 truncate text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
                 >
-                  {comment.post_title}
-                  <ExternalLink className="size-3" />
+                  <span className="truncate">{comment.post_title}</span>
+                  <ExternalLink className="size-3 shrink-0" />
                 </a>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {comment.status !== "approved" && (
                     <Button
                       size="sm"
@@ -145,7 +147,8 @@ function AdminComments() {
                         })
                       }
                     >
-                      <Check /> Approve
+                      <Check />
+                      <span className="hidden sm:inline">Approve</span>
                     </Button>
                   )}
                   {comment.status !== "spam" && (
@@ -160,7 +163,8 @@ function AdminComments() {
                         })
                       }
                     >
-                      <ShieldAlert /> Mark Spam
+                      <ShieldAlert />
+                      <span className="hidden sm:inline">Mark Spam</span>
                     </Button>
                   )}
                   <Button
@@ -169,7 +173,8 @@ function AdminComments() {
                     disabled={deleteComment.isPending}
                     onClick={() => deleteComment.mutate(comment.id)}
                   >
-                    <Trash2 /> Delete
+                    <Trash2 />
+                    <span className="hidden sm:inline">Delete</span>
                   </Button>
                 </div>
               </div>

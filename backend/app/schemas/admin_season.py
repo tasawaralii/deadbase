@@ -44,6 +44,7 @@ class SeasonAdminPublic(SQLModel):
     season_tmdb_id: str | None
     season_rel_date: dt.date | None
     status: SeasonStatus
+    post_id: int
     post_slug: str
 
 
@@ -57,4 +58,5 @@ class SeasonAdminSummary(SQLModel):
     episode_count: int
     total_episodes: int
     status: SeasonStatus
+    post_id: int | None
     post_slug: str | None

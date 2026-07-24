@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import {
+  createFileRoute,
+  Link as RouterLink,
+  useNavigate,
+} from "@tanstack/react-router"
 import { Link2, Lock, Plus, Trash2, X } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -381,23 +385,32 @@ function SeasonDetail() {
         </div>
       )}
 
-      <button
-        type="button"
-        disabled={locked}
-        onClick={() =>
-          statusMutation.mutate(
-            season.status === "ongoing" ? "completed" : "ongoing",
-          )
-        }
-        className="self-start"
-      >
-        <Badge
-          variant={season.status === "completed" ? "secondary" : "default"}
-          className="cursor-pointer capitalize"
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() =>
+            statusMutation.mutate(
+              season.status === "ongoing" ? "completed" : "ongoing",
+            )
+          }
         >
-          {season.status}
-        </Badge>
-      </button>
+          <Badge
+            variant={season.status === "completed" ? "secondary" : "default"}
+            className="cursor-pointer capitalize"
+          >
+            {season.status}
+          </Badge>
+        </button>
+        <RouterLink
+          to="/admin/posts/$postId"
+          params={{ postId: String(season.post_id) }}
+          search={{ from: `/admin/content/${animeId}/seasons/${seasonId}` }}
+          className="text-sm text-primary hover:underline"
+        >
+          Edit blog post →
+        </RouterLink>
+      </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

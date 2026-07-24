@@ -153,15 +153,15 @@ function AnimeDetail() {
         </div>
       </div>
 
-      {anime.post_slug && (
-        <a
-          href={`${import.meta.env.VITE_BLOG_URL || "http://localhost:3000"}/posts/${anime.post_slug}`}
-          target="_blank"
-          rel="noopener noreferrer"
+      {anime.post_id && (
+        <RouterLink
+          to="/admin/posts/$postId"
+          params={{ postId: String(anime.post_id) }}
+          search={{ from: `/admin/content/${animeId}` }}
           className="text-sm text-primary hover:underline"
         >
           Edit blog post →
-        </a>
+        </RouterLink>
       )}
 
       {anime.type === "movie" && anime.content_id ? (

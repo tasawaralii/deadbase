@@ -18,6 +18,7 @@ import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAdminPeopleRouteImport } from './routes/_layout/admin.people'
 import { Route as LayoutAdminCommentsRouteImport } from './routes/_layout/admin.comments'
 import { Route as LayoutAdminContentIndexRouteImport } from './routes/_layout/admin/content/index'
+import { Route as LayoutAdminPostsPostIdRouteImport } from './routes/_layout/admin/posts/$postId'
 import { Route as LayoutAdminContentNewRouteImport } from './routes/_layout/admin/content/new'
 import { Route as LayoutAdminContentAnimeIdIndexRouteImport } from './routes/_layout/admin/content/$animeId/index'
 import { Route as LayoutAdminContentAnimeIdSeasonsNewRouteImport } from './routes/_layout/admin/content/$animeId/seasons/new'
@@ -67,6 +68,11 @@ const LayoutAdminContentIndexRoute = LayoutAdminContentIndexRouteImport.update({
   path: '/admin/content/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAdminPostsPostIdRoute = LayoutAdminPostsPostIdRouteImport.update({
+  id: '/admin/posts/$postId',
+  path: '/admin/posts/$postId',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutAdminContentNewRoute = LayoutAdminContentNewRouteImport.update({
   id: '/admin/content/new',
   path: '/admin/content/new',
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/admin/comments': typeof LayoutAdminCommentsRoute
   '/admin/people': typeof LayoutAdminPeopleRoute
   '/admin/content/new': typeof LayoutAdminContentNewRoute
+  '/admin/posts/$postId': typeof LayoutAdminPostsPostIdRoute
   '/admin/content/': typeof LayoutAdminContentIndexRoute
   '/admin/content/$animeId/': typeof LayoutAdminContentAnimeIdIndexRoute
   '/admin/content/$animeId/seasons/$seasonId': typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/admin/comments': typeof LayoutAdminCommentsRoute
   '/admin/people': typeof LayoutAdminPeopleRoute
   '/admin/content/new': typeof LayoutAdminContentNewRoute
+  '/admin/posts/$postId': typeof LayoutAdminPostsPostIdRoute
   '/admin/content': typeof LayoutAdminContentIndexRoute
   '/admin/content/$animeId': typeof LayoutAdminContentAnimeIdIndexRoute
   '/admin/content/$animeId/seasons/$seasonId': typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_layout/admin/comments': typeof LayoutAdminCommentsRoute
   '/_layout/admin/people': typeof LayoutAdminPeopleRoute
   '/_layout/admin/content/new': typeof LayoutAdminContentNewRoute
+  '/_layout/admin/posts/$postId': typeof LayoutAdminPostsPostIdRoute
   '/_layout/admin/content/': typeof LayoutAdminContentIndexRoute
   '/_layout/admin/content/$animeId/': typeof LayoutAdminContentAnimeIdIndexRoute
   '/_layout/admin/content/$animeId/seasons/$seasonId': typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/admin/comments'
     | '/admin/people'
     | '/admin/content/new'
+    | '/admin/posts/$postId'
     | '/admin/content/'
     | '/admin/content/$animeId/'
     | '/admin/content/$animeId/seasons/$seasonId'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/admin/comments'
     | '/admin/people'
     | '/admin/content/new'
+    | '/admin/posts/$postId'
     | '/admin/content'
     | '/admin/content/$animeId'
     | '/admin/content/$animeId/seasons/$seasonId'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/_layout/admin/comments'
     | '/_layout/admin/people'
     | '/_layout/admin/content/new'
+    | '/_layout/admin/posts/$postId'
     | '/_layout/admin/content/'
     | '/_layout/admin/content/$animeId/'
     | '/_layout/admin/content/$animeId/seasons/$seasonId'
@@ -253,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminContentIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/admin/posts/$postId': {
+      id: '/_layout/admin/posts/$postId'
+      path: '/admin/posts/$postId'
+      fullPath: '/admin/posts/$postId'
+      preLoaderRoute: typeof LayoutAdminPostsPostIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/admin/content/new': {
       id: '/_layout/admin/content/new'
       path: '/admin/content/new'
@@ -290,6 +309,7 @@ interface LayoutRouteChildren {
   LayoutAdminCommentsRoute: typeof LayoutAdminCommentsRoute
   LayoutAdminPeopleRoute: typeof LayoutAdminPeopleRoute
   LayoutAdminContentNewRoute: typeof LayoutAdminContentNewRoute
+  LayoutAdminPostsPostIdRoute: typeof LayoutAdminPostsPostIdRoute
   LayoutAdminContentIndexRoute: typeof LayoutAdminContentIndexRoute
   LayoutAdminContentAnimeIdIndexRoute: typeof LayoutAdminContentAnimeIdIndexRoute
   LayoutAdminContentAnimeIdSeasonsSeasonIdRoute: typeof LayoutAdminContentAnimeIdSeasonsSeasonIdRoute
@@ -302,6 +322,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminCommentsRoute: LayoutAdminCommentsRoute,
   LayoutAdminPeopleRoute: LayoutAdminPeopleRoute,
   LayoutAdminContentNewRoute: LayoutAdminContentNewRoute,
+  LayoutAdminPostsPostIdRoute: LayoutAdminPostsPostIdRoute,
   LayoutAdminContentIndexRoute: LayoutAdminContentIndexRoute,
   LayoutAdminContentAnimeIdIndexRoute: LayoutAdminContentAnimeIdIndexRoute,
   LayoutAdminContentAnimeIdSeasonsSeasonIdRoute:

@@ -389,6 +389,17 @@ export const AnimeAdminDetailSchema = {
             type: 'array',
             title: 'Genres'
         },
+        post_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Post Id'
+        },
         post_slug: {
             anyOf: [
                 {
@@ -409,7 +420,7 @@ export const AnimeAdminDetailSchema = {
         }
     },
     type: 'object',
-    required: ['anime_id', 'slug', 'anime_name', 'type', 'content_id', 'poster', 'backdrop', 'overview', 'duration', 'rating', 'age_id', 'anime_tmdb_id', 'anime_rel_date', 'genres', 'post_slug', 'seasons'],
+    required: ['anime_id', 'slug', 'anime_name', 'type', 'content_id', 'poster', 'backdrop', 'overview', 'duration', 'rating', 'age_id', 'anime_tmdb_id', 'anime_rel_date', 'genres', 'post_id', 'post_slug', 'seasons'],
     title: 'AnimeAdminDetail'
 } as const;
 
@@ -514,6 +525,17 @@ export const AnimeAdminPublicSchema = {
             type: 'array',
             title: 'Genres'
         },
+        post_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Post Id'
+        },
         post_slug: {
             anyOf: [
                 {
@@ -527,7 +549,7 @@ export const AnimeAdminPublicSchema = {
         }
     },
     type: 'object',
-    required: ['anime_id', 'slug', 'anime_name', 'type', 'content_id', 'poster', 'backdrop', 'overview', 'duration', 'rating', 'age_id', 'anime_tmdb_id', 'anime_rel_date', 'genres', 'post_slug'],
+    required: ['anime_id', 'slug', 'anime_name', 'type', 'content_id', 'poster', 'backdrop', 'overview', 'duration', 'rating', 'age_id', 'anime_tmdb_id', 'anime_rel_date', 'genres', 'post_id', 'post_slug'],
     title: 'AnimeAdminPublic'
 } as const;
 
@@ -3268,13 +3290,17 @@ export const SeasonAdminPublicSchema = {
         status: {
             '$ref': '#/components/schemas/SeasonStatus'
         },
+        post_id: {
+            type: 'integer',
+            title: 'Post Id'
+        },
         post_slug: {
             type: 'string',
             title: 'Post Slug'
         }
     },
     type: 'object',
-    required: ['season_id', 'anime_id', 'season_number', 'season_name', 'total_episodes', 'season_overview', 'poster', 'rating', 'season_tmdb_id', 'season_rel_date', 'status', 'post_slug'],
+    required: ['season_id', 'anime_id', 'season_number', 'season_name', 'total_episodes', 'season_overview', 'poster', 'rating', 'season_tmdb_id', 'season_rel_date', 'status', 'post_id', 'post_slug'],
     title: 'SeasonAdminPublic'
 } as const;
 
@@ -3306,6 +3332,17 @@ export const SeasonAdminSummarySchema = {
         status: {
             '$ref': '#/components/schemas/SeasonStatus'
         },
+        post_id: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Post Id'
+        },
         post_slug: {
             anyOf: [
                 {
@@ -3319,7 +3356,7 @@ export const SeasonAdminSummarySchema = {
         }
     },
     type: 'object',
-    required: ['season_id', 'season_number', 'season_name', 'poster', 'episode_count', 'total_episodes', 'status', 'post_slug'],
+    required: ['season_id', 'season_number', 'season_name', 'poster', 'episode_count', 'total_episodes', 'status', 'post_id', 'post_slug'],
     title: 'SeasonAdminSummary'
 } as const;
 
